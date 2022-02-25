@@ -200,32 +200,6 @@ class DfHelperTest(SmvBaseTest):
         )
         self.should_be_same(expect, res)
 
-    def test_smvJoinMultipleByKey(self):
-        df1 = self.createDF("a:Integer;b:String", """1,x1;2,y1;3,z1""")
-        df2 = self.createDF("a:Integer;b:String", """1,x1;4,w2;""")
-        df3 = self.createDF("a:Integer;b:String", """1,x3;5,w3;""")
-
-        mj = df1.smvJoinMultipleByKey(['a'], 'inner').joinWith(df2, '_df2').joinWith(df3, '_df3', 'outer')
-        r1 = mj.doJoin()
-
-        self.assertEquals(r1.columns, ['a', 'b', 'b_df2', 'b_df3'])
-        self.should_be_same(r1, self.createDF(
-            "a:Integer;b:String;b_df2:String;b_df3:String",
-            "1,x1,x1,x3;5,,,w3"))
-
-        r2 = mj.doJoin(True)
-        self.should_be_same(r2, self.createDF(
-            "a:Integer;b:String",
-            "1,x1;5,"))
-
-        r3 = df1.smvJoinMultipleByKey(['a'], 'leftouter').joinWith(df2, "_df2").doJoin()
-        self.should_be_same(r3, self.createDF(
-            "a:Integer;b:String;b_df2:String",
-            """1,x1,x1;
-            2,y1,;
-            3,z1,"""
-        ))
-
     def test_topNValsByFreq(self):
         df = self.createDF("a:Integer;b:String", """1,foo;2,foo;3,foo;3,foo;4,bar;4,bar;4,bar""")
         topN = df.topNValsByFreq(2, df["a"])
