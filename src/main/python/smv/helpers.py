@@ -26,8 +26,9 @@ from pyspark.sql.types import DataType
 from smv.utils import smv_copy_array
 from smv.error import SmvRuntimeError
 from smv.utils import is_string
-from smv.schema_meta_ops import SchemaMetaOps
 
+if sys.version_info >= (3, 0):
+    from functools import reduce
 
 # common converters to pass to _to_seq and _to_list
 def _jcol(c): return c._jc
@@ -84,6 +85,25 @@ def _helpCls(receiverCls, helperCls):
             newMethod = _getUnboundMethod(helperCls, impl)
             setattr(receiverCls, name, newMethod)
 
+def _mkUniq(collection, candidate, ignorcase = False, postfix = None):
+    """
+    Repeatedly changes `candidate` so that it is not found in the `collection`.
+    Useful when choosing a unique column name to add to a data frame.
+    """
+    if ignorcase:
+        col_cmp = [i.lower() for i in collection]
+        can_cmp = candidate.lower()
+    else:
+        col_cmp = collection
+        can_cmp = candidate
+    
+    can_to = "_" + can_cmp if postfix is None else can_cmp + postfix
+    if can_to in col_cmp:
+        res = _mkUniq(col_cmp, can_to, ignorcase, postfix)
+    else:
+        res = can_to
+
+    return res
 
 class DataFrameHelper(object):
     def __init__(self, df):
@@ -93,16 +113,15 @@ class DataFrameHelper(object):
         self._jdf = df._jdf
         self._jPythonHelper = df._sc._jvm.SmvPythonHelper
         self._jDfHelper = df._sc._jvm.SmvDFHelper(df._jdf)
-        self._SchemaMetaOps = SchemaMetaOps(df)
 
+       
     def smvJoinByKey(self, other, keys, joinType, isNullSafe=False):
         """joins two DataFrames on a key
 
-            The Spark `DataFrame` join operation does not handle duplicate key names.
-            If both left and right side of the join operation contain the same key,
-            the result `DataFrame` is unusable.
+            Check none key columns for duplicate and rename right DF duplicate column before join.
 
-            The `smvJoinByKey` method will allow the user to join two `DataFrames` using the same join key.
+            Same as Spark native join funcation if not NullSafe.
+            For NullSafe specified, replicate Spark native join behaviour on NullSafe case
             Post join, only the left side keys will remain. In case of outer-join, the
             `coalesce(leftkey, rightkey)` will replace the left key to be kept.
 
@@ -119,8 +138,33 @@ class DataFrameHelper(object):
             Returns:
                 (DataFrame): result of the join operation
         """
-        jdf = self._jPythonHelper.smvJoinByKey(self._jdf, other._jdf, _to_seq(keys), joinType, isNullSafe)
-        return DataFrame(jdf, self._sql_ctx)
+        
+        # Check right DF non-key col names for duplicates``
+        left_nonkey_cols = [i for i in self.df.columns if i not in keys]
+        right_need_change = [i for i in other.columns if i not in keys and i in left_nonkey_cols]
+
+        # Rename right DF duplicated column with prefix "_"
+        other_name_changed = other
+        for i in right_need_change:
+            other_name_changed = other_name_changed.withColumnRenamed(i, _mkUniq(left_nonkey_cols, i, ignorcase=True))
+
+        if isNullSafe:
+            keys_rn = [(k, _mkUniq(other.columns, k)) for k in keys]
+            key_name_changed = other_name_changed
+            for (k, nk) in keys_rn:
+                key_name_changed = key_name_changed.withColumnRenamed(k, nk)
+            joinOpt = reduce(lambda a, b: a & b, [self.df[k].eqNullSafe(key_name_changed[nk]) for (k, nk) in keys_rn])
+            joinOut = self.df.join(key_name_changed, joinOpt, joinType)
+            res = joinOut
+            # for each key used in NullSafe, coalesce key value from left to right (replicate spark "join" on key behavior)
+            # Only impact outer join result, since inner join will have both key the same
+            for (k, nk) in keys_rn:
+                res = res.withColumn(k, F.coalesce(k, nk)).drop(nk)
+        else:
+            # native join on key can't do null safe
+            res = self.df.join(other_name_changed, keys, joinType)
+
+        return res
 
     def smvUnion(self, dfother):
         """Unions DataFrames with different number of columns by column name and schema
