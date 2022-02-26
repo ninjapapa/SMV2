@@ -30,10 +30,6 @@ from smv.utils import is_string
 if sys.version_info >= (3, 0):
     from functools import reduce
 
-# common converters to pass to _to_seq and _to_list
-def _jcol(c): return c._jc
-def _jdf(df): return df._jdf
-
 # Modified from Spark column.py
 def _to_seq(cols, converter=None):
     """
@@ -45,18 +41,6 @@ def _to_seq(cols, converter=None):
     if converter:
         cols = [converter(c) for c in cols]
     return _sparkContext()._jvm.PythonUtils.toSeq(cols)
-
-# Modified from Spark column.py
-def _to_list(cols, converter=None):
-    """
-    Convert a list of Column (or names) into a JVM (Scala) List of Column.
-
-    An optional `converter` could be used to convert items in `cols`
-    into JVM Column objects.
-    """
-    if converter:
-        cols = [converter(c) for c in cols]
-    return _sparkContext()._jvm.PythonUtils.toList(cols)
 
 def _sparkContext():
     return SparkContext._active_spark_context
