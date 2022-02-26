@@ -22,4 +22,4 @@ class B(SmvModule):
     def requiresDS(self): return [L]
     def run(self, i):
         df = i[L]
-        return df.smvSelectPlus((col("v") + 1).alias("v2"))
+        return df.withColumn("v2", col("v") + 1)
