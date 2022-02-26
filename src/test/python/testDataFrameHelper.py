@@ -31,6 +31,42 @@ class DfHelperTest(SmvBaseTest):
     def smvAppInitArgs(cls):
         return ['--smv-props', 'smv.stages=stage']
 
+    def test_smvJoinByKey(self):
+        df1 = self.createDF(
+            "a:Integer; b:Double; c:String",
+            """1,2.0,hello;
+            1,3.0,hello;
+            2,10.0,hello2;
+            2,11.0,hello3"""
+        )
+        df2 = self.createDF("a:Integer; c:String", """1,asdf;2,asdfg""")
+        res = df1.smvJoinByKey(df2, ['a'], "inner")
+        expect = self.createDF(
+            "a:Integer;b:Double;c:String;_c:String",
+            "1,2.0,hello,asdf;1,3.0,hello,asdf;2,10.0,hello2,asdfg;2,11.0,hello3,asdfg"
+        )
+        self.should_be_same(expect, res)
+
+    def test_smvJoinByKey_nullSafe(self):
+        df1 = self.createDF(
+            "a:String; b:String; i:Integer",
+            """a,,1;
+            a,b,2;
+            ,,3"""
+        )
+        df2 = self.createDF(
+            "a:String; b:String; j:String",
+            """a,,x;
+            ,,y;
+            c,d,z"""
+        )
+        res = df1.smvJoinByKey(df2, ['a', 'b'], 'inner', isNullSafe=True)
+        expect = self.createDF(
+            "a: String;b: String;i: Integer;j: String",
+            """,,3,y;
+            a,,1,x"""
+        )
+        self.should_be_same(expect, res)
  
     def test_smvUnion(self):
         schema       = "a:Integer; b:Double; c:String"

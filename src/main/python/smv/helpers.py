@@ -122,23 +122,36 @@ class DataFrameHelper(object):
         jdf = self._jPythonHelper.smvJoinByKey(self._jdf, other._jdf, _to_seq(keys), joinType, isNullSafe)
         return DataFrame(jdf, self._sql_ctx)
 
-    def smvUnion(self, *dfothers):
+    def smvUnion(self, dfother):
         """Unions DataFrames with different number of columns by column name and schema
 
             Spark unionAll ignores column names & schema, and can only be performed on tables with the same number of columns.
 
             Args:
-                dfOthers (\*DataFrame): the dataframes to union with
+                dfOther (DataFrame): the dataframe to union with
 
             Example:
-                >>> df.smvUnion(df2, df3)
+                >>> df.smvUnion(df2)
 
             Returns:
                 (DataFrame): the union of all specified DataFrames
         """
-        jdf = self._jDfHelper.smvUnion(_to_seq(dfothers, _jdf))
-        return DataFrame(jdf, self._sql_ctx)
+        # val leftNeed   = dfother.columns diff df.columns
+        left_need = list(set(dfother.columns) - set(self.df.columns))
+        left_name_type = [(i, dfother.schema[i].dataType) for i in left_need]
+        leftFull = self.df.select("*", *[F.lit(None).cast(t).alias(n) for (n, t) in left_name_type])
 
+        right_need = list(set(self.df.columns) - set(dfother.columns))
+        right_name_type = [(i, self.df.schema[i].dataType) for i in right_need]
+        rightFull = dfother.select("*", *[F.lit(None).cast(t).alias(n) for (n, t) in right_name_type])
+
+        overlap = list(set(self.df.columns).intersection(set(dfother.columns)))
+        cols_diff_struct = [i for i in overlap if self.df.schema[i].dataType != dfother.schema[i].dataType]
+
+        if bool(cols_diff_struct):
+            raise SmvRuntimeError("fail to union columns with same name but different StructTypes:" + ", ".join(cols_diff_struct))
+
+        return leftFull.union(rightFull.select(*(leftFull.columns)))
 
     #############################################
     # DfHelpers which print to STDOUT
