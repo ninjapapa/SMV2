@@ -108,12 +108,6 @@ def _mkUniq(collection, candidate, ignorcase = False, postfix = None):
 class DataFrameHelper(object):
     def __init__(self, df):
         self.df = df
-        self._sc = df._sc
-        self._sql_ctx = df.sql_ctx
-        self._jdf = df._jdf
-        self._jPythonHelper = df._sc._jvm.SmvPythonHelper
-        self._jDfHelper = df._sc._jvm.SmvDFHelper(df._jdf)
-
        
     def smvJoinByKey(self, other, keys, joinType, isNullSafe=False):
         """joins two DataFrames on a key
@@ -197,17 +191,7 @@ class DataFrameHelper(object):
 
         return leftFull.union(rightFull.select(*(leftFull.columns)))
 
-    #############################################
-    # DfHelpers which print to STDOUT
-    # Scala side which print to STDOUT will not work on Jupyter. Have to pass the string to python side then print to stdout
-    #############################################
-    def _println(self, string):
-        sys.stdout.write(string + "\n")
-
-    def _peekStr(self, pos = 1, colRegex = ".*"):
-        return self._jPythonHelper.peekStr(self._jdf, pos, colRegex)
-
-    def peek(self, pos = 1, colRegex = ".*"):
+    def peek(self, pos = 1):
         """Display a DataFrame row in transposed view
 
             Args:
@@ -217,7 +201,13 @@ class DataFrameHelper(object):
             Returns:
                 (None)
         """
-        self._println(self._peekStr(pos, colRegex))
+        rows = self.df.take(pos)
+        if (bool(rows)):
+            rec = rows[-1]  # last row
+            labels = [ (s.name, "{} : {}".format(s.name, str(s.dataType).replace("Type", ""))) for s in self.df.schema ]
+            width = max([len(l) for (n, l) in labels])
+            for (n, l) in labels:
+                print("{} = {}".format(l, rec[n]))
 
 
 class ColumnHelper(object):
