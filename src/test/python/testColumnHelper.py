@@ -22,7 +22,6 @@ from pyspark.sql import SQLContext, HiveContext
 from pyspark.sql.functions import array, col
 import pyspark.sql.functions as F
 from pyspark.sql.types import StringType
-import smv.functions as SF
 
 class ColumnHelperTest(SmvBaseTest):
     def test_smvGetColName(self):

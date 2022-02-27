@@ -13,7 +13,6 @@
 
 from smv import *
 from smv.dqm import *
-from smv.functions import smvStrCat
 from smv.iomod import SmvCsvInputFile, SmvMultiCsvInputFiles, SmvXmlInputFile
 
 import pyspark.sql.functions as F
@@ -120,7 +119,7 @@ class Csv1(SmvCsvFile):
         return CsvAttributes(",", '"', True)
     def run(self, df):
         return df.withColumn("name_id",
-            smvStrCat(F.col("name"), F.col("id"))
+            F.concat(F.col("name"), F.col("id"))
         )
 
 class Csv2(SmvCsvFile):

@@ -13,7 +13,6 @@
 
 from smv import *
 from smv.dqm import *
-from smv.functions import smvStrCat
 import pyspark.sql.functions as F
 
 
