@@ -140,9 +140,6 @@ class SmvConfig(object):
     def stage_names(self):
         return self._split_prop("smv.stages")
 
-    def force_edd(self):
-        return self._get_prop_as_bool("smv.forceEdd")
-
     def df_persist_format(self):
         """Spark DF's default persisted format. Available values:
 

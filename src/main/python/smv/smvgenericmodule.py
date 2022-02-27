@@ -413,11 +413,7 @@ class SmvGenericModule(ABC):
                 return True
             else:
                 meta = io_strategy.read()
-                force_edd = self.smvApp.py_smvconf.force_edd()
-                if (force_edd and len(meta.getEddResult()) == 0):
-                    return True
-                else:
-                    return False
+                return False
 
         def run_delayed_postAction(mod, state):
             (_run_set, coll) = state

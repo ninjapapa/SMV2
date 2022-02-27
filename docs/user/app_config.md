@@ -95,13 +95,6 @@ Note that for sequence/list type parameters (e.g. smv.stages), a "," or ":" can 
 </tr>
 
 <tr>
-<td>smv.forceEdd</td>
-<td>empty</td>
-<td>Optional</td>
-<td>When set to "true" or "True", a run will force edd calculation on all modules, and persisted in metadata</td>
-</tr>
-
-<tr>
 <td>smv.lock</td>
 <td>False</td>
 <td>Optional</td>

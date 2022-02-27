@@ -194,35 +194,6 @@ class SmvFrameworkTest2(SmvBaseTest):
         with self.assertRaisesRegexp(SmvRuntimeError, "should be a Spark DataFrame"):
             self.df("stage.modules.WrongType")
 
-class SmvForceEddTest(SmvBaseTest):
-    @classmethod
-    def smvAppInitArgs(cls):
-        return ['--smv-props', 'smv.stages=stage']
-
-    def setUp(self):
-        super(SmvForceEddTest, self).setUp()
-        # Clean up data_cache, persisted files, and dynamic conf for each test
-        self.smvApp.data_cache = {}
-        self.mkTmpTestDir()
-        self.smvApp.setDynamicRunConfig({})
-
-    def test_no_force_create_edd(self):
-        fqn = "stage.modules.M2"
-        (df, info) = self.smvApp.runModule(fqn)
-        meta = info.metadata(fqn)
-        edd = meta.get('_edd')
-        self.assertEqual(len(edd), 0)
-
-    def test_force_create_edd(self):
-        fqn = "stage.modules.M2"
-        self.smvApp.setDynamicRunConfig({'smv.forceEdd': 'True'})
-        (df, info) = self.smvApp.runModule(fqn)
-        meta = info.metadata(fqn)
-        edd = meta.get('_edd')
-        for r in edd:
-            if (r['taskName'] == 'cnt' and r['colName'] == 'a'):
-                self.assertEqual(r['valueJSON'], '2')
-
 class SmvAppWithoutSparkTest(SmvBaseTest):
     @classmethod
     def setUpClass(cls):

@@ -74,17 +74,6 @@ class SparkDfGenMod(SmvGenericModule):
     #########################################################################
     # Implement of SmvGenericModule abatract methos and other private methods
     #########################################################################
-    def _calculate_edd(self):
-        """When config smv.forceEdd flag is true, run edd calculation.
-        """
-        def get_edd(df):
-            return self.smvApp._jvm.SmvPythonHelper.getEddJsonArray(df._jdf)
-
-        (edd_json_array, eddTimeElapsed) = self._do_action_on_df(
-            get_edd, self.data, "CALCULATE EDD")
-        self.module_meta.addEddResult(edd_json_array)
-        self.module_meta.addDuration("edd", eddTimeElapsed)
-
     def _force_an_action(self, df):
         # Since optimization can be done on a DF actions like count, we have to convert DF
         # to RDD and than apply an action, otherwise fix count will be always zero
@@ -94,8 +83,6 @@ class SparkDfGenMod(SmvGenericModule):
     # Override this method to add the edd calculation if config
     def _calculate_user_meta(self):
         super(SparkDfGenMod, self)._calculate_user_meta()
-        if (self.smvApp.py_smvconf.force_edd()):
-            self._calculate_edd()
 
     # Override this method to add the dqmTimeElapsed
     def _finalize_meta(self):
