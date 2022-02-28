@@ -16,7 +16,7 @@ import os
 import json
 
 from pyspark.sql import DataFrame
-from pyspark.sql.types import StructType
+from pyspark.sql.types import StructType, StructField, StringType
 from py4j.protocol import Py4JJavaError
 
 import smv
@@ -26,6 +26,7 @@ from smv.smviostrategy import SmvJdbcIoStrategy, SmvHiveIoStrategy, \
     SmvSchemaOnHdfsIoStrategy, SmvCsvOnHdfsIoStrategy, SmvTextOnHdfsIoStrategy,\
     SmvXmlOnHdfsIoStrategy
 from smv.dqm import SmvDQM
+from smv.smvschema2 import SmvSchema2
 from smv.utils import lazy_property, smvhash
 from smv.error import SmvRuntimeError
 
@@ -404,11 +405,18 @@ class SmvCsvStringInputData(SparkDfGenMod, WithUserSchema, WithCsvParser):
             - dqm(): optional
     """
 
+    def _extendSchemaStr(self):
+        if (self._csv_reader_mode() == "PERMISSIVE"):
+            return self.userSchema() + ";_corrupt_record:String"
+        else:
+            return self.userSchema()
+
     def smvSchema(self):
-        return self.smvApp.smvSchemaObj.fromString(self.userSchema())
+        (_schema, _attr) = SmvSchema2(self._extendSchemaStr()) 
+        return _schema
 
     def _get_input_data(self):
-        return self.smvApp.createDFWithLogger(self.userSchema(), self.dataStr(), self._readerLogger())
+        return self.smvApp.createDF(self._extendSchemaStr(), self.dataStr(), self._csv_reader_mode())
 
     @abc.abstractmethod
     def schemaStr(self):

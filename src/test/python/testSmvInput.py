@@ -125,6 +125,16 @@ id:integer"""
         fqn = "stage.modules.D1WithError"
         try:
             df = self.df(fqn)
+            # df.show()
+            # +----+----+---------------+
+            # |   a|   b|_corrupt_record|
+            # +----+----+---------------+
+            # |  a1|  10|           null|
+            # |null|null|           a2,x|
+            # |  a3|   2|           null|
+            # |  a4|null|           null|
+            # |null|null|           a5,y|
+            # +----+----+---------------+
         except SmvDqmValidationError as e:
             self.assertEqual(e.dqmValidationResult["passed"], False)
             self.assertEqual(e.dqmValidationResult["dqmStateSnapshot"]["totalRecords"], 3)

@@ -574,13 +574,13 @@ class SmvApp(object):
     #     readerLogger = self._jvm.SmvPythonHelper.getTerminateParserLogger()
     #     return self.createDFWithLogger(schema, data, readerLogger)
 
-    def createDF(self, schema, data = ""):
+    def createDF(self, schema, data = "", mode = "FAILFAST"):
         spark = self.sparkSession
         smvSchema = SmvSchema2(schema)
         (s, attrs) = (smvSchema.schema, smvSchema.attributes)
         d = spark.sparkContext.parallelize(data.split(";"))
         reader_builder = spark.read\
-            .option("mode", "FAILFAST")\
+            .option("mode", mode)\
             .option('header', 'false')\
             .option('inferSchema', 'false')\
             .option('enforceSchema', 'true')\
@@ -597,6 +597,9 @@ class SmvApp(object):
             reader_builder = reader_builder.option("sep", attrs.get('delimiter'))
         if attrs.get('quote-char'):
             reader_builder = reader_builder.option("quote", attrs.get('quote-char'))
+
+        if (mode == "PERMISSIVE"):
+            reader_builder = reader_builder.option("columnNameOfCorruptRecord", "_corrupt_record")
 
         dataframe = reader_builder.schema(s).csv(d)
         return dataframe
