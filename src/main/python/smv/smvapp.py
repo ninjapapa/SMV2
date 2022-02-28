@@ -42,7 +42,7 @@ from smv.smviostrategy import SmvJsonOnHdfsPersistenceStrategy
 from smv.conn import SmvHdfsConnectionInfo
 from smv.smvmetadata import SmvMetaHistory
 from smv.smvhdfs import SmvHDFS
-from smv.smvschema2 import smvSchemaFromStr
+from smv.smvschema2 import SmvSchema2
 from py4j.protocol import Py4JJavaError
 
 
@@ -576,7 +576,8 @@ class SmvApp(object):
 
     def createDF(self, schema, data = ""):
         spark = self.sparkSession
-        (s, attrs, df, tf) = smvSchemaFromStr(schema)
+        smvSchema = SmvSchema2(schema)
+        (s, attrs) = (smvSchema.schema, smvSchema.attributes)
         d = spark.sparkContext.parallelize(data.split(";"))
         reader_builder = spark.read\
             .option("mode", "FAILFAST")\
@@ -586,10 +587,10 @@ class SmvApp(object):
             .option('ignoreLeadingWhiteSpace', 'true')
 
         # Could set nullValue when handle String[,_NULL_] type schema string
-        if df:
-            reader_builder = reader_builder.option("dateFormat", df)
-        if tf:
-            reader_builder = reader_builder.option("timestampFormat", tf)
+        if attrs.get('dateFormat'):
+            reader_builder = reader_builder.option("dateFormat", attrs.get('dateFormat'))
+        if attrs.get('timestampFormat'):
+            reader_builder = reader_builder.option("timestampFormat", attrs.get('timestampFormat'))
         if attrs.get('has-header'):
             reader_builder = reader_builder.option("header", attrs.get('has-header'))
         if attrs.get('delimiter'):
