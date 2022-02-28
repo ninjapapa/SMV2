@@ -1,2 +1,3 @@
+@has-header = true
 name:string
 id:integer

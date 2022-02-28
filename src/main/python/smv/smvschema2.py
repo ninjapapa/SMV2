@@ -90,7 +90,7 @@ class SmvSchema2(object):
         return (field, dfmtStr, tfmtStr)
 
     def _strToAttr(self, attrStr):
-        pattern = re.compile(r"@\s*(?P<name>\S*)\s*=\s*(?P<value>\S*)\s*Z")
+        pattern = re.compile(r"@\s*(?P<name>\S*)\s*=\s*(?P<value>\S*)\s*")
         match = pattern.match(attrStr)
         name = match.group('name')
         value = match.group('value')

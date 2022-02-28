@@ -40,7 +40,7 @@ For above case, the Csv file is assumed to be
 You can specify the appropriate CsvAttributes for your file
 
 ```python
-> smvDiscoverSchemaToFile("/path/to/file.csv", ca = CsvAttributes(delimiter = '|', hasHeader = True))
+> smvDiscoverSchemaToFile("/path/to/file.csv", ca = CsvAttributes(delimiter = '|', hasHeader = "true"))
 ```
 
 Please see [SMV File](smv_input.md) for more CsvAttributes details.
@@ -54,7 +54,7 @@ hinted by the file name, human need to review the schema file.
 Using the `CB1200CZ11.csv` file as an example,
 
 ```python
->>> smvDiscoverSchemaToFile("data/input/employment/CB1200CZ11.csv", ca = CsvAttributes(delimiter = '|', hasHeader = true))
+>>> smvDiscoverSchemaToFile("data/input/employment/CB1200CZ11.csv", ca = CsvAttributes(delimiter = '|', hasHeader = "true"))
 ```
 
 The path here is relative to the project root dir, where I started the `smv-shell`.

@@ -269,7 +269,8 @@ class WithCsvParser(SmvInput):
         if (self.failAtParsingError()):
             return "FAILFAST"
         else:
-            return "PERMISSIVE"
+            return "DROPMALFORMED"
+            # return "PERMISSIVE"
 
 class WithSmvSchema(InputFileWithSchema):
     def csvAttr(self):

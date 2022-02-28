@@ -587,7 +587,7 @@ class SmvApp(object):
         if (mode == "PERMISSIVE"):
             builder = builder.option("columnNameOfCorruptRecord", "_corrupt_record")
 
-        return builder.schema(s)
+        return builder.schema(s) if (wr == 'r') else builder
 
     def createDF(self, schemaStr, data = "", mode = "FAILFAST"):
         spark = self.sparkSession

@@ -140,14 +140,6 @@ class SmvConfig(object):
     def stage_names(self):
         return self._split_prop("smv.stages")
 
-    def df_persist_format(self):
-        """Spark DF's default persisted format. Available values:
-
-            - smvcsv_on_hdfs
-            - parquet_on_hdfs (default)
-        """
-        return self.merged_props().get("smv.sparkdf.defaultPersistFormat", "parquet_on_hdfs")
-
     def use_lock(self):
         return self._get_prop_as_bool("smv.lock")
 
