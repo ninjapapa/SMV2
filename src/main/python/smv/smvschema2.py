@@ -15,13 +15,29 @@ import re
 import json
 import pyspark.sql.types as T
 from smv.error import SmvRuntimeError
+from smv.utils import is_string
 
 # make it as a class with spark-schema, attrs (consider date, time formats as attr)
 class SmvSchema2(object):
     """
     """
-    def __init__(self, schemaStr):
-        (s, a, df, tf) = self._fullStrToSchema(schemaStr)
+    def __init__(self, _schema):
+        if is_string(_schema):
+            (s, a, df, tf) = self._fullStrToSchema(_schema)
+        elif isinstance(_schema, T.StructType):
+            (s, a, df, tf) = (
+                _schema,
+                {
+                    "has-header": "false",
+                    "delimiter": ",",
+                    "quote-char": "\"",
+                },
+                None,
+                None
+            )
+        else:
+            raise SmvRuntimeError("Unsupported schema type: {}".format(type(_schema)))
+
         self.schema = s 
         a.update({
             "dateFormat": df or "yyyy-MM-dd",
