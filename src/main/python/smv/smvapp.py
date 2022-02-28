@@ -562,18 +562,6 @@ class SmvApp(object):
         """Returns a Scala None value"""
         return self.scalaOption(None)
 
-    def createDFWithLogger(self, schema, data, readerLogger):
-        return DataFrame(self._jvm.DfCreator.createDFWithLogger(
-            self.sparkSession._jsparkSession,
-            schema,
-            data,
-            readerLogger
-        ), self.sqlContext)
-
-    # def createDF(self, schema, data = None):
-    #     readerLogger = self._jvm.SmvPythonHelper.getTerminateParserLogger()
-    #     return self.createDFWithLogger(schema, data, readerLogger)
-
     def createDF(self, schema, data = "", mode = "FAILFAST"):
         spark = self.sparkSession
         smvSchema = SmvSchema2(schema)
