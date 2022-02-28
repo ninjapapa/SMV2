@@ -23,9 +23,7 @@ class DataSetMgr(object):
     """The Python representation of DataSetMgr.
     """
 
-    def __init__(self, _jvm, smvconfig):
-        self._jvm = _jvm
-
+    def __init__(self, smvconfig):
         self.smvconfig = smvconfig
         self.dsRepoFactories = []
 
@@ -35,7 +33,7 @@ class DataSetMgr(object):
     def tx(self):
         """Create a TXContext for multiple places, avoid the long TXContext line
         """
-        return TXContext(self._jvm, self.dsRepoFactories, self.stages())
+        return TXContext(self.dsRepoFactories, self.stages())
 
 
     def load(self, *fqns):
@@ -98,13 +96,12 @@ class DataSetMgr(object):
 class TXContext(object):
     """Create a TX context for "with tx() as tx" syntax
     """
-    def __init__(self, _jvm, resourceFactories, stages):
-        self._jvm = _jvm
+    def __init__(self, resourceFactories, stages):
         self.resourceFactories = resourceFactories
         self.stages = stages
 
     def __enter__(self):
-        return TX(self._jvm, self.resourceFactories, self.stages)
+        return TX(self.resourceFactories, self.stages)
 
     def __exit__(self, type, value, traceback):
         pass
@@ -122,7 +119,7 @@ class TX(object):
         by the previous TX is not guaranteed. Particularly it may become impossible
         to run modules from the previous TX.
     """
-    def __init__(self, _jvm, resourceFactories, stages):
+    def __init__(self, resourceFactories, stages):
         self.repos = [rf.createRepo() for rf in resourceFactories]
         self.stages = stages
         self.resolver = DataSetResolver(self.repos[0])

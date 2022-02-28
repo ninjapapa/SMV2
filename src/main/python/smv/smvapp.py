@@ -134,7 +134,7 @@ class SmvApp(object):
         self.cmd_line = namedtuple("CmdLine", cl.keys())(*cl.values())
 
         # shortcut is meant for internal use only
-        self.dsm = DataSetMgr(self._jvm, self.py_smvconf)
+        self.dsm = DataSetMgr(self.py_smvconf)
 
         # computed df cache, keyed by m.versioned_fqn
         self.data_cache = {}
