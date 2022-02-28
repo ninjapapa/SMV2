@@ -28,7 +28,6 @@ from pyspark.java_gateway import launch_gateway
 from pyspark import SparkContext
 from pyspark.sql import SparkSession, DataFrame
 
-
 from smv.datasetmgr import DataSetMgr
 from smv.smvappinfo import SmvAppInfo
 from smv.datasetrepo import DataSetRepoFactory, DataSetRepo
@@ -43,6 +42,7 @@ from smv.smviostrategy import SmvJsonOnHdfsPersistenceStrategy
 from smv.conn import SmvHdfsConnectionInfo
 from smv.smvmetadata import SmvMetaHistory
 from smv.smvhdfs import SmvHDFS
+from smv.smvschema2 import smvSchemaFromStr
 from py4j.protocol import Py4JJavaError
 
 
@@ -570,9 +570,29 @@ class SmvApp(object):
             readerLogger
         ), self.sqlContext)
 
-    def createDF(self, schema, data = None):
-        readerLogger = self._jvm.SmvPythonHelper.getTerminateParserLogger()
-        return self.createDFWithLogger(schema, data, readerLogger)
+    # def createDF(self, schema, data = None):
+    #     readerLogger = self._jvm.SmvPythonHelper.getTerminateParserLogger()
+    #     return self.createDFWithLogger(schema, data, readerLogger)
+
+    def createDF(self, schema, data = ""):
+        spark = self.sparkSession
+        (s, df, tf) = smvSchemaFromStr(schema)
+        d = spark.sparkContext.parallelize(data.split(";"))
+        reader_builder = spark.read\
+            .option("mode", "FAILFAST")\
+            .option('header', 'false')\
+            .option('inferSchema', 'false')\
+            .option('enforceSchema', 'true')\
+            .option('ignoreLeadingWhiteSpace', 'true')
+
+        # Could set nullValue when handle String[,_NULL_] type schema string
+        if df:
+            reader_builder = reader_builder.option("dateFormat", df)
+        if tf:
+            reader_builder = reader_builder.option("timestampFormat", tf)
+
+        dataframe = reader_builder.schema(s).csv(d)
+        return dataframe
 
     def _mkCsvAttr(self, delimiter=',', quotechar='"', hasHeader=False):
         """Factory method for creating instances of Scala case class CsvAttributes"""
