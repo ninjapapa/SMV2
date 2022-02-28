@@ -62,12 +62,20 @@ def smvFieldToStructField(smvField):
 
     return (field, dfmtStr, tfmtStr)
 
+def smvAttrFromStr(attrStr):
+    pattern = re.compile(r"@\s*(?P<name>\S*)\s*=\s*(?P<value>\S*)\s*Z")
+    match = pattern.match(attrStr)
+    name = match.group('name')
+    value = match.group('value')
+    return (name, value)
+
 def smvStrListToSchema(smvStrs):
     no_comm = [re.sub(';[ \t]*$', '', r).strip() for r in smvStrs if not (re.match(r"^(//|#).*$", r) or re.match(r"^[ \t]*$", r))]
-    #attrStrs = [s for s in no_comm if s.startswith("@")]
+    attrStrs = [s for s in no_comm if s.startswith("@")]
     fieldStrs = [s for s in no_comm if not s.startswith("@")]
 
-    # need to handle Date[yyyy-MM-dd] case here"
+    attrs = dict([smvAttrFromStr(a) for a in attrStrs])
+
     fieldlist = []
     dfmtlist = []
     tfmtlist = []
@@ -94,7 +102,7 @@ def smvStrListToSchema(smvStrs):
         timestampFormat = None
 
     schema = T.StructType(fieldlist)
-    return (schema, dateFormat, timestampFormat)
+    return (schema, attrs, dateFormat, timestampFormat)
 
 
 def smvSchemaFromStr(smvStr):

@@ -576,7 +576,7 @@ class SmvApp(object):
 
     def createDF(self, schema, data = ""):
         spark = self.sparkSession
-        (s, df, tf) = smvSchemaFromStr(schema)
+        (s, attrs, df, tf) = smvSchemaFromStr(schema)
         d = spark.sparkContext.parallelize(data.split(";"))
         reader_builder = spark.read\
             .option("mode", "FAILFAST")\
@@ -590,6 +590,12 @@ class SmvApp(object):
             reader_builder = reader_builder.option("dateFormat", df)
         if tf:
             reader_builder = reader_builder.option("timestampFormat", tf)
+        if attrs.get('has-header'):
+            reader_builder = reader_builder.option("header", attrs.get('has-header'))
+        if attrs.get('delimiter'):
+            reader_builder = reader_builder.option("sep", attrs.get('delimiter'))
+        if attrs.get('quote-char'):
+            reader_builder = reader_builder.option("quote", attrs.get('quote-char'))
 
         dataframe = reader_builder.schema(s).csv(d)
         return dataframe
