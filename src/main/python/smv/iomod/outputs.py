@@ -16,8 +16,7 @@ import re
 
 from smv.iomod.base import SmvSparkDfOutput, AsTable, AsFile
 from smv.smviostrategy import SmvCsvOnHdfsIoStrategy, SmvJdbcIoStrategy, SmvHiveIoStrategy, SmvSchemaOnHdfsIoStrategy
-from smv.csv_attributes import CsvAttributes
-from smv.utils import scala_seq_to_list
+from smv.smvschema2 import SmvSchema2
 
 class WithSparkDfWriter(object):
     """Mixin for output modules using spark df writer"""
@@ -100,7 +99,7 @@ class SmvCsvOutputFile(SmvSparkDfOutput, AsFile):
         file_path = os.path.join(self.get_connection().path, self.fileName())
         schema_path = re.sub("\.csv$", ".schema", file_path)
 
-        schema = self.smvApp.smvSchemaObj.fromDataFrame(data._jdf, "_SmvStrNull_", self.smvApp.scalaOption(CsvAttributes()))
+        schema = SmvSchema2(data.schema)
 
         SmvCsvOnHdfsIoStrategy(self.smvApp, file_path, schema, None, self.writeMode()).write(data)
         SmvSchemaOnHdfsIoStrategy(self.smvApp, schema_path, self.writeMode()).write(schema)

@@ -12,7 +12,7 @@
 # limitations under the License.
 import smv
 from smv.modulesvisitor import ModulesVisitor
-from smv.smviostrategy import SmvCsvPersistenceStrategy, SmvJsonOnHdfsPersistenceStrategy
+from smv.smviostrategy import SmvCsvOnHdfsIoStrategy, SmvJsonOnHdfsPersistenceStrategy
 from smv.smvmetadata import SmvMetaHistory
 from smv.runinfo import SmvRunInfoCollector
 from smv.utils import scala_seq_to_list, is_string

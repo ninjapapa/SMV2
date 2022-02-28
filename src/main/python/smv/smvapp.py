@@ -562,9 +562,8 @@ class SmvApp(object):
         """Returns a Scala None value"""
         return self.scalaOption(None)
 
-    def buildCsvIO(self, schema, wr,  df = None, mode = "FAILFAST"):
+    def buildCsvIO(self, smvSchema, wr,  df = None, mode = "FAILFAST"):
         spark = self.sparkSession
-        smvSchema = SmvSchema2(schema)
         (s, attrs) = (smvSchema.schema, smvSchema.attributes)
         builder = spark.read if (wr == "r") else df.write
         builder = builder\
@@ -590,10 +589,11 @@ class SmvApp(object):
 
         return builder.schema(s)
 
-    def createDF(self, schema, data = "", mode = "FAILFAST"):
+    def createDF(self, schemaStr, data = "", mode = "FAILFAST"):
         spark = self.sparkSession
+        smvSchema = SmvSchema2(schemaStr)
         d = spark.sparkContext.parallelize(data.split(";"))
-        reader_builder = self.buildCsvIO(schema, "r", None, mode)
+        reader_builder = self.buildCsvIO(smvSchema, "r", None, mode)
         dataframe = reader_builder.csv(d)
         return dataframe
 

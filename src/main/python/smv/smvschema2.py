@@ -145,3 +145,7 @@ class SmvSchema2(object):
             for name in s.fieldNames()
         ])
         return attrStr + "\n\n" + fmtStr
+
+    def addCsvAttributes(self, attr):
+        self.attributes.update(attr)
+        return self

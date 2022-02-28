@@ -290,7 +290,7 @@ class WithSmvSchema(InputFileWithSchema):
 
         """
         if (self.userSchema() is not None):
-            schema = self.smvApp.smvSchemaObj.fromString(self.userSchema())
+            schema = SmvSchema2(self.userSchema())
         else:
             schema_file_name = self._get_schema_file_name()
             conn = self._get_schema_connection()
