@@ -19,6 +19,7 @@ from pyspark.sql import DataFrame
 from smv.utils import scala_seq_to_list
 import smv
 from smv.error import SmvRuntimeError
+from smv.smvschema2 import SmvSchema2
 
 if sys.version_info >= (3, 4):
     ABC = abc.ABC
@@ -348,17 +349,16 @@ class SmvSchemaOnHdfsIoStrategy(SmvIoStrategy):
 
     def read(self):
         # To be backward compatable read using spark sc.textFile
-        smv_schema = self.smvApp.smvSchemaObj.fromFile(
-            self.smvApp.j_smvApp.sc(),
-            self._file_path
-        )
+        schema_str = self.smvApp._jvm.SmvHDFS.readFromFile(self._file_path).encode('utf8')
+        one_str = re.sub(r"[\r\n]+", ";", schema_str)
+        smv_schema = SmvSchema2(one_str)
         return smv_schema
 
     def _remove(self):
         self.smvApp._jvm.SmvHDFS.deleteFile(self._file_path)
 
     def write(self, smvSchema):
-        schema_str = "\n".join(scala_seq_to_list(self.smvApp._jvm, smvSchema.toStringsWithMeta()))
+        schema_str = smvSchema.toStrForFile()
         if (self._write_mode.lower() == "overwrite"):
             self._remove()
         else:
@@ -378,10 +378,8 @@ class SmvCsvOnHdfsIoStrategy(SmvIoStrategy):
         self._write_mode = write_mode
 
     def read(self):
-        handler = self.smvApp.j_smvPyClient.createFileIOHandler(self._file_path)
-
-        jdf = handler.csvFileWithSchema(None, self._smv_schema, self._logger)
-        return DataFrame(jdf, self.smvApp.sqlContext)
+        df = self.smvApp.buildCsvIO(self._smv_schema, "r", mode = "FAILFAST").csv(self._file_path)
+        return df
 
     def _remove(self):
         self.smvApp._jvm.SmvHDFS.deleteFile(self._file_path)
@@ -394,5 +392,5 @@ class SmvCsvOnHdfsIoStrategy(SmvIoStrategy):
         else:
             raise SmvRuntimeError("Write mode {} is not implemented yet. (Only support overwrite)".format(self._write_mode))
 
-        handler = self.smvApp.j_smvPyClient.createFileIOHandler(self._file_path)
-        handler.saveAsCsv(jdf, self._smv_schema)
+        writer = self.smvApp.buildCsvIO(self._smv_schema, "w", raw_data, mode = "FAILFAST")
+        writer.csv(self._file_path)

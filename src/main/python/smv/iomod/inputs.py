@@ -412,8 +412,7 @@ class SmvCsvStringInputData(SparkDfGenMod, WithUserSchema, WithCsvParser):
             return self.userSchema()
 
     def smvSchema(self):
-        (_schema, _attr) = SmvSchema2(self._extendSchemaStr()) 
-        return _schema
+        return SmvSchema2(self._extendSchemaStr()) 
 
     def _get_input_data(self):
         return self.smvApp.createDF(self._extendSchemaStr(), self.dataStr(), self._csv_reader_mode())

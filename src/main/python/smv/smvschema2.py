@@ -136,3 +136,12 @@ class SmvSchema2(object):
         (s, a, df, tf) = self._strListToSchema(smvStr.split(";"))
         return (s, a, df, tf)
 
+
+    def toStrForFile(self):
+        attrStr = "\n".join(["@{} = {}".format(k, v) for (k, v) in self.attributes.items()])
+        s = self.schema
+        fmtStr = "\n".join([
+            "{}: {} @metadata={}".format(name, s[name].dataType.typeName(), json.dumps(s[name].metadata))
+            for name in s.fieldNames()
+        ])
+        return attrStr + "\n\n" + fmtStr

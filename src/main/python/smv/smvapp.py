@@ -562,34 +562,39 @@ class SmvApp(object):
         """Returns a Scala None value"""
         return self.scalaOption(None)
 
-    def createDF(self, schema, data = "", mode = "FAILFAST"):
+    def buildCsvIO(self, schema, wr,  df = None, mode = "FAILFAST"):
         spark = self.sparkSession
         smvSchema = SmvSchema2(schema)
         (s, attrs) = (smvSchema.schema, smvSchema.attributes)
-        d = spark.sparkContext.parallelize(data.split(";"))
-        reader_builder = spark.read\
+        builder = spark.read if (wr == "r") else df.write
+        builder = builder\
             .option("mode", mode)\
-            .option('header', 'false')\
             .option('inferSchema', 'false')\
             .option('enforceSchema', 'true')\
             .option('ignoreLeadingWhiteSpace', 'true')
 
         # Could set nullValue when handle String[,_NULL_] type schema string
         if attrs.get('dateFormat'):
-            reader_builder = reader_builder.option("dateFormat", attrs.get('dateFormat'))
+            builder = builder.option("dateFormat", attrs.get('dateFormat'))
         if attrs.get('timestampFormat'):
-            reader_builder = reader_builder.option("timestampFormat", attrs.get('timestampFormat'))
+            builder = builder.option("timestampFormat", attrs.get('timestampFormat'))
         if attrs.get('has-header'):
-            reader_builder = reader_builder.option("header", attrs.get('has-header'))
+            builder = builder.option("header", attrs.get('has-header'))
         if attrs.get('delimiter'):
-            reader_builder = reader_builder.option("sep", attrs.get('delimiter'))
+            builder = builder.option("sep", attrs.get('delimiter'))
         if attrs.get('quote-char'):
-            reader_builder = reader_builder.option("quote", attrs.get('quote-char'))
+            builder = builder.option("quote", attrs.get('quote-char'))
 
         if (mode == "PERMISSIVE"):
-            reader_builder = reader_builder.option("columnNameOfCorruptRecord", "_corrupt_record")
+            builder = builder.option("columnNameOfCorruptRecord", "_corrupt_record")
 
-        dataframe = reader_builder.schema(s).csv(d)
+        return builder.schema(s)
+
+    def createDF(self, schema, data = "", mode = "FAILFAST"):
+        spark = self.sparkSession
+        d = spark.sparkContext.parallelize(data.split(";"))
+        reader_builder = self.buildCsvIO(schema, "r", None, mode)
+        dataframe = reader_builder.csv(d)
         return dataframe
 
     def _mkCsvAttr(self, delimiter=',', quotechar='"', hasHeader=False):
