@@ -88,20 +88,8 @@ class SmvHiveInputTable(SparkDfGenMod, SmvInput, AsTable):
         return res
 
 
-
-class InputFileWithSchema(SmvInput, AsFile):
-    """Base class for input files which has input schema"""
-
-    def schemaConnectionName(self):
-        """Optional method to specify a schema connection"""
-        return None
-
-    def schemaFileName(self):
-        """Optional name of the schema file relative to the
-            schema connection path
-        """
-        return None
-
+class WithUserSchema(object):
+    """"""
     def userSchema(self):
         """User-defined schema
 
@@ -112,6 +100,20 @@ class InputFileWithSchema(SmvInput, AsFile):
 
             Returns:
                 (string):
+        """
+        return None
+
+
+class InputFileWithSchema(SmvInput, WithUserSchema, AsFile):
+    """Base class for input files which has input schema"""
+
+    def schemaConnectionName(self):
+        """Optional method to specify a schema connection"""
+        return None
+
+    def schemaFileName(self):
+        """Optional name of the schema file relative to the
+            schema connection path
         """
         return None
 
@@ -184,7 +186,6 @@ class InputFileWithSchema(SmvInput, AsFile):
 
         res = _data_file_hash + _schema_hash
         return res
-
 
 
 class SmvXmlInputFile(SparkDfGenMod, InputFileWithSchema):
@@ -262,6 +263,12 @@ class WithCsvParser(SmvInput):
             return self.smvApp._jvm.SmvPythonHelper.getTerminateParserLogger()
         else:
             return self._dqmValidator.createParserValidator()
+
+    def _csv_reader_mode(self):
+        if (self.failAtParsingError()):
+            return "FAILFAST"
+        else:
+            return "PERMISSIVE"
 
 class WithSmvSchema(InputFileWithSchema):
     def csvAttr(self):
@@ -386,7 +393,7 @@ class SmvMultiCsvInputFiles(SparkDfGenMod, WithSmvSchema, WithCsvParser):
         return combinedDf
 
 
-class SmvCsvStringInputData(SparkDfGenMod, WithCsvParser):
+class SmvCsvStringInputData(SparkDfGenMod, WithUserSchema, WithCsvParser):
     """Input data defined by a schema string and data string
 
         User need to implement:
@@ -398,10 +405,10 @@ class SmvCsvStringInputData(SparkDfGenMod, WithCsvParser):
     """
 
     def smvSchema(self):
-        return self.smvApp.smvSchemaObj.fromString(self.schemaStr())
+        return self.smvApp.smvSchemaObj.fromString(self.userSchema())
 
     def _get_input_data(self):
-        return self.smvApp.createDFWithLogger(self.schemaStr(), self.dataStr(), self._readerLogger())
+        return self.smvApp.createDFWithLogger(self.userSchema(), self.dataStr(), self._readerLogger())
 
     @abc.abstractmethod
     def schemaStr(self):
@@ -412,6 +419,9 @@ class SmvCsvStringInputData(SparkDfGenMod, WithCsvParser):
             Returns:
                 (str): schema
         """
+
+    def userSchema(self):
+        return self.schemaStr()
 
     @abc.abstractmethod
     def dataStr(self):
