@@ -259,12 +259,6 @@ class WithCsvParser(SmvInput):
     def _dqmValidator(self):
         return self.smvApp._jvm.DQMValidator(self.dqm())
 
-    def _readerLogger(self):
-        if (self.failAtParsingError()):
-            return self.smvApp._jvm.SmvPythonHelper.getTerminateParserLogger()
-        else:
-            return self._dqmValidator.createParserValidator()
-
     def _csv_reader_mode(self):
         if (self.failAtParsingError()):
             return "FAILFAST"
@@ -328,7 +322,7 @@ class SmvCsvInputFile(SparkDfGenMod, WithSmvSchema, WithCsvParser):
             self.smvApp,
             file_path,
             self.smvSchema(),
-            self._readerLogger()
+            self._csv_reader_mode()
         ).read()
 
 
@@ -382,13 +376,12 @@ class SmvMultiCsvInputFiles(SparkDfGenMod, WithSmvSchema, WithCsvParser):
             raise SmvRuntimeError("There are no data files in {}".format(dir_path))
 
         combinedDf = None
-        reader_logger = self._readerLogger()
         for filePath in filesInDir:
             df = SmvCsvOnHdfsIoStrategy(
                 self.smvApp,
                 filePath,
                 smv_schema,
-                reader_logger
+                self._csv_reader_mode()
             ).read()
             combinedDf = df if (combinedDf is None) else combinedDf.unionAll(df)
 

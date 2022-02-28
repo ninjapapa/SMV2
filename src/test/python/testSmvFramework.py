@@ -235,7 +235,7 @@ class SmvPublishTest(SmvBaseTest):
          ]
 
      def test_publish_as_file(self):
-         self.createTempInputFile("test3.csv", "col1\na\nb\n")
+         self.createTempInputFile("test3.csv", "a\nb\n")
          self.createTempInputFile("test3.schema", "col1: String\n")
          fqn = "stage.modules.CsvFile"
          self.smvApp.run()

@@ -12,11 +12,12 @@
 # limitations under the License.
 import smv
 from smv.modulesvisitor import ModulesVisitor
-from smv.smviostrategy import SmvCsvOnHdfsIoStrategy, SmvJsonOnHdfsPersistenceStrategy
+from smv.smviostrategy import SmvCsvOnHdfsIoStrategy, SmvJsonOnHdfsPersistenceStrategy, SmvSchemaOnHdfsIoStrategy
 from smv.smvmetadata import SmvMetaHistory
 from smv.runinfo import SmvRunInfoCollector
 from smv.utils import scala_seq_to_list, is_string
 from smv.error import SmvRuntimeError, SmvMetadataValidationError
+from smv.smvschema2 import SmvSchema2
 
 class SmvModuleRunner(object):
     """Represent the run-transaction. Provides the single entry point to run
@@ -85,10 +86,13 @@ class SmvModuleRunner(object):
         for m in self.roots:
             publish_base_path = "{}/{}".format(publish_dir, m.fqn())
             publish_csv_path = publish_base_path + ".csv"
+            publish_schema_path = publish_base_path + ".schema"
             publish_meta_path = publish_base_path + ".meta"
             publish_hist_path = publish_base_path + ".hist"
 
-            SmvCsvOnHdfsIoStrategy(m.smvApp, publish_csv_path, None, self.log).write(m.data)
+            smvSchema = SmvSchema2(m.data.schema)
+            SmvCsvOnHdfsIoStrategy(m.smvApp, publish_csv_path, None, "FAILFAST").write(m.data)
+            SmvSchemaOnHdfsIoStrategy(m.smvApp, publish_schema_path).write(smvSchema)
             SmvJsonOnHdfsPersistenceStrategy(m.smvApp, publish_meta_path).write(m.module_meta.toJson())
             hist = self.smvApp._read_meta_hist(m)
             SmvJsonOnHdfsPersistenceStrategy(m.smvApp, publish_hist_path).write(hist.toJson())

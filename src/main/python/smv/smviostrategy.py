@@ -327,15 +327,15 @@ class SmvSchemaOnHdfsIoStrategy(SmvIoStrategy):
 
 class SmvCsvOnHdfsIoStrategy(SmvIoStrategy):
     """Simply read/write of csv, given schema. Not for persisting"""
-    def __init__(self, smvApp, path, smvSchema, logger, write_mode="overwrite"):
+    def __init__(self, smvApp, path, smvSchema, mode="FAILFAST", write_mode="overwrite"):
         self.smvApp = smvApp
         self._file_path = path
         self._smv_schema = smvSchema
-        self._logger = logger
+        self._mode = mode
         self._write_mode = write_mode
 
     def read(self):
-        df = self.smvApp.buildCsvIO(self._smv_schema, "r", mode = "FAILFAST").csv(self._file_path)
+        df = self.smvApp.buildCsvIO(self._smv_schema, "r", mode = self._mode).csv(self._file_path)
         return df
 
     def _remove(self):
@@ -352,5 +352,5 @@ class SmvCsvOnHdfsIoStrategy(SmvIoStrategy):
         else:
             raise SmvRuntimeError("Write mode {} is not implemented yet. (Only support overwrite)".format(self._write_mode))
 
-        writer = self.smvApp.buildCsvIO(smvSchema, "w", raw_data, mode = "FAILFAST")
+        writer = self.smvApp.buildCsvIO(smvSchema, "w", raw_data, mode = self._mode)
         writer.csv(self._file_path)

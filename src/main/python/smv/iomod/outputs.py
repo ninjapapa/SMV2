@@ -101,7 +101,7 @@ class SmvCsvOutputFile(SmvSparkDfOutput, AsFile):
 
         schema = SmvSchema2(data.schema)
 
-        SmvCsvOnHdfsIoStrategy(self.smvApp, file_path, schema, None, self.writeMode()).write(data)
+        SmvCsvOnHdfsIoStrategy(self.smvApp, file_path, None, "FAILFAST", self.writeMode()).write(data)
         SmvSchemaOnHdfsIoStrategy(self.smvApp, schema_path, self.writeMode()).write(schema)
         return data
 
