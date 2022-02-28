@@ -29,12 +29,6 @@ class DataSetMgr(object):
         self.smvconfig = smvconfig
         self.dsRepoFactories = []
 
-        from py4j.java_gateway import java_import
-        java_import(self._jvm, "org.tresamigos.smv.python.SmvPythonHelper")
-        java_import(self._jvm, "org.tresamigos.smv.DataSetRepoFactoryPython")
-
-        self.helper = self._jvm.SmvPythonHelper
-
     def stages(self):
         return self.smvconfig.stage_names()
 
