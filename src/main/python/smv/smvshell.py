@@ -109,7 +109,7 @@ def openHive(tableName):
 
     return DataFrame(TmpHive(app).doRun(None), app.sqlContext)
 
-def openCsv(path, validate=False):
+def openCsv(path):
     """Read in a CSV file as a DataFrame
 
         Args:
@@ -130,8 +130,8 @@ def openCsv(path, validate=False):
         def fileName(self):
             return path
 
-        def failAtParsingError(self):
-            return validate
+        def csvReaderMode(self):
+            return "DROPMALFORMED"
 
     return TmpCsv(app).doRun(None)
 

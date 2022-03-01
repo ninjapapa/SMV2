@@ -7,8 +7,8 @@ class Employment(smv.SmvCsvFile):
     def path(self):
         return "employment/CB1200CZ11.csv"
 
-    def failAtParsingError(self):
-        return False
+    def csvReaderMode(self):
+        return "DROPMALFORMED"
 
 class EmploymentByState(smv.SmvModule, smv.SmvOutput):
     """Python ETL Example: employ by state"""

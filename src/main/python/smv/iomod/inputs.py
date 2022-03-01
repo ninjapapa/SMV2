@@ -234,16 +234,6 @@ class SmvXmlInputFile(SparkDfGenMod, InputFileWithSchema):
 class WithCsvParser(SmvInput):
     """Mixin for input modules to parse csv data"""
 
-    def failAtParsingError(self):
-        """When set, any parsing error will throw an exception to make sure we can stop early.
-            To tolerant some parsing error, user can
-
-            - Override failAtParsingError to False
-            - Set dqm to SmvDQM().add(FailParserCountPolicy(10))
-                for tolerant <=10 parsing errors
-        """
-        return True
-
     def dqm(self):
         """DQM policy
 
@@ -259,12 +249,15 @@ class WithCsvParser(SmvInput):
     def _dqmValidator(self):
         return self.smvApp._jvm.DQMValidator(self.dqm())
 
-    def _csv_reader_mode(self):
-        if (self.failAtParsingError()):
-            return "FAILFAST"
-        else:
-            return "DROPMALFORMED"
-            # return "PERMISSIVE"
+    def csvReaderMode(self):
+        """When set, any parsing error will throw an exception to make sure we can stop early.
+            To tolerant some parsing error, user can
+
+            - Override csvReadermode 
+                "DROPMALFORMED"
+                "PERMISSIVE"
+        """
+        return "FAILFAST"
 
 class WithSmvSchema(InputFileWithSchema):
     def csvAttr(self):
@@ -322,7 +315,7 @@ class SmvCsvInputFile(SparkDfGenMod, WithSmvSchema, WithCsvParser):
             self.smvApp,
             file_path,
             self.smvSchema(),
-            self._csv_reader_mode()
+            self.csvReaderMode()
         ).read()
 
 
@@ -381,7 +374,7 @@ class SmvMultiCsvInputFiles(SparkDfGenMod, WithSmvSchema, WithCsvParser):
                 self.smvApp,
                 filePath,
                 smv_schema,
-                self._csv_reader_mode()
+                self.csvReaderMode()
             ).read()
             combinedDf = df if (combinedDf is None) else combinedDf.unionAll(df)
 
@@ -400,7 +393,7 @@ class SmvCsvStringInputData(SparkDfGenMod, WithUserSchema, WithCsvParser):
     """
 
     def _extendSchemaStr(self):
-        if (self._csv_reader_mode() == "PERMISSIVE"):
+        if (self.csvReaderMode() == "PERMISSIVE"):
             return self.userSchema() + ";_corrupt_record:String"
         else:
             return self.userSchema()
@@ -409,7 +402,7 @@ class SmvCsvStringInputData(SparkDfGenMod, WithUserSchema, WithCsvParser):
         return SmvSchema2(self._extendSchemaStr()) 
 
     def _get_input_data(self):
-        return self.smvApp.createDF(self._extendSchemaStr(), self.dataStr(), self._csv_reader_mode())
+        return self.smvApp.createDF(self._extendSchemaStr(), self.dataStr(), self.csvReaderMode())
 
     @abc.abstractmethod
     def schemaStr(self):
