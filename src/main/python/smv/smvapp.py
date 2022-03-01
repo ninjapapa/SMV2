@@ -99,7 +99,6 @@ class SmvApp(object):
             self.sqlContext = self.sparkSession._wrapped
             self._jvm = sc._jvm
             self.j_smvPyClient = self._jvm.org.tresamigos.smv.python.SmvPyClientFactory.init(self.sparkSession._jsparkSession)
-            self.j_smvApp = self.j_smvPyClient.j_smvApp()
         else:
             _gw = launch_gateway(None)
             self._jvm = _gw.jvm
@@ -307,13 +306,6 @@ class SmvApp(object):
 
     def appId(self):
         return self.py_smvconf.app_id()
-
-    def getSchemaByDataFileAsSmvSchema(self, data_file_name, path=None):
-        """Get the schema of a data file from its path and returns a Scala SmvSchema instance.
-           The result will be None if the corresponding schema file does not exist or is invalid.
-        """
-        data_file_path = os.path.join(self.inputDir() if path == None else path, data_file_name)
-        return self.j_smvPyClient.readSchemaFromDataPathAsSmvSchema(data_file_path)
 
     def inputDir(self):
         return self.all_data_dirs().inputDir
