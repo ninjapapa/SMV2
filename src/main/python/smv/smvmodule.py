@@ -200,10 +200,11 @@ class SmvSparkDfModule(SmvProcessModule, SparkDfGenMod):
 
         self._do_action_on_df(run_query, self.data, "PUBLISH TO HIVE")
 
+    # see testJdbc for example how it works
     def publishThroughJDBC(self):
         url = self.smvApp.jdbcUrl()
         driver = self.smvApp.jdbcDriver()
-        self.smvApp.j_smvPyClient.writeThroughJDBC(self.data._jdf, url, driver, self.tableName())
+        self.data.write.jdbc(url, self.tableName(), properties={"driver": driver})
 
 class SmvModule(SmvSparkDfModule):
     """SmvModule is the same as SmvSparkDfModule. Since it was used in all the
