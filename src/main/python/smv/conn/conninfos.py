@@ -12,6 +12,7 @@
 # limitations under the License.
 
 from smv.conn.smvconnectioninfo import SmvConnectionInfo
+from smv.smvhdfs import SmvHDFS
 
 class SmvJdbcConnectionInfo(SmvConnectionInfo):
     """Connection Info for connection type "jdbc"
@@ -104,7 +105,7 @@ class SmvHdfsConnectionInfo(SmvConnectionInfo):
         """Return a list of file/dir names
         """
         # TODO: should be recursive and return the tree
-        return [str(f) for f in smvApp._jvm.SmvHDFS.dirList(self.path).array()]
+        return [str(f) for f in SmvHDFS(smvApp._jvm).dirList(self.path)]
 
 SmvHdfsEmptyConn = SmvHdfsConnectionInfo(
     "emptydir",

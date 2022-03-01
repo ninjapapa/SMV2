@@ -20,6 +20,7 @@ from smv.utils import scala_seq_to_list
 import smv
 from smv.error import SmvRuntimeError
 from smv.smvschema import SmvSchema
+from smv.smvhdfs import SmvHDFS
 
 if sys.version_info >= (3, 4):
     ABC = abc.ABC
@@ -105,10 +106,10 @@ class SmvFileOnHdfsPersistenceStrategy(SmvPersistenceStrategy):
         self._write(dataframe)
 
     def isPersisted(self):
-        return self.smvApp._jvm.SmvHDFS.exists(self._file_path)
+        return SmvHDFS(self.smvApp._jvm).exists(self._file_path)
 
     def remove(self):
-        self.smvApp._jvm.SmvHDFS.deleteFile(self._file_path)
+        SmvHDFS(self.smvApp._jvm).deleteFile(self._file_path)
 
 
 class SmvJsonOnHdfsPersistenceStrategy(SmvFileOnHdfsPersistenceStrategy):
@@ -116,10 +117,10 @@ class SmvJsonOnHdfsPersistenceStrategy(SmvFileOnHdfsPersistenceStrategy):
         super(SmvJsonOnHdfsPersistenceStrategy, self).__init__(smvApp, None, None, path)
 
     def _read(self):
-        return self.smvApp._jvm.SmvHDFS.readFromFile(self._file_path)
+        return SmvHDFS(self.smvApp._jvm).readFromFile(self._file_path)
 
     def _write(self, rawdata):
-        self.smvApp._jvm.SmvHDFS.writeToFile(rawdata, self._file_path)
+        SmvHDFS(self.smvApp._jvm).writeToFile(rawdata, self._file_path)
 
 
 class SmvPicklablePersistenceStrategy(SmvFileOnHdfsPersistenceStrategy):
@@ -128,7 +129,7 @@ class SmvPicklablePersistenceStrategy(SmvFileOnHdfsPersistenceStrategy):
 
     def _read(self):
         # reverses result of applying _write. see _write for explanation.
-        hex_encoded_pickle_as_str = self.smvApp._jvm.SmvHDFS.readFromFile(self._file_path)
+        hex_encoded_pickle_as_str = SmvHDFS(self.smvApp._jvm).readFromFile(self._file_path)
         pickled_res_as_str = binascii.unhexlify(hex_encoded_pickle_as_str)
         return pickle_lib.loads(pickled_res_as_str)
 
@@ -140,7 +141,7 @@ class SmvPicklablePersistenceStrategy(SmvFileOnHdfsPersistenceStrategy):
         # encoding will be a bytestring object if in Python 3, so need to convert it to string
         # str.decode converts string to utf8 in python 2 and bytes to str in Python 3
         hex_encoded_pickle_as_str = hex_encoded_pickle.decode()
-        self.smvApp._jvm.SmvHDFS.writeToFile(hex_encoded_pickle_as_str, self._file_path)
+        SmvHDFS(self.smvApp._jvm).writeToFile(hex_encoded_pickle_as_str, self._file_path)
 
 
 class SmvParquetPersistenceStrategy(SmvFileOnHdfsPersistenceStrategy):
@@ -165,17 +166,17 @@ class SmvParquetPersistenceStrategy(SmvFileOnHdfsPersistenceStrategy):
 
     def _write(self, rawdata):
         # default to overwrite to be consistent with csv persist
-        self.smvApp._jvm.SmvHDFS.deleteFile(self._file_path)
+        SmvHDFS(self.smvApp._jvm).deleteFile(self._file_path)
 
         rawdata.write.parquet(self._file_path)
-        self.smvApp._jvm.SmvHDFS.createFileAtomic(self._semaphore_path)
+        SmvHDFS(self.smvApp._jvm).createFileAtomic(self._semaphore_path)
 
     def remove(self):
-        self.smvApp._jvm.SmvHDFS.deleteFile(self._file_path)
-        self.smvApp._jvm.SmvHDFS.deleteFile(self._semaphore_path)
+        SmvHDFS(self.smvApp._jvm).deleteFile(self._file_path)
+        SmvHDFS(self.smvApp._jvm).deleteFile(self._semaphore_path)
 
     def isPersisted(self):
-        return self.smvApp._jvm.SmvHDFS.exists(self._semaphore_path)
+        return SmvHDFS(self.smvApp._jvm).exists(self._semaphore_path)
 
 
 class SmvJdbcIoStrategy(SmvIoStrategy):
@@ -268,10 +269,10 @@ class SmvTextOnHdfsIoStrategy(SmvIoStrategy):
         self._file_path = path
 
     def read(self):
-        return self.smvApp._jvm.SmvHDFS.readFromFile(self._file_path)
+        return SmvHDFS(self.smvApp._jvm).readFromFile(self._file_path)
 
     def write(self, rawdata):
-        self.smvApp._jvm.SmvHDFS.writeToFile(rawdata, self._file_path)
+        SmvHDFS(self.smvApp._jvm).writeToFile(rawdata, self._file_path)
 
 
 class SmvXmlOnHdfsIoStrategy(SmvIoStrategy):
@@ -307,13 +308,13 @@ class SmvSchemaOnHdfsIoStrategy(SmvIoStrategy):
 
     def read(self):
         # To be backward compatable read using spark sc.textFile
-        schema_str = self.smvApp._jvm.SmvHDFS.readFromFile(self._file_path).encode('utf8')
+        schema_str = SmvHDFS(self.smvApp._jvm).readFromFile(self._file_path).encode('utf8')
         one_str = re.sub(r"[\r\n]+", ";", schema_str)
         smv_schema = SmvSchema(one_str)
         return smv_schema
 
     def _remove(self):
-        self.smvApp._jvm.SmvHDFS.deleteFile(self._file_path)
+        SmvHDFS(self.smvApp._jvm).deleteFile(self._file_path)
 
     def write(self, smvSchema):
         schema_str = smvSchema.toStrForFile()
@@ -322,7 +323,7 @@ class SmvSchemaOnHdfsIoStrategy(SmvIoStrategy):
         else:
             raise SmvRuntimeError("Write mode {} is not implemented yet. (Only support overwrite)".format(self._write_mode))
 
-        self.smvApp._jvm.SmvHDFS.writeToFile(schema_str, self._file_path)
+        SmvHDFS(self.smvApp._jvm).writeToFile(schema_str, self._file_path)
 
 
 class SmvCsvOnHdfsIoStrategy(SmvIoStrategy):
@@ -339,7 +340,7 @@ class SmvCsvOnHdfsIoStrategy(SmvIoStrategy):
         return df
 
     def _remove(self):
-        self.smvApp._jvm.SmvHDFS.deleteFile(self._file_path)
+        SmvHDFS(self.smvApp._jvm).deleteFile(self._file_path)
 
     def write(self, raw_data):
         if self._smv_schema:

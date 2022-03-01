@@ -39,7 +39,6 @@ class SmvLock(object):
         while (not self._obtained):
             self._attempts = self._attempts + 1
             try:
-                # self._jvm.SmvHDFS.createFileAtomic(self.lock_path)
                 SmvHDFS(self._jvm).createFileAtomic(self.lock_path)
                 self._obtained = True
             except:
@@ -54,7 +53,6 @@ class SmvLock(object):
                     pass                # getting waken up is okay, check if lock is available again
 
     def unlock(self):
-        # self._jvm.SmvHDFS.deleteFile(self.lock_path)
         SmvHDFS(self._jvm).deleteFile(self.lock_path)
 
     def __exit__(self, type, value, traceback):
