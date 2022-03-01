@@ -90,11 +90,6 @@ stage2:
         res = self.smvApp.createDF("a:String")
         self.assertEqual(res.count(), 0)
 
-    def test_app_getFileNamesByType(self):
-        self.createTempInputFile("check_file.csv")
-        self.createTempInputFile("check_file.schema")
-        self.assertEqual(self.smvApp.getFileNamesByType("csv"), ['check_file.csv'])
-
     def test_app_getMetadataJson(self):
         fqn = "stage.modules.CsvStr"
         self.df(fqn)

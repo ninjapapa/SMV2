@@ -104,7 +104,7 @@ class SmvHdfsConnectionInfo(SmvConnectionInfo):
         """Return a list of file/dir names
         """
         # TODO: should be recursive and return the tree
-        return [str(f) for f in smvApp._jvm.SmvPythonHelper.getDirList(self.path)]
+        return [str(f) for f in smvApp._jvm.SmvHDFS.dirList(self.path).array()]
 
 SmvHdfsEmptyConn = SmvHdfsConnectionInfo(
     "emptydir",
