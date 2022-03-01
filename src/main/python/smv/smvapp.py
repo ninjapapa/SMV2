@@ -106,7 +106,6 @@ class SmvApp(object):
         self.py_module_hotload = py_module_hotload
 
         java_import(self._jvm, "org.tresamigos.smv.dqm.*")
-        java_import(self._jvm, "org.tresamigos.smv.SmvHDFS")
 
         self.py_smvconf = SmvConfig(arglist)
 
