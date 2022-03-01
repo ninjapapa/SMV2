@@ -11,8 +11,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 class SmvHDFS(object):
-    def __init__(self, j_smvHDFS):
-        self.j_smvHDFS = j_smvHDFS
+    def __init__(self, _jvm):
+        self.j_smvHDFS = _jvm.SmvHDFS
+        self.URI = _jvm.java.net.URI
+        self.Path = _jvm.org.apache.hadoop.fs.Path
+        self.FileSystem = _jvm.org.apache.hadoop.fs.FileSystem
+        self.hadoopConf = _jvm.org.apache.hadoop.conf.Configuration()
+
+    def _getFileSystem(self, path):
+        uri = self.URI(path)
+        return self.FileSystem.get(uri, self.hadoopConf)
+
+    def createFileAtomic(self, fileName):
+        self._getFileSystem(fileName).create(self.Path(fileName), False).close()
+        return None
+
+    def deleteFile(self, fileName):
+        self._getFileSystem(fileName).delete(self.Path(fileName), True)
+        return None
 
     def writeToFile(self, py_fileobj, file_name):
         out = self.j_smvHDFS.openForWrite(file_name)

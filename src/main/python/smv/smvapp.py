@@ -509,7 +509,7 @@ class SmvApp(object):
 
         The file object is closed when this function completes.
         """
-        SmvHDFS(self._jvm.SmvHDFS).writeToFile(fileobj, destination)
+        SmvHDFS(self._jvm).writeToFile(fileobj, destination)
 
     def getStageFromModuleFqn(self, fqn):
         """Returns the stage name for a given fqn"""
