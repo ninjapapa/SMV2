@@ -18,5 +18,9 @@ SmvModule to get user configuration parameters at run-time.
 
 from smv.smvapp import SmvApp
 
-def CsvAttributes(delimiter=',', quotechar='"', hasHeader=False):
-    return SmvApp.getInstance()._mkCsvAttr(delimiter, quotechar, hasHeader)
+def CsvAttributes(delimiter=',', quotechar='"', hasHeader="false"):
+    return {
+        "has-header": hasHeader,
+        "delimiter": delimiter,
+        "quote-char": quotechar,
+    }

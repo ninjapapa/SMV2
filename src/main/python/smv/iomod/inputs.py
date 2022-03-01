@@ -16,7 +16,7 @@ import os
 import json
 
 from pyspark.sql import DataFrame
-from pyspark.sql.types import StructType
+from pyspark.sql.types import StructType, StructField, StringType
 from py4j.protocol import Py4JJavaError
 
 import smv
@@ -26,6 +26,7 @@ from smv.smviostrategy import SmvJdbcIoStrategy, SmvHiveIoStrategy, \
     SmvSchemaOnHdfsIoStrategy, SmvCsvOnHdfsIoStrategy, SmvTextOnHdfsIoStrategy,\
     SmvXmlOnHdfsIoStrategy
 from smv.dqm import SmvDQM
+from smv.smvschema import SmvSchema
 from smv.utils import lazy_property, smvhash
 from smv.error import SmvRuntimeError
 
@@ -88,20 +89,8 @@ class SmvHiveInputTable(SparkDfGenMod, SmvInput, AsTable):
         return res
 
 
-
-class InputFileWithSchema(SmvInput, AsFile):
-    """Base class for input files which has input schema"""
-
-    def schemaConnectionName(self):
-        """Optional method to specify a schema connection"""
-        return None
-
-    def schemaFileName(self):
-        """Optional name of the schema file relative to the
-            schema connection path
-        """
-        return None
-
+class WithUserSchema(object):
+    """"""
     def userSchema(self):
         """User-defined schema
 
@@ -112,6 +101,20 @@ class InputFileWithSchema(SmvInput, AsFile):
 
             Returns:
                 (string):
+        """
+        return None
+
+
+class InputFileWithSchema(SmvInput, WithUserSchema, AsFile):
+    """Base class for input files which has input schema"""
+
+    def schemaConnectionName(self):
+        """Optional method to specify a schema connection"""
+        return None
+
+    def schemaFileName(self):
+        """Optional name of the schema file relative to the
+            schema connection path
         """
         return None
 
@@ -186,7 +189,6 @@ class InputFileWithSchema(SmvInput, AsFile):
         return res
 
 
-
 class SmvXmlInputFile(SparkDfGenMod, InputFileWithSchema):
     """Input from file in XML format
         User need to implement:
@@ -232,16 +234,6 @@ class SmvXmlInputFile(SparkDfGenMod, InputFileWithSchema):
 class WithCsvParser(SmvInput):
     """Mixin for input modules to parse csv data"""
 
-    def failAtParsingError(self):
-        """When set, any parsing error will throw an exception to make sure we can stop early.
-            To tolerant some parsing error, user can
-
-            - Override failAtParsingError to False
-            - Set dqm to SmvDQM().add(FailParserCountPolicy(10))
-                for tolerant <=10 parsing errors
-        """
-        return True
-
     def dqm(self):
         """DQM policy
 
@@ -257,11 +249,15 @@ class WithCsvParser(SmvInput):
     def _dqmValidator(self):
         return self.smvApp._jvm.DQMValidator(self.dqm())
 
-    def _readerLogger(self):
-        if (self.failAtParsingError()):
-            return self.smvApp._jvm.SmvPythonHelper.getTerminateParserLogger()
-        else:
-            return self._dqmValidator.createParserValidator()
+    def csvReaderMode(self):
+        """When set, any parsing error will throw an exception to make sure we can stop early.
+            To tolerant some parsing error, user can
+
+            - Override csvReadermode 
+                "DROPMALFORMED"
+                "PERMISSIVE"
+        """
+        return "FAILFAST"
 
 class WithSmvSchema(InputFileWithSchema):
     def csvAttr(self):
@@ -282,7 +278,7 @@ class WithSmvSchema(InputFileWithSchema):
 
         """
         if (self.userSchema() is not None):
-            schema = self.smvApp.smvSchemaObj.fromString(self.userSchema())
+            schema = SmvSchema(self.userSchema())
         else:
             schema_file_name = self._get_schema_file_name()
             conn = self._get_schema_connection()
@@ -306,7 +302,7 @@ class SmvCsvInputFile(SparkDfGenMod, WithSmvSchema, WithCsvParser):
             - schemaFileName: optional
             - userSchema: optional
             - csvAttr: optional
-            - failAtParsingError: optional, default True
+            - csvReaderMode: optional, default True
             - dqm: optional, default SmvDQM()
     """
 
@@ -319,7 +315,7 @@ class SmvCsvInputFile(SparkDfGenMod, WithSmvSchema, WithCsvParser):
             self.smvApp,
             file_path,
             self.smvSchema(),
-            self._readerLogger()
+            self.csvReaderMode()
         ).read()
 
 
@@ -333,7 +329,7 @@ class SmvMultiCsvInputFiles(SparkDfGenMod, WithSmvSchema, WithCsvParser):
             - schemaFileName: optional
             - userSchema: optional
             - csvAttr: optional
-            - failAtParsingError: optional, default True
+            - csvReaderMode: optional, default True
             - dqm: optional, default SmvDQM()
     """
 
@@ -373,35 +369,40 @@ class SmvMultiCsvInputFiles(SparkDfGenMod, WithSmvSchema, WithCsvParser):
             raise SmvRuntimeError("There are no data files in {}".format(dir_path))
 
         combinedDf = None
-        reader_logger = self._readerLogger()
         for filePath in filesInDir:
             df = SmvCsvOnHdfsIoStrategy(
                 self.smvApp,
                 filePath,
                 smv_schema,
-                reader_logger
+                self.csvReaderMode()
             ).read()
             combinedDf = df if (combinedDf is None) else combinedDf.unionAll(df)
 
         return combinedDf
 
 
-class SmvCsvStringInputData(SparkDfGenMod, WithCsvParser):
+class SmvCsvStringInputData(SparkDfGenMod, WithUserSchema, WithCsvParser):
     """Input data defined by a schema string and data string
 
         User need to implement:
 
             - schemaStr(): required
             - dataStr(): required
-            - failAtParsingError(): optional
+            - csvReaderMode(): optional
             - dqm(): optional
     """
 
+    def _extendSchemaStr(self):
+        if (self.csvReaderMode() == "PERMISSIVE"):
+            return self.userSchema() + ";_corrupt_record:String"
+        else:
+            return self.userSchema()
+
     def smvSchema(self):
-        return self.smvApp.smvSchemaObj.fromString(self.schemaStr())
+        return SmvSchema(self._extendSchemaStr()) 
 
     def _get_input_data(self):
-        return self.smvApp.createDFWithLogger(self.schemaStr(), self.dataStr(), self._readerLogger())
+        return self.smvApp.createDF(self._extendSchemaStr(), self.dataStr(), self.csvReaderMode())
 
     @abc.abstractmethod
     def schemaStr(self):
@@ -412,6 +413,9 @@ class SmvCsvStringInputData(SparkDfGenMod, WithCsvParser):
             Returns:
                 (str): schema
         """
+
+    def userSchema(self):
+        return self.schemaStr()
 
     @abc.abstractmethod
     def dataStr(self):

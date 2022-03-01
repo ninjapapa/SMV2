@@ -15,7 +15,6 @@
 This module provides the main SMV Python entry point ``SmvPy`` class and a singleton `smvApp`.
 It is equivalent to ``SmvApp`` on Scala side
 """
-from datetime import datetime
 import os
 import sys
 import re
@@ -23,18 +22,14 @@ import json
 import pkgutil
 from collections import namedtuple
 
-from py4j.java_gateway import java_import, JavaObject
+from py4j.java_gateway import java_import
 from pyspark.java_gateway import launch_gateway
-from pyspark import SparkContext
-from pyspark.sql import SparkSession, DataFrame
 
 from smv.datasetmgr import DataSetMgr
 from smv.smvappinfo import SmvAppInfo
 from smv.datasetrepo import DataSetRepoFactory, DataSetRepo
-from smv.utils import smv_copy_array, check_socket, scala_seq_to_list
 from smv.error import SmvRuntimeError, SmvDqmValidationError
 import smv.helpers
-from smv.runinfo import SmvRunInfoCollector
 from smv.modulesvisitor import ModulesVisitor
 from smv.smvmodulerunner import SmvModuleRunner
 from smv.smvconfig import SmvConfig
@@ -42,7 +37,7 @@ from smv.smviostrategy import SmvJsonOnHdfsPersistenceStrategy
 from smv.conn import SmvHdfsConnectionInfo
 from smv.smvmetadata import SmvMetaHistory
 from smv.smvhdfs import SmvHDFS
-from smv.smvschema2 import smvSchemaFromStr
+from smv.smvschema import SmvSchema
 from py4j.protocol import Py4JJavaError
 
 
@@ -114,9 +109,6 @@ class SmvApp(object):
         java_import(self._jvm, "org.tresamigos.smv.dqm.*")
         java_import(self._jvm, "org.tresamigos.smv.python.SmvPythonHelper")
         java_import(self._jvm, "org.tresamigos.smv.SmvHDFS")
-        java_import(self._jvm, "org.tresamigos.smv.DfCreator")
-
-        self.smvSchemaObj = self._jvm.SmvPythonHelper.getSmvSchema()
 
         self.py_smvconf = SmvConfig(arglist)
 
@@ -316,16 +308,6 @@ class SmvApp(object):
     def appId(self):
         return self.py_smvconf.app_id()
 
-    # TODO: deprecate method below.  Users should use SmvSchema.discover() instead.
-    def discoverSchemaAsSmvSchema(self, path, csvAttributes, n=100000):
-        """Discovers the schema of a .csv file and returns a Scala SmvSchema instance
-
-        path --- path to csvfile
-        n --- number of records used to discover schema (optional)
-        csvAttributes --- Scala CsvAttributes instance (optional)
-        """
-        return self._jvm.SmvPythonHelper.discoverSchemaAsSmvSchema(path, n, csvAttributes)
-
     def getSchemaByDataFileAsSmvSchema(self, data_file_name, path=None):
         """Get the schema of a data file from its path and returns a Scala SmvSchema instance.
            The result will be None if the corresponding schema file does not exist or is invalid.
@@ -341,12 +323,6 @@ class SmvApp(object):
             "inputdir",
             {"smv.conn.inputdir.path": self.inputDir()}
         )
-
-    def getFileNamesByType(self, ftype):
-        """Return a list of file names which has the postfix ftype
-        """
-        all_files = self._jvm.SmvPythonHelper.getDirList(self.inputDir())
-        return [str(f) for f in all_files if f.endswith(ftype)]
 
     def get_graph_json(self):
         """Generate a json string representing the dependency graph.
@@ -562,36 +538,39 @@ class SmvApp(object):
         """Returns a Scala None value"""
         return self.scalaOption(None)
 
-    def createDFWithLogger(self, schema, data, readerLogger):
-        return DataFrame(self._jvm.DfCreator.createDFWithLogger(
-            self.sparkSession._jsparkSession,
-            schema,
-            data,
-            readerLogger
-        ), self.sqlContext)
-
-    # def createDF(self, schema, data = None):
-    #     readerLogger = self._jvm.SmvPythonHelper.getTerminateParserLogger()
-    #     return self.createDFWithLogger(schema, data, readerLogger)
-
-    def createDF(self, schema, data = ""):
+    def buildCsvIO(self, smvSchema, wr,  df = None, mode = "FAILFAST"):
         spark = self.sparkSession
-        (s, df, tf) = smvSchemaFromStr(schema)
-        d = spark.sparkContext.parallelize(data.split(";"))
-        reader_builder = spark.read\
-            .option("mode", "FAILFAST")\
-            .option('header', 'false')\
+        (s, attrs) = (smvSchema.schema, smvSchema.attributes)
+        builder = spark.read if (wr == "r") else df.write
+        builder = builder\
+            .option("mode", mode)\
             .option('inferSchema', 'false')\
             .option('enforceSchema', 'true')\
             .option('ignoreLeadingWhiteSpace', 'true')
 
         # Could set nullValue when handle String[,_NULL_] type schema string
-        if df:
-            reader_builder = reader_builder.option("dateFormat", df)
-        if tf:
-            reader_builder = reader_builder.option("timestampFormat", tf)
+        if attrs.get('dateFormat'):
+            builder = builder.option("dateFormat", attrs.get('dateFormat'))
+        if attrs.get('timestampFormat'):
+            builder = builder.option("timestampFormat", attrs.get('timestampFormat'))
+        if attrs.get('has-header'):
+            builder = builder.option("header", attrs.get('has-header'))
+        if attrs.get('delimiter'):
+            builder = builder.option("sep", attrs.get('delimiter'))
+        if attrs.get('quote-char'):
+            builder = builder.option("quote", attrs.get('quote-char'))
 
-        dataframe = reader_builder.schema(s).csv(d)
+        if (mode == "PERMISSIVE"):
+            builder = builder.option("columnNameOfCorruptRecord", "_corrupt_record")
+
+        return builder.schema(s) if (wr == 'r') else builder
+
+    def createDF(self, schemaStr, data = "", mode = "FAILFAST"):
+        spark = self.sparkSession
+        smvSchema = SmvSchema(schemaStr)
+        d = spark.sparkContext.parallelize(data.split(";"))
+        reader_builder = self.buildCsvIO(smvSchema, "r", None, mode)
+        dataframe = reader_builder.csv(d)
         return dataframe
 
     def _mkCsvAttr(self, delimiter=',', quotechar='"', hasHeader=False):

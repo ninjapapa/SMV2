@@ -24,8 +24,8 @@ class D1(SmvCsvStringData):
         return "x,10;y,1"
 
 class D1WithError(SmvCsvStringData):
-    def failAtParsingError(self):
-        return False
+    def csvReaderMode(self):
+        return "DROPMALFORMED"
     def dqm(self):
         return SmvDQM().add(FailParserCountPolicy(1))
 
@@ -116,7 +116,7 @@ class Csv1(SmvCsvFile):
     def path(self):
         return "csvtest/csv1.csv"
     def csvAttr(self):
-        return CsvAttributes(",", '"', True)
+        return CsvAttributes(",", '"', "true")
     def run(self, df):
         return df.withColumn("name_id",
             F.concat(F.col("name"), F.col("id"))
@@ -126,7 +126,7 @@ class Csv2(SmvCsvFile):
     def path(self):
         return "csvtest/csv1.csv"
     def csvAttr(self):
-        return CsvAttributes(",", '"', True)
+        return CsvAttributes(",", '"', "true")
     def userSchema(self):
         return "eman:String;di:integer"
 
@@ -167,6 +167,9 @@ class NewCsvFile4(SmvCsvInputFile):
 
     def fileName(self):
         return "csvtest/csv1.csv"
+
+    def csvAttr(self):
+        return CsvAttributes(",", '"', "true")
 
     def userSchema(self):
         return "name2:String;id2:Integer"

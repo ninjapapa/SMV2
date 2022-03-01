@@ -19,6 +19,7 @@ from pyspark.sql import DataFrame
 from smv.utils import scala_seq_to_list
 import smv
 from smv.error import SmvRuntimeError
+from smv.smvschema import SmvSchema
 
 if sys.version_info >= (3, 4):
     ABC = abc.ABC
@@ -108,48 +109,6 @@ class SmvFileOnHdfsPersistenceStrategy(SmvPersistenceStrategy):
 
     def remove(self):
         self.smvApp._jvm.SmvHDFS.deleteFile(self._file_path)
-
-
-class SmvCsvPersistenceStrategy(SmvFileOnHdfsPersistenceStrategy):
-    """Persist strategy for using Smv CSV IO handler
-
-        Args:
-            smvApp(SmvApp):
-            versioned_fqn(str): data/module's FQN/Name with hash_of_hash
-            file_path(str): parameter "versioned_fqn" is used to create
-                a data file path. However if "file_path" is provided, all the other 2
-                parameters are ignored
-    """
-    def __init__(self, smvApp, versioned_fqn, file_path=None):
-        super(SmvCsvPersistenceStrategy, self).__init__(smvApp, versioned_fqn, 'csv', file_path)
-
-    @property
-    def _schema_path(self):
-        return re.sub("\.csv$", ".schema", self._file_path)
-
-    def _write(self, raw_data):
-        smv.logger.info("Output path: {}".format(self._file_path))
-        # this call creates both .csv and .schema file from the scala side
-        record_count = self.smvApp.j_smvPyClient.persistDF(self._file_path, raw_data._jdf)
-        smv.logger.info("N: {}".format(record_count))
-
-    def _read(self):
-        smv_schema = self.smvApp.smvSchemaObj.fromFile(self.smvApp.j_smvApp.sc(), self._schema_path)
-
-        terminateLogger = self.smvApp._jvm.SmvPythonHelper.getTerminateParserLogger()
-        handler = self.smvApp.j_smvPyClient.createFileIOHandler(self._file_path)
-
-        jdf = handler.csvFileWithSchema(None, smv_schema, terminateLogger)
-        return DataFrame(jdf, self.smvApp.sqlContext)
-
-    def isPersisted(self):
-        # since within the persistDF call on scala side, schema was written after
-        # csv file, so we can use the schema file as a semaphore
-        return self.smvApp._jvm.SmvHDFS.exists(self._schema_path)
-
-    def remove(self):
-        self.smvApp._jvm.SmvHDFS.deleteFile(self._file_path)
-        self.smvApp._jvm.SmvHDFS.deleteFile(self._schema_path)
 
 
 class SmvJsonOnHdfsPersistenceStrategy(SmvFileOnHdfsPersistenceStrategy):
@@ -348,17 +307,16 @@ class SmvSchemaOnHdfsIoStrategy(SmvIoStrategy):
 
     def read(self):
         # To be backward compatable read using spark sc.textFile
-        smv_schema = self.smvApp.smvSchemaObj.fromFile(
-            self.smvApp.j_smvApp.sc(),
-            self._file_path
-        )
+        schema_str = self.smvApp._jvm.SmvHDFS.readFromFile(self._file_path).encode('utf8')
+        one_str = re.sub(r"[\r\n]+", ";", schema_str)
+        smv_schema = SmvSchema(one_str)
         return smv_schema
 
     def _remove(self):
         self.smvApp._jvm.SmvHDFS.deleteFile(self._file_path)
 
     def write(self, smvSchema):
-        schema_str = "\n".join(scala_seq_to_list(self.smvApp._jvm, smvSchema.toStringsWithMeta()))
+        schema_str = smvSchema.toStrForFile()
         if (self._write_mode.lower() == "overwrite"):
             self._remove()
         else:
@@ -368,31 +326,31 @@ class SmvSchemaOnHdfsIoStrategy(SmvIoStrategy):
 
 
 class SmvCsvOnHdfsIoStrategy(SmvIoStrategy):
-    """Simply read/write of csv, given schema. Not for persisting,
-        which should be handled by SmvCsvPersistenceStrategy"""
-    def __init__(self, smvApp, path, smvSchema, logger, write_mode="overwrite"):
+    """Simply read/write of csv, given schema. Not for persisting"""
+    def __init__(self, smvApp, path, smvSchema, mode="FAILFAST", write_mode="overwrite"):
         self.smvApp = smvApp
         self._file_path = path
         self._smv_schema = smvSchema
-        self._logger = logger
+        self._mode = mode
         self._write_mode = write_mode
 
     def read(self):
-        handler = self.smvApp.j_smvPyClient.createFileIOHandler(self._file_path)
-
-        jdf = handler.csvFileWithSchema(None, self._smv_schema, self._logger)
-        return DataFrame(jdf, self.smvApp.sqlContext)
+        df = self.smvApp.buildCsvIO(self._smv_schema, "r", mode = self._mode).csv(self._file_path)
+        return df
 
     def _remove(self):
         self.smvApp._jvm.SmvHDFS.deleteFile(self._file_path)
 
     def write(self, raw_data):
-        jdf = raw_data._jdf
+        if self._smv_schema:
+            smvSchema = self._smv_schema
+        else:
+            smvSchema = SmvSchema(raw_data.schema)
 
         if (self._write_mode.lower() == "overwrite"):
             self._remove()
         else:
             raise SmvRuntimeError("Write mode {} is not implemented yet. (Only support overwrite)".format(self._write_mode))
 
-        handler = self.smvApp.j_smvPyClient.createFileIOHandler(self._file_path)
-        handler.saveAsCsv(jdf, self._smv_schema)
+        writer = self.smvApp.buildCsvIO(smvSchema, "w", raw_data, mode = self._mode)
+        writer.csv(self._file_path)

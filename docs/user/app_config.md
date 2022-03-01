@@ -102,13 +102,6 @@ Note that for sequence/list type parameters (e.g. smv.stages), a "," or ":" can 
 </tr>
 
 <tr>
-<td>smv.sparkdf.defaultPersistFormat</td>
-<td>parquet_on_hdfs</td>
-<td>Optional</td>
-<td>Specify default data persisting format for Spark DF data, either `smvcsv_on_hdfs` or `parquet_on_hdfs`.</td>
-</tr>
-
-<tr>
 <th colspan="4">Data Directories Parameters</th>
 </tr>
 

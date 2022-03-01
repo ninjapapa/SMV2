@@ -101,7 +101,8 @@ Fred,2"""
 
     def _create_csv_schema(self, name):
         self.createTempInputFile(name,
-        """name:string
+        """@has-header = true
+name:string
 id:integer"""
         )
 
@@ -125,6 +126,16 @@ id:integer"""
         fqn = "stage.modules.D1WithError"
         try:
             df = self.df(fqn)
+            # df.show()
+            # +----+----+---------------+
+            # |   a|   b|_corrupt_record|
+            # +----+----+---------------+
+            # |  a1|  10|           null|
+            # |null|null|           a2,x|
+            # |  a3|   2|           null|
+            # |  a4|null|           null|
+            # |null|null|           a5,y|
+            # +----+----+---------------+
         except SmvDqmValidationError as e:
             self.assertEqual(e.dqmValidationResult["passed"], False)
             self.assertEqual(e.dqmValidationResult["dqmStateSnapshot"]["totalRecords"], 3)
@@ -133,7 +144,7 @@ id:integer"""
     def test_SmvMultiCsvFiles(self):
         self.createTempInputFile("multiCsvTest/f1", "col1\na\n")
         self.createTempInputFile("multiCsvTest/f2", "col1\nb\n")
-        self.createTempInputFile("multiCsvTest.schema", "col1: String\n")
+        self.createTempInputFile("multiCsvTest.schema", "@has-header = true\ncol1: String\n")
 
         fqn = "stage.modules.MultiCsv"
         df = self.df(fqn)
@@ -141,8 +152,8 @@ id:integer"""
         self.should_be_same(df, exp)
 
     def test_SmvMultiCsvFilesWithUserSchema(self):
-        self.createTempInputFile("test3/f1", "col1\na\n")
-        self.createTempInputFile("test3/f2", "col1\nb\n")
+        self.createTempInputFile("test3/f1", "a\n")
+        self.createTempInputFile("test3/f2", "b\n")
         self.createTempInputFile("test3.schema", "col1: String\n")
 
         fqn = "stage.modules.MultiCsvWithUserSchema"
@@ -151,7 +162,7 @@ id:integer"""
         self.should_be_same(df, exp)
 
     def test_SmvCsvFileWithUserSchema(self):
-        self.createTempInputFile("test3.csv", "col1\na\nb\n")
+        self.createTempInputFile("test3.csv", "a\nb\n")
         self.createTempInputFile("test3.schema", "col1: String\n")
 
         fqn = "stage.modules.CsvFile"
@@ -172,7 +183,7 @@ id:integer"""
         self.assertNotIn("b", tableNames)
 
     def test_SmvSqlCsvFile(self):
-        self.createTempInputFile("test3.csv", "a,b,c\na1,100,c1\na2,200,c2\n")
+        self.createTempInputFile("test3.csv", "a1,100,c1\na2,200,c2\n")
         self.createTempInputFile("test3.schema", "a: String;b: Integer;c: String\n")
 
         fqn = "stage.modules.SqlCsvFile"
@@ -255,7 +266,8 @@ Fred,2"""
 
     def _create_csv_schema(self, name):
         self.createTempInputFile(name,
-        """name:string
+        """@has-header = true
+name:string
 id:integer"""
         )
 
@@ -290,7 +302,7 @@ id:integer"""
     def test_multi_csv_basic(self):
         self.createTempInputFile("multi_csv/f1", "col1\na\n")
         self.createTempInputFile("multi_csv/f2", "col1\nb\n")
-        self.createTempInputFile("multi_csv.schema", "col1: String\n")
+        self.createTempInputFile("multi_csv.schema", "@has-header = true\ncol1: String\n")
 
         res = self.df("stage.modules.NewMultiCsvFiles1")
         exp = self.createDF("col1:String", "a;b")

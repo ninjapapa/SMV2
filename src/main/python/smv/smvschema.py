@@ -11,70 +11,141 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
-import pyspark.sql.types as sql_types
-from smv.smvapp import SmvApp
+import re
+import json
+import pyspark.sql.types as T
+from smv.error import SmvRuntimeError
+from smv.utils import is_string
 
+# make it as a class with spark-schema, attrs (consider date, time formats as attr)
 class SmvSchema(object):
-    """The Python representation of SmvSchema scala class.
-
-    Most of the work is still being done on the scala side and this is just a pass through.
     """
-    def __init__(self, j_smv_schema):
-        self.j_smv_schema = j_smv_schema
-        self.spark_schema = self._toStructType()
+    """
+    def __init__(self, _schema):
+        if is_string(_schema):
+            (s, a, df, tf) = self._fullStrToSchema(_schema)
+        elif isinstance(_schema, T.StructType):
+            (s, a, df, tf) = (
+                _schema,
+                {
+                    "has-header": "false",
+                    "delimiter": ",",
+                    "quote-char": "\"",
+                },
+                None,
+                None
+            )
+        else:
+            raise SmvRuntimeError("Unsupported schema type: {}".format(type(_schema)))
 
-    @staticmethod
-    def discover(csv_path, csvAttributes, n=100000):
-        """Discover schema from CSV file with given csv attributes"""
-        smvApp = SmvApp.getInstance()
-        j_smv_schema = smvApp.discoverSchemaAsSmvSchema(csv_path, csvAttributes, n)
-        return SmvSchema(j_smv_schema)
+        self.schema = s 
+        a.update({
+            "dateFormat": df or "yyyy-MM-dd",
+            "timestampFormat": tf or "yyyy-MM-dd HH:mm:ss"
+        })
+        self.attributes = a
+        
+    def _strToStructField(self, fieldStr):
+        # *? is for non-greedy match
+        pattern = re.compile(r"""\s*(?P<name>[^:]*?)\s*:    # Col Name part
+                                \s*(?P<dtype>[^@]*?)\s*    # Type part
+                                (@metadata=(?P<meta>.*))?  # Meta if any
+                                \Z                         #end of string""", re.VERBOSE)
+        match = pattern.match(fieldStr)
+        name = match.group('name')
+        dtype = match.group('dtype')
+        meta = match.group('meta') or "{}"
 
-    @staticmethod
-    def fromFile(schema_file):
-        smvApp = SmvApp.getInstance()
-        j_smv_schema = smvApp.smvSchemaObj.fromFile(smvApp.j_smvApp.sc(), schema_file)
-        return SmvSchema(j_smv_schema)
+        # Timestamp, date, decimal
+        dfmtStr = None
+        tfmtStr = None
+        if (re.match(r"[Dd]ecimal", dtype)):
+            dpat = re.compile(r"""[Dd]ecimal(\[ *(?P<precision>\d+) *(, *(?P<scale>\d+) *)?\])?""")
+            dmatch = dpat.match(dtype)
+            precision = dmatch.group('precision') or 10
+            scale = dmatch.group('scale') or 0
+            dtypeStr = "decimal({},{})".format(precision, scale)
+        elif (re.match(r"[Dd]ate", dtype)):
+            dmatch = re.match(r"[Dd]ate(\[(?P<fmt>.+)\])?", dtype)
+            dfmtStr = dmatch.group('fmt')
+            dtypeStr = "date"
+        elif (re.match(r"[Tt]imestamp", dtype)):
+            dmatch = re.match(r"[Tt]imestamp(\[(?P<fmt>.+)\])?", dtype)
+            tfmtStr = dmatch.group('fmt')
+            dtypeStr = "timestamp"
+        elif (re.match(r"[Ss]tring", dtype)):
+            # smv allow String[,_SmvStrNull_] type of value. Ignor here
+            dtypeStr = "string"
+        else:
+            dtypeStr = dtype.lower()
 
-    @staticmethod
-    def fromString(schema_str):
-        smvApp = SmvApp.getInstance()
-        j_smv_schema = smvApp.smvSchemaObj.fromString(schema_str)
-        return SmvSchema(j_smv_schema)
+        fieldJson = {
+            "name": name,
+            "type": dtypeStr,
+            "nullable": True,
+            "metadata": json.loads(meta)
+        }
 
-    def toValue(self, i, str_val):
-        """convert the string value to native value based on type defined in schema.
+        field = T.StructField.fromJson(fieldJson)
+        return (field, dfmtStr, tfmtStr)
 
-           For example, if first column was of type Int, then call of `toValue(0, "55")`
-           would return integer 55.
-        """
-        val = self.j_smv_schema.toValue(i, str_val)
-        j_type = self.spark_schema.fields[i].dataType.typeName()
-        if j_type == sql_types.DateType.typeName():
-            val = datetime.date(1900 + val.getYear(), val.getMonth()+1, val.getDate())
-        return val
+    def _strToAttr(self, attrStr):
+        pattern = re.compile(r"@\s*(?P<name>\S*)\s*=\s*(?P<value>\S*)\s*")
+        match = pattern.match(attrStr)
+        name = match.group('name')
+        value = match.group('value')
+        return (name, value)
 
-    def saveToLocalFile(self, schema_file):
-        """Save schema to local (driver) file"""
-        self.j_smv_schema.saveToLocalFile(schema_file)
+    def _strListToSchema(self, smvStrs):
+        no_comm = [re.sub(';[ \t]*$', '', r).strip() for r in smvStrs if not (re.match(r"^(//|#).*$", r) or re.match(r"^[ \t]*$", r))]
+        attrStrs = [s for s in no_comm if s.startswith("@")]
+        fieldStrs = [s for s in no_comm if not s.startswith("@")]
 
-    def _scala_to_python_field_type(self, scala_field_type):
-        """create a python FieldType from the scala field type"""
-        col_name = str(scala_field_type.name())
-        col_type_name = str(scala_field_type.dataType())
-        # map string "IntegerType" to actual class IntegerType
-        col_type_class = getattr(sql_types, col_type_name)
-        return sql_types.StructField(col_name, col_type_class())
+        attrs = dict([self._strToAttr(a) for a in attrStrs])
 
-    def _toStructType(self):
-        """return equivalent Spark schema (StructType) from this smv schema"""
-        # ss is the raw scala spark schema (Scala StructType).  This has no
-        # iterator defined on the python side, so we use old school for loop.
-        ss = self.j_smv_schema.toStructType()
-        spark_schema = sql_types.StructType()
-        for i in range(ss.length()):
-            # use "apply" to get the nth StructField item in StructType
-            ft = self._scala_to_python_field_type(ss.apply(i))
-            spark_schema = spark_schema.add(ft)
-        return spark_schema
+        fieldlist = []
+        dfmtlist = []
+        tfmtlist = []
+        for s in fieldStrs:
+            (field, dfmt, tfmt) = self._strToStructField(s)
+            fieldlist.append(field)
+            if dfmt:
+                dfmtlist.append(dfmt)
+            if tfmt:
+                tfmtlist.append(tfmt)
+
+        if len(set(dfmtlist)) > 1:
+            raise SmvRuntimeError("Date type has multiple formats: {}".format(set(dfmtlist)))
+        elif len(set(dfmtlist)) == 1:
+            dateFormat = dfmtlist[0]
+        else:
+            dateFormat = None
+
+        if len(set(tfmtlist)) > 1:
+            raise SmvRuntimeError("TimeStamp type has multiple formats: {}".format(set(tfmtlist)))
+        elif len(set(tfmtlist)) == 1:
+            timestampFormat = tfmtlist[0]
+        else:
+            timestampFormat = None
+
+        schema = T.StructType(fieldlist)
+        return (schema, attrs, dateFormat, timestampFormat)
+
+
+    def _fullStrToSchema(self, smvStr):
+        (s, a, df, tf) = self._strListToSchema(smvStr.split(";"))
+        return (s, a, df, tf)
+
+
+    def toStrForFile(self):
+        attrStr = "\n".join(["@{} = {}".format(k, v) for (k, v) in self.attributes.items()])
+        s = self.schema
+        fmtStr = "\n".join([
+            "{}: {} @metadata={}".format(name, s[name].dataType.typeName(), json.dumps(s[name].metadata))
+            for name in s.fieldNames()
+        ])
+        return attrStr + "\n\n" + fmtStr
+
+    def addCsvAttributes(self, attr):
+        self.attributes.update(attr)
+        return self
