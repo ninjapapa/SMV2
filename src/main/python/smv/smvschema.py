@@ -23,28 +23,28 @@ class SmvSchema(object):
     """
     def __init__(self, _schema):
         if is_string(_schema):
-            (s, a, df, tf) = self._fullStrToSchema(_schema)
+            (s, a) = self._fullStrToSchema(_schema)
         elif isinstance(_schema, T.StructType):
-            (s, a, df, tf) = (
+            (s, a) = (
                 _schema,
                 {
                     "has-header": "false",
                     "delimiter": ",",
                     "quote-char": "\"",
-                },
-                None,
-                None
+                    "dateFormat": "yyyy-MM-dd",
+                    "timestampFormat": "yyyy-MM-dd HH:mm:ss"
+                }
             )
         else:
             raise SmvRuntimeError("Unsupported schema type: {}".format(type(_schema)))
 
         self.schema = s 
-        a.update({
-            "dateFormat": df or "yyyy-MM-dd",
-            "timestampFormat": tf or "yyyy-MM-dd HH:mm:ss"
-        })
         self.attributes = a
         
+    def updateAttrs(self, attrs):
+        self.attributes.update(attrs)
+        return self
+
     def _strToStructField(self, fieldStr):
         # *? is for non-greedy match
         pattern = re.compile(r"""\s*(?P<name>[^:]*?)\s*:    # Col Name part
@@ -128,14 +128,18 @@ class SmvSchema(object):
         else:
             timestampFormat = None
 
+        if dateFormat:
+            attrs.update({"dateFormat": dateFormat})
+        if timestampFormat:
+            attrs.update({"timestampFormat": timestampFormat})
+
         schema = T.StructType(fieldlist)
-        return (schema, attrs, dateFormat, timestampFormat)
+        return (schema, attrs)
 
 
     def _fullStrToSchema(self, smvStr):
-        (s, a, df, tf) = self._strListToSchema(smvStr.split(";"))
-        return (s, a, df, tf)
-
+        (s, a) = self._strListToSchema(smvStr.split(";"))
+        return (s, a)
 
     def toStrForFile(self):
         attrStr = "\n".join(["@{} = {}".format(k, v) for (k, v) in self.attributes.items()])
@@ -149,3 +153,17 @@ class SmvSchema(object):
     def addCsvAttributes(self, attr):
         self.attributes.update(attr)
         return self
+
+    @classmethod
+    def dicoverFromInferedDF(cls, df):
+        raw_schema = df.schema
+        first_row = df.limit(1).collect()[0]
+
+        new_schema = T.StructType([])
+        for n in raw_schema.fieldNames():
+            name_norm = re.sub(r"\W+", "_", n.strip())
+            dtype = raw_schema[n].dataType
+            meta = {"smvDesc": str(first_row[n])}
+            new_schema.add(name_norm, dtype, True, meta)
+
+        return cls(new_schema).addCsvAttributes({"has-header": "true"})

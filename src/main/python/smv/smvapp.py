@@ -530,6 +530,27 @@ class SmvApp(object):
         """Returns a Scala None value"""
         return self.scalaOption(None)
 
+    def discoverSchema(self, path, attrs = {}):
+        spark = self.sparkSession
+        builder = spark.read\
+            .option("mode", "DROPMALFORMED")\
+            .option("inferSchema", "true")\
+            .option("header", "true")\
+            .option('ignoreLeadingWhiteSpace', 'true')
+
+        # infer schema can't handle Date anyhow. If specify timestampFormat, it could 
+        # infer to timestamp
+        if attrs.get('timestampFormat'):
+            builder = builder.option("timestampFormat", attrs.get('timestampFormat'))
+        if attrs.get('delimiter'):
+            builder = builder.option("sep", attrs.get('delimiter'))
+        if attrs.get('quote-char'):
+            builder = builder.option("quote", attrs.get('quote-char'))
+
+        df = builder.csv(path)
+        smvSchema = SmvSchema.dicoverFromInferedDF(df)
+        return smvSchema.updateAttrs(attrs)
+        
     def buildCsvIO(self, smvSchema, wr,  df = None, mode = "FAILFAST"):
         spark = self.sparkSession
         (s, attrs) = (smvSchema.schema, smvSchema.attributes)

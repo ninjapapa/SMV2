@@ -14,12 +14,14 @@
 """
 from inspect import formatargspec, getargspec
 import sys
+import re
 import datetime
 
 from smv import SmvApp, SmvHiveTable, dqm
 from smv.smvappinfo import SmvAppInfo
 from smv.conn import SmvHdfsEmptyConn
 from smv.iomod import SmvCsvInputFile
+from smv.smviostrategy import SmvSchemaOnHdfsIoStrategy
 from test_support.test_runner import SmvTestRunner
 from test_support.testconfig import TestConfig
 
@@ -209,7 +211,11 @@ def now():
     """
     print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-def smvDiscoverSchemaToFile(path, n=100000, ca=None):
+def smvDiscoverSchema(path, attrs = {}):
+    smvSchema = SmvApp.getInstance().discoverSchema(path, attrs)
+    print(smvSchema.toStrForFile())
+
+def smvDiscoverSchemaToFile(path, attrs = {}):
     """Try best to discover Schema from raw Csv file
 
         Will save a schema file with postfix ".toBeReviewed" in local directory.
@@ -219,7 +225,10 @@ def smvDiscoverSchemaToFile(path, n=100000, ca=None):
             n (int): Number of records to check for schema discovery, default 100k
             ca (CsvAttributes): Defaults to CsvWithHeader
     """
-    SmvApp.getInstance()._jvm.SmvPythonHelper.smvDiscoverSchemaToFile(path, n, ca or SmvApp.getInstance().defaultCsvWithHeader())
+    app = SmvApp.getInstance()
+    schema_path = re.sub(r"(?i)csv", "schema.toBeReviewed", path)
+    smvSchema = app.discoverSchema(path, attrs)
+    SmvSchemaOnHdfsIoStrategy(app, schema_path).write(smvSchema)
 
 def run_test(test_name):
     """Run a test with the given name without creating new Spark context
@@ -284,6 +293,7 @@ __all__ = [
     'ancestors',
     'descendants',
     'now',
+    'smvDiscoverSchema',
     'smvDiscoverSchemaToFile',
     'run_test',
     'show_run_info',
