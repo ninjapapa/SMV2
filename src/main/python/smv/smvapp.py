@@ -106,7 +106,6 @@ class SmvApp(object):
         self.py_module_hotload = py_module_hotload
 
         java_import(self._jvm, "org.tresamigos.smv.dqm.*")
-        java_import(self._jvm, "org.tresamigos.smv.SmvHDFS")
 
         self.py_smvconf = SmvConfig(arglist)
 
@@ -509,7 +508,7 @@ class SmvApp(object):
 
         The file object is closed when this function completes.
         """
-        SmvHDFS(self._jvm.SmvHDFS).writeToFile(fileobj, destination)
+        SmvHDFS(self._jvm).writeToFile(fileobj, destination)
 
     def getStageFromModuleFqn(self, fqn):
         """Returns the stage name for a given fqn"""

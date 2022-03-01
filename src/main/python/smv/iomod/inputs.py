@@ -28,6 +28,7 @@ from smv.smviostrategy import SmvJdbcIoStrategy, SmvHiveIoStrategy, \
 from smv.smvschema import SmvSchema
 from smv.utils import lazy_property, smvhash
 from smv.error import SmvRuntimeError
+from smv.smvhdfs import SmvHDFS
 
 
 class SmvJdbcInputTable(SparkDfGenMod, SmvInput, AsTable):
@@ -161,7 +162,7 @@ class InputFileWithSchema(SmvInput, WithUserSchema, AsFile):
 
         # It is possible that the file doesn't exist
         try:
-            _m_time = self.smvApp._jvm.SmvHDFS.modificationTime(path)
+            _m_time = SmvHDFS(self.smvApp._jvm).modificationTime(path)
         except Py4JJavaError:
             _m_time = 0
 
@@ -343,7 +344,7 @@ class SmvMultiCsvInputFiles(SparkDfGenMod, WithSmvSchema, WithCsvParser):
         dir_path = os.path.join(self.get_connection().path, self.dirName())
         smv_schema = self.smvSchema()
 
-        flist = self.smvApp._jvm.SmvHDFS.dirList(dir_path).array()
+        flist = SmvHDFS(self.smvApp._jvm).dirList(dir_path)
         # ignore all hidden files in the data dir
         filesInDir = [os.path.join(dir_path, n) for n in flist if not n.startswith(".")]
 
