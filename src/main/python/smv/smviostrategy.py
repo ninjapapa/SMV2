@@ -19,7 +19,7 @@ from pyspark.sql import DataFrame
 from smv.utils import scala_seq_to_list
 import smv
 from smv.error import SmvRuntimeError
-from smv.smvschema2 import SmvSchema2
+from smv.smvschema import SmvSchema
 
 if sys.version_info >= (3, 4):
     ABC = abc.ABC
@@ -309,7 +309,7 @@ class SmvSchemaOnHdfsIoStrategy(SmvIoStrategy):
         # To be backward compatable read using spark sc.textFile
         schema_str = self.smvApp._jvm.SmvHDFS.readFromFile(self._file_path).encode('utf8')
         one_str = re.sub(r"[\r\n]+", ";", schema_str)
-        smv_schema = SmvSchema2(one_str)
+        smv_schema = SmvSchema(one_str)
         return smv_schema
 
     def _remove(self):
@@ -345,7 +345,7 @@ class SmvCsvOnHdfsIoStrategy(SmvIoStrategy):
         if self._smv_schema:
             smvSchema = self._smv_schema
         else:
-            smvSchema = SmvSchema2(raw_data.schema)
+            smvSchema = SmvSchema(raw_data.schema)
 
         if (self._write_mode.lower() == "overwrite"):
             self._remove()

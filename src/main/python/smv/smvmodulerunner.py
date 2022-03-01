@@ -17,7 +17,7 @@ from smv.smvmetadata import SmvMetaHistory
 from smv.runinfo import SmvRunInfoCollector
 from smv.utils import scala_seq_to_list, is_string
 from smv.error import SmvRuntimeError, SmvMetadataValidationError
-from smv.smvschema2 import SmvSchema2
+from smv.smvschema import SmvSchema
 
 class SmvModuleRunner(object):
     """Represent the run-transaction. Provides the single entry point to run
@@ -90,7 +90,7 @@ class SmvModuleRunner(object):
             publish_meta_path = publish_base_path + ".meta"
             publish_hist_path = publish_base_path + ".hist"
 
-            smvSchema = SmvSchema2(m.data.schema)
+            smvSchema = SmvSchema(m.data.schema)
             SmvCsvOnHdfsIoStrategy(m.smvApp, publish_csv_path, None, "FAILFAST").write(m.data)
             SmvSchemaOnHdfsIoStrategy(m.smvApp, publish_schema_path).write(smvSchema)
             SmvJsonOnHdfsPersistenceStrategy(m.smvApp, publish_meta_path).write(m.module_meta.toJson())

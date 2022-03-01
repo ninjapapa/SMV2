@@ -26,7 +26,7 @@ from smv.smviostrategy import SmvJdbcIoStrategy, SmvHiveIoStrategy, \
     SmvSchemaOnHdfsIoStrategy, SmvCsvOnHdfsIoStrategy, SmvTextOnHdfsIoStrategy,\
     SmvXmlOnHdfsIoStrategy
 from smv.dqm import SmvDQM
-from smv.smvschema2 import SmvSchema2
+from smv.smvschema import SmvSchema
 from smv.utils import lazy_property, smvhash
 from smv.error import SmvRuntimeError
 
@@ -278,7 +278,7 @@ class WithSmvSchema(InputFileWithSchema):
 
         """
         if (self.userSchema() is not None):
-            schema = SmvSchema2(self.userSchema())
+            schema = SmvSchema(self.userSchema())
         else:
             schema_file_name = self._get_schema_file_name()
             conn = self._get_schema_connection()
@@ -399,7 +399,7 @@ class SmvCsvStringInputData(SparkDfGenMod, WithUserSchema, WithCsvParser):
             return self.userSchema()
 
     def smvSchema(self):
-        return SmvSchema2(self._extendSchemaStr()) 
+        return SmvSchema(self._extendSchemaStr()) 
 
     def _get_input_data(self):
         return self.smvApp.createDF(self._extendSchemaStr(), self.dataStr(), self.csvReaderMode())

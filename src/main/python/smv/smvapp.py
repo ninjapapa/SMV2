@@ -42,7 +42,7 @@ from smv.smviostrategy import SmvJsonOnHdfsPersistenceStrategy
 from smv.conn import SmvHdfsConnectionInfo
 from smv.smvmetadata import SmvMetaHistory
 from smv.smvhdfs import SmvHDFS
-from smv.smvschema2 import SmvSchema2
+from smv.smvschema import SmvSchema
 from py4j.protocol import Py4JJavaError
 
 
@@ -590,7 +590,7 @@ class SmvApp(object):
 
     def createDF(self, schemaStr, data = "", mode = "FAILFAST"):
         spark = self.sparkSession
-        smvSchema = SmvSchema2(schemaStr)
+        smvSchema = SmvSchema(schemaStr)
         d = spark.sparkContext.parallelize(data.split(";"))
         reader_builder = self.buildCsvIO(smvSchema, "r", None, mode)
         dataframe = reader_builder.csv(d)
