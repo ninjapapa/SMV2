@@ -11,25 +11,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from smv.error import SmvRuntimeError
+from datetime import datetime
+import time
+
 class SmvLock(object):
     """Create a lock context
     """
-    def __init__(self, _jvm, _lock_path):
+    def __init__(self, _jvm, lock_path, timeout = 3600000):
         self._jvm = _jvm
-        self._lock_path = _lock_path
-        self.slock = None
+        self.lock_path = lock_path
+        self.timeout = timeout
+
+        self._obtained = False
+        self._attempts = 0
 
     def __enter__(self):
-        # create a lock file with timeout as 1 hour
-        self.slock = self._jvm.org.tresamigos.smv.SmvLock(
-            self._lock_path,
-            3600 * 1000 
-        )
-        self.slock.lock()
+        self.lock()
         return None
 
+    def lock(self):
+        if (self._obtained):
+            raise SmvRuntimeError("Non-reentrant lock already obtained")
+
+        start = datetime.now()
+        while (not self._obtained):
+            self._attempts = self._attempts + 1
+            try:
+                self._jvm.SmvHDFS.createFileAtomic(self.lock_path)
+                self._obtained = True
+            except:
+                if (datetime.now() - start).total_seconds() * 1000 > self.timeout:
+                    raise TimeoutError("Cannot obtain lock [{}] within {} seconds".format(self.lock_path, self.timeout / 1000))
+                if (self._attempts == 1):
+                    print("Found existing lock file [{}]".format(self.lock_path))
+                
+                try:
+                    time.sleep(10)      # sleep 10 second before next check
+                except KeyboardInterrupt:
+                    pass                # getting waken up is okay, check if lock is available again
+
+    def unlock(self):
+        self._jvm.SmvHDFS.deleteFile(self.lock_path)
+
     def __exit__(self, type, value, traceback):
-        self.slock.unlock()
+        self.unlock()
+
+        # Reset counter
+        self._obtained = False
+        self._attempts = 0
+
 
 class NonOpLock(object):
     def __enter__(self):
