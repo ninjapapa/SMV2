@@ -7,7 +7,6 @@ from smv.smvapp import SmvApp
 
 from smv.runconfig import SmvRunConfig
 from smv.csv_attributes import CsvAttributes
-from smv.smvschema import SmvSchema
 
 # keep old py names for backwards compatibility
 SmvPyCsvFile = SmvCsvFile

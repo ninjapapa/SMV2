@@ -302,7 +302,7 @@ class SmvCsvInputFile(SparkDfGenMod, WithSmvSchema, WithCsvParser):
             - schemaFileName: optional
             - userSchema: optional
             - csvAttr: optional
-            - failAtParsingError: optional, default True
+            - csvReaderMode: optional, default True
             - dqm: optional, default SmvDQM()
     """
 
@@ -329,7 +329,7 @@ class SmvMultiCsvInputFiles(SparkDfGenMod, WithSmvSchema, WithCsvParser):
             - schemaFileName: optional
             - userSchema: optional
             - csvAttr: optional
-            - failAtParsingError: optional, default True
+            - csvReaderMode: optional, default True
             - dqm: optional, default SmvDQM()
     """
 
@@ -388,7 +388,7 @@ class SmvCsvStringInputData(SparkDfGenMod, WithUserSchema, WithCsvParser):
 
             - schemaStr(): required
             - dataStr(): required
-            - failAtParsingError(): optional
+            - csvReaderMode(): optional
             - dqm(): optional
     """
 

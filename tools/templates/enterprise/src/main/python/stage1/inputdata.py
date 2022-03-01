@@ -5,8 +5,8 @@ class Employment(smv.SmvCsvFile):
     def path(self):
         return "employment/CB1200CZ11.csv"
 
-    def failAtParsingError(self):
-        return False
+    def csvReaderMode(self):
+        return "DROPMALFORMED"
 
     def dqm(self):
         """An example DQM policy"""
