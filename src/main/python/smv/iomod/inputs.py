@@ -25,7 +25,6 @@ from smv.smvmodule import SparkDfGenMod
 from smv.smviostrategy import SmvJdbcIoStrategy, SmvHiveIoStrategy, \
     SmvSchemaOnHdfsIoStrategy, SmvCsvOnHdfsIoStrategy, SmvTextOnHdfsIoStrategy,\
     SmvXmlOnHdfsIoStrategy
-from smv.dqm import SmvDQM
 from smv.smvschema import SmvSchema
 from smv.utils import lazy_property, smvhash
 from smv.error import SmvRuntimeError
@@ -234,21 +233,6 @@ class SmvXmlInputFile(SparkDfGenMod, InputFileWithSchema):
 class WithCsvParser(SmvInput):
     """Mixin for input modules to parse csv data"""
 
-    def dqm(self):
-        """DQM policy
-
-            Override this method to define your own DQM policy (optional).
-            Default is an empty policy.
-
-            Returns:
-                (SmvDQM): a DQM policy
-        """
-        return SmvDQM()
-
-    @lazy_property
-    def _dqmValidator(self):
-        return self.smvApp._jvm.DQMValidator(self.dqm())
-
     def csvReaderMode(self):
         """When set, any parsing error will throw an exception to make sure we can stop early.
             To tolerant some parsing error, user can
@@ -303,7 +287,6 @@ class SmvCsvInputFile(SparkDfGenMod, WithSmvSchema, WithCsvParser):
             - userSchema: optional
             - csvAttr: optional
             - csvReaderMode: optional, default True
-            - dqm: optional, default SmvDQM()
     """
 
     def _get_input_data(self):
@@ -330,7 +313,6 @@ class SmvMultiCsvInputFiles(SparkDfGenMod, WithSmvSchema, WithCsvParser):
             - userSchema: optional
             - csvAttr: optional
             - csvReaderMode: optional, default True
-            - dqm: optional, default SmvDQM()
     """
 
     @abc.abstractmethod
@@ -389,7 +371,6 @@ class SmvCsvStringInputData(SparkDfGenMod, WithUserSchema, WithCsvParser):
             - schemaStr(): required
             - dataStr(): required
             - csvReaderMode(): optional
-            - dqm(): optional
     """
 
     def _extendSchemaStr(self):
