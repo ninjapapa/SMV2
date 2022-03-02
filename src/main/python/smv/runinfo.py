@@ -64,7 +64,7 @@ class SmvRunInfoCollector(object):
         metadata = self.metadata(ds_name)
         if (not metadata):
             return {}
-        return metadata["_dqmValidation"]
+        return metadata.get("_dqmValidation", "")
 
     def dqm_state(self, ds_name):
         """Returns the DQM state for a given dataset

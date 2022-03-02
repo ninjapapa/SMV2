@@ -12,20 +12,7 @@
 # limitations under the License.
 
 from smv import *
-from smv.dqm import *
 from pyspark.sql.functions import col, lit
-
-class D3(SmvCsvStringData):
-    def schemaStr(self):
-        return "a:Integer;b:Double"
-    def dataStr(self):
-        return "1,0.3;0,0.2;3,0.5"
-    def dqm(self):
-        return SmvDQM().add(
-            DQMRule(col("b") < 0.4 , "b_lt_03")).add(
-            DQMFix(col("a") < 1, lit(1).alias("a"), "a_lt_1_fix")).add(
-            FailTotalRuleCountPolicy(2)).add(
-            FailTotalFixCountPolicy(1))
 
 class D4(SmvModule, SmvRunConfig):
     def schemaStr(self):

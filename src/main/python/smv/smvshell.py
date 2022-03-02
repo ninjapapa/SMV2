@@ -17,7 +17,7 @@ import sys
 import re
 import datetime
 
-from smv import SmvApp, SmvHiveTable, dqm
+from smv import SmvApp, SmvHiveTable
 from smv.smvappinfo import SmvAppInfo
 from smv.conn import SmvHdfsEmptyConn
 from smv.iomod import SmvCsvInputFile

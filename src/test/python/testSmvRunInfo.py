@@ -50,15 +50,6 @@ class SmvRunInfoTest(SmvBaseTest):
             assert len(coll.dqm_state(fqn)) == 0
             assert len(coll.metadata(fqn)['_fqn']) > 0  # still collect basic meta
 
-    def test_get_run_info_should_return_info_from_last_run(self):
-        self.smvApp.runModule(self.R4Fqn, forceRun=True)
-        self.smvApp.runModule(self.R4Fqn, forceRun=False)
-        coll = self.smvApp.getRunInfoByPartialName('R4')
-        for fqn in coll.fqns():
-            if 'R2' not in fqn:  # R2 module does not have validation
-                assert len(coll.dqm_validation(fqn)) > 0
-                assert len(coll.dqm_state(fqn)) > 0
-
     # Target a bug that caused an error when getting run info for a module
     # that depends on a link
     def test_get_run_info_of_module_with_link_dependency(self):

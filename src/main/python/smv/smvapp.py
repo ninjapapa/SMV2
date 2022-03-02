@@ -28,7 +28,7 @@ from pyspark.java_gateway import launch_gateway
 from smv.datasetmgr import DataSetMgr
 from smv.smvappinfo import SmvAppInfo
 from smv.datasetrepo import DataSetRepoFactory, DataSetRepo
-from smv.error import SmvRuntimeError, SmvDqmValidationError
+from smv.error import SmvRuntimeError
 import smv.helpers
 from smv.modulesvisitor import ModulesVisitor
 from smv.smvmodulerunner import SmvModuleRunner
@@ -98,15 +98,11 @@ class SmvApp(object):
             self.sc = sc
             self.sqlContext = self.sparkSession._wrapped
             self._jvm = sc._jvm
-            self.j_smvPyClient = self._jvm.org.tresamigos.smv.python.SmvPyClientFactory.init(self.sparkSession._jsparkSession)
         else:
             _gw = launch_gateway(None)
             self._jvm = _gw.jvm
 
         self.py_module_hotload = py_module_hotload
-
-        java_import(self._jvm, "org.tresamigos.smv.dqm.*")
-
         self.py_smvconf = SmvConfig(arglist)
 
         # configure spark sql params
@@ -156,11 +152,7 @@ class SmvApp(object):
             try:
                 return func(*args, **kwargs)
             except Py4JJavaError as e:
-                if (e.java_exception and e.java_exception.getClass().getName() == "org.tresamigos.smv.dqm.SmvDqmValidationError"):
-                    dqmValidationResult = json.loads(e.java_exception.getMessage())
-                    raise SmvDqmValidationError(dqmValidationResult)
-                else:
-                    raise e
+                raise e
         return func_wrapper
 
     def prependDefaultDirs(self):
