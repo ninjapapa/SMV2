@@ -311,4 +311,4 @@ set_smv_spark_paths
 set_smv_home
 verify_spark_version
 check_help_option
-find_fat_jar
+# find_fat_jar

@@ -41,10 +41,9 @@ BUNDLE_EXCLUDE = venv metastore_db .tox .ivy2 $(SPARKS_DIR) .git admin $(BUNDLE_
 local_bundle:
 	# cleanup some unneeded binary files.
 	rm -rf project/target project/project
-	rm -rf target/resolution-cache target/streams
+	rm -rf target
 	# use the `find ... -exec` variant instead of xargs
 	# because we don't want `rm` to execute if `find` returns nothing
-	find target -name *with-dependencies.jar -prune -o -type f -exec rm -f \{\} +
 	find src -name '*.pyc' -exec rm -f \{\} +
 	find src -name '__pycache__' -exec rm -rf \{\} +
 
