@@ -22,7 +22,6 @@ import json
 import pkgutil
 from collections import namedtuple
 
-from py4j.java_gateway import java_import
 from pyspark.java_gateway import launch_gateway
 
 from smv.datasetmgr import DataSetMgr
@@ -575,19 +574,6 @@ class SmvApp(object):
         reader_builder = self.buildCsvIO(smvSchema, "r", None, mode)
         dataframe = reader_builder.csv(d)
         return dataframe
-
-    def _mkCsvAttr(self, delimiter=',', quotechar='"', hasHeader=False):
-        """Factory method for creating instances of Scala case class CsvAttributes"""
-        return self._jvm.org.tresamigos.smv.CsvAttributes(delimiter, quotechar, hasHeader)
-
-    def defaultCsvWithHeader(self):
-        return self._mkCsvAttr(hasHeader=True)
-
-    def defaultTsv(self):
-        return self._mkCsvAttr(delimiter='\t')
-
-    def defaultTsvWithHeader(self):
-        return self._mkCsvAttr(delimiter='\t', hasHeader=True)
 
     def abs_path_for_project_path(self, project_path):
         # Load dynamic app dir from scala

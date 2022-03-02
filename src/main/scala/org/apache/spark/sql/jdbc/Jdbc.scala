@@ -12,13 +12,13 @@
  * limitations under the License.
  */
 
-package org.tresamigos.smv.jdbc
+package org.apache.spark.sql.jdbc
 
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.jdbc._
 import java.sql.Types
 
-private[smv] object JdbcDialectHelper {
+object JdbcDialectHelper {
   def registerDerby() = JdbcDialects.registerDialect(DerbyDialect)
 }
 
@@ -29,7 +29,7 @@ private[smv] object JdbcDialectHelper {
  *
  * NOTE: This should be used for tests only!
  */
-private[smv] object DerbyDialect extends JdbcDialect {
+object DerbyDialect extends JdbcDialect {
 
   override def canHandle(url: String): Boolean = url.startsWith("jdbc:derby")
 

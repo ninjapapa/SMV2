@@ -20,7 +20,7 @@ class NewJdbcTest(SmvBaseTest):
     @classmethod
     def setUpClass(cls):
         super(NewJdbcTest, cls).setUpClass()
-        cls.smvApp._jvm.org.tresamigos.smv.jdbc.JdbcDialectHelper.registerDerby()
+        cls.smvApp._jvm.org.apache.spark.sql.jdbc.JdbcDialectHelper.registerDerby()
 
     @classmethod
     def url(cls):
