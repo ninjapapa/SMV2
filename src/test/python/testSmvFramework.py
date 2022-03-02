@@ -22,8 +22,7 @@ from smv import *
 import sys
 import smv.utils
 import smv.smvshell
-from smv.dqm import *
-from smv.error import SmvDqmValidationError, SmvMetadataValidationError, SmvRuntimeError
+from smv.error import SmvMetadataValidationError, SmvRuntimeError
 
 import pyspark
 from pyspark.context import SparkContext
@@ -39,22 +38,6 @@ class SmvFrameworkTest(SmvBaseTest):
     @classmethod
     def smvAppInitArgs(cls):
         return ['--smv-props', 'smv.stages=stage:stage2:cycle']
-
-    def test_SmvDQM(self):
-        fqn = "stage.modules.D3"
-
-        msg = """{"passed":false,"dqmStateSnapshot":{"totalRecords":3,"parseError":{"total":0,"firstN":[]},"fixCounts":{"a_lt_1_fix":1},"ruleErrors":{"b_lt_03":{"total":1,"firstN":["org.tresamigos.smv.dqm.DQMRuleError: b_lt_03 @FIELDS: b=0.5"]}}},"errorMessages":[{"FailTotalRuleCountPolicy(2)":"true"},{"FailTotalFixCountPolicy(1)":"false"},{"FailParserCountPolicy(1)":"true"}],"checkLog":["Rule: b_lt_03, total count: 1","org.tresamigos.smv.dqm.DQMRuleError: b_lt_03 @FIELDS: b=0.5","Fix: a_lt_1_fix, total count: 1"]}"""
-
-        with self.assertRaises(SmvDqmValidationError) as cm:
-            df = self.df(fqn)
-            df.smvDumpDF()
-
-        e = cm.exception
-        self.assertEqual(e.dqmValidationResult["passed"], False)
-        self.assertEqual(e.dqmValidationResult["dqmStateSnapshot"]["totalRecords"], 3)
-        self.assertEqual(e.dqmValidationResult["dqmStateSnapshot"]["parseError"]["total"],0)
-        self.assertEqual(e.dqmValidationResult["dqmStateSnapshot"]["fixCounts"]["a_lt_1_fix"],1)
-        self.assertEqual(e.dqmValidationResult["dqmStateSnapshot"]["ruleErrors"]["b_lt_03"]["total"],1)
 
     # All SmvInput related tests were moved to testSmvInput.py
 

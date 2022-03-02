@@ -12,7 +12,6 @@
 # limitations under the License.
 
 from smv import *
-from smv.dqm import *
 from smv.iomod import SmvCsvInputFile, SmvMultiCsvInputFiles, SmvXmlInputFile
 
 import pyspark.sql.functions as F
@@ -32,8 +31,6 @@ class D1WithDate(SmvCsvStringData):
 class D1WithError(SmvCsvStringData):
     def csvReaderMode(self):
         return "DROPMALFORMED"
-    def dqm(self):
-        return SmvDQM().add(FailParserCountPolicy(1))
 
     def schemaStr(self):
         return "a:String;b:Integer"

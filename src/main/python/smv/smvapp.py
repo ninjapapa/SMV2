@@ -22,13 +22,12 @@ import json
 import pkgutil
 from collections import namedtuple
 
-from py4j.java_gateway import java_import
 from pyspark.java_gateway import launch_gateway
 
 from smv.datasetmgr import DataSetMgr
 from smv.smvappinfo import SmvAppInfo
 from smv.datasetrepo import DataSetRepoFactory, DataSetRepo
-from smv.error import SmvRuntimeError, SmvDqmValidationError
+from smv.error import SmvRuntimeError
 import smv.helpers
 from smv.modulesvisitor import ModulesVisitor
 from smv.smvmodulerunner import SmvModuleRunner
@@ -98,15 +97,11 @@ class SmvApp(object):
             self.sc = sc
             self.sqlContext = self.sparkSession._wrapped
             self._jvm = sc._jvm
-            self.j_smvPyClient = self._jvm.org.tresamigos.smv.python.SmvPyClientFactory.init(self.sparkSession._jsparkSession)
         else:
             _gw = launch_gateway(None)
             self._jvm = _gw.jvm
 
         self.py_module_hotload = py_module_hotload
-
-        java_import(self._jvm, "org.tresamigos.smv.dqm.*")
-
         self.py_smvconf = SmvConfig(arglist)
 
         # configure spark sql params
@@ -156,11 +151,7 @@ class SmvApp(object):
             try:
                 return func(*args, **kwargs)
             except Py4JJavaError as e:
-                if (e.java_exception and e.java_exception.getClass().getName() == "org.tresamigos.smv.dqm.SmvDqmValidationError"):
-                    dqmValidationResult = json.loads(e.java_exception.getMessage())
-                    raise SmvDqmValidationError(dqmValidationResult)
-                else:
-                    raise e
+                raise e
         return func_wrapper
 
     def prependDefaultDirs(self):
@@ -583,19 +574,6 @@ class SmvApp(object):
         reader_builder = self.buildCsvIO(smvSchema, "r", None, mode)
         dataframe = reader_builder.csv(d)
         return dataframe
-
-    def _mkCsvAttr(self, delimiter=',', quotechar='"', hasHeader=False):
-        """Factory method for creating instances of Scala case class CsvAttributes"""
-        return self._jvm.org.tresamigos.smv.CsvAttributes(delimiter, quotechar, hasHeader)
-
-    def defaultCsvWithHeader(self):
-        return self._mkCsvAttr(hasHeader=True)
-
-    def defaultTsv(self):
-        return self._mkCsvAttr(delimiter='\t')
-
-    def defaultTsvWithHeader(self):
-        return self._mkCsvAttr(delimiter='\t', hasHeader=True)
 
     def abs_path_for_project_path(self, project_path):
         # Load dynamic app dir from scala

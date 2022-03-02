@@ -29,4 +29,4 @@ SMV_TOOLS="$(get_smv_tools_dir)"
 LOG_CONF_FILE="${SMV_HOME}/log4j.properties"
 SPARK_ARGS=("${SPARK_ARGS[@]}" "--conf" "spark.driver.extraJavaOptions=-Dlog4j.configuration=file://${LOG_CONF_FILE}")
 
-run_pyspark_with ${SMV_TOOLS}/../src/main/python/scripts/runtests.py
+run_pyspark_with_fat_jar ${SMV_TOOLS}/../src/main/python/scripts/runtests.py

@@ -22,7 +22,6 @@ import json
 from datetime import datetime
 
 import smv
-from smv.dqm import SmvDQM
 from smv.error import SmvRuntimeError
 from smv.utils import pickle_lib, lazy_property
 from smv.smviostrategy import SmvPicklablePersistenceStrategy, SmvParquetPersistenceStrategy
@@ -60,16 +59,16 @@ class SparkDfGenMod(SmvGenericModule):
     # SparkDfGenMod specific:
     # - dqm: Optional, default SmvDQM()
     #########################################################################
-    def dqm(self):
-        """DQM policy
+    # def dqm(self):
+    #     """DQM policy
 
-            Override this method to define your own DQM policy (optional).
-            Default is an empty policy.
+    #         Override this method to define your own DQM policy (optional).
+    #         Default is an empty policy.
 
-            Returns:
-                (SmvDQM): a DQM policy
-        """
-        return SmvDQM()
+    #         Returns:
+    #             (SmvDQM): a DQM policy
+    #     """
+    #     return SmvDQM()
 
     #########################################################################
     # Implement of SmvGenericModule abatract methos and other private methods
@@ -105,24 +104,26 @@ class SparkDfGenMod(SmvGenericModule):
     def persistStrategy(self):
         return SmvParquetPersistenceStrategy(self.smvApp, self.versioned_fqn)
 
-    @lazy_property
-    def _dqmValidator(self):
-        return self.smvApp._jvm.DQMValidator(self.dqm())
+    # @lazy_property
+    # def _dqmValidator(self):
+    #     return self.smvApp._jvm.DQMValidator(self.dqm())
 
     def _pre_action(self, df):
         """DF in and DF out, to perform operations on created from run method"""
-        return DataFrame(self._dqmValidator.attachTasks(df._jdf), df.sql_ctx)
+        #return DataFrame(self._dqmValidator.attachTasks(df._jdf), df.sql_ctx)
+        return df
 
     def _post_action(self):
         """Will run when action happens on a DF, here for DQM validation"""
-        validation_result = self._dqmValidator.validate()
-        if (not validation_result.isEmpty()):
-            msg = json.dumps(
-                json.loads(validation_result.toJSON()),
-                indent=2, separators=(',', ': ')
-            )
-            smv.logger.warn("Nontrivial DQM result:\n{}".format(msg))
-        self.module_meta.addDqmValidationResult(validation_result.toJSON())
+        # validation_result = self._dqmValidator.validate()
+        # if (not validation_result.isEmpty()):
+        #     msg = json.dumps(
+        #         json.loads(validation_result.toJSON()),
+        #         indent=2, separators=(',', ': ')
+        #     )
+        #     smv.logger.warn("Nontrivial DQM result:\n{}".format(msg))
+        # self.module_meta.addDqmValidationResult(validation_result.toJSON())
+        pass
 
     def _assure_output_type(self, run_output):
         if (not isinstance(run_output, DataFrame)):

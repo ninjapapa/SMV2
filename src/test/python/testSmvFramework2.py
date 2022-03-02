@@ -15,7 +15,7 @@ import os
 import sys
 from test_support.smvbasetest import SmvBaseTest
 from smv import *
-from smv.error import SmvDqmValidationError, SmvRuntimeError
+from smv.error import SmvRuntimeError
 from smv.modulesvisitor import ModulesVisitor
 from smv.smvmodulerunner import SmvModuleRunner
 from smv.smviostrategy import SmvJsonOnHdfsPersistenceStrategy
@@ -87,18 +87,6 @@ class SmvFrameworkTest2(SmvBaseTest):
         # counter is in M2 (non-ephemeral)
         self.assertEqual(persist_run_counter, 1)
 
-    def test_basic_metadata_creation(self):
-        fqn = "stage.modules.M2"
-        m = self.load(fqn)[0]
-
-        SmvModuleRunner([m], self.smvApp).run()
-
-        result = m.module_meta._metadata['_dqmValidation']
-        rule_cnt = result['dqmStateSnapshot']['ruleErrors']['b_lt_04']['total']
-
-        self.assertEqual(m.module_meta._metadata['_fqn'], fqn)
-        self.assertEqual(rule_cnt, 1)
-
     def test_metadata_persist(self):
         fqn = "stage.modules.M1"
         m = self.load(fqn)[0]
@@ -164,7 +152,7 @@ class SmvFrameworkTest2(SmvBaseTest):
         names = [m.fqn()[14:] for m in res]
         self.assertEqual(names, ['M2', 'M5'])
 
-    def test_ephemeral_dqm_will_not_run_if_not_needed(self):
+    def test_module_will_not_run_if_not_needed(self):
         global m1_post_counter
         m1_post_counter = 0
 

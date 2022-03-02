@@ -1,5 +1,4 @@
 import smv
-import smv.dqm as dqm
 
 class Employment(smv.SmvCsvFile):
     def path(self):
@@ -7,7 +6,3 @@ class Employment(smv.SmvCsvFile):
 
     def csvReaderMode(self):
         return "DROPMALFORMED"
-
-    def dqm(self):
-        """An example DQM policy"""
-        return dqm.SmvDQM().add(dqm.FailParserCountPolicy(10))

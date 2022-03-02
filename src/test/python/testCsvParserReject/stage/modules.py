@@ -12,7 +12,6 @@
 # limitations under the License.
 
 from smv import *
-from smv.dqm import *
 import pyspark.sql.functions as F
 
 
@@ -27,5 +26,3 @@ class CsvWithError(SmvCsvFile):
         return "csv1.csv"
     def csvReaderMode(self):
         return "DROPMALFORMED"
-    def dqm(self):
-        return SmvDQM().add(FailParserCountPolicy(1))
