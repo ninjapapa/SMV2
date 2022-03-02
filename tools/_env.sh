@@ -266,7 +266,7 @@ function print_help() {
 # We eagerly add the basename of the APP_JAR so that this same command
 # works in YARN Cluster mode, where the JAR gets added to the root directory
 # of the container. Also note the colon separator
-function run_pyspark_with () {
+function run_pyspark_with_fat_jar () {
   local tools_dir="$(get_smv_tools_dir)"
   local SMV_HOME="$(cd ${tools_dir}/..; pwd)"
   local PYTHONPATH="$SMV_HOME/src/main/python:$PYTHONPATH"
@@ -284,6 +284,23 @@ function run_pyspark_with () {
   )
 }
 
+function run_pyspark_with () {
+  local tools_dir="$(get_smv_tools_dir)"
+  local SMV_HOME="$(cd ${tools_dir}/..; pwd)"
+  local PYTHONPATH="$SMV_HOME/src/main/python:$PYTHONPATH"
+  # Suppress creation of .pyc files. These cause complications with
+  # reloading code and have led to discovering deleted modules (#612)
+  local PYTHONDONTWRITEBYTECODE=1
+  local SPARK_PRINT_LAUNCH_COMMAND=1
+  local SMV_LAUNCH_SCRIPT="${SMV_LAUNCH_SCRIPT:-${SMV_SPARK_SUBMIT_FULLPATH}}"
+
+  ( export PYTHONDONTWRITEBYTECODE SPARK_PRINT_LAUNCH_COMMAND PYTHONPATH; \
+    "${SMV_LAUNCH_SCRIPT}" "${SPARK_ARGS[@]}" \
+    --jars "$EXTRA_JARS" \
+    --driver-class-path "$EXTRA_DRIVER_CLASSPATHS" \
+    $1 "${SMV_ARGS[@]}"
+  )
+}
 # --- MAIN ---
 declare -a SMV_ARGS SPARK_ARGS
 
