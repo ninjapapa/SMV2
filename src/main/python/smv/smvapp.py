@@ -18,7 +18,6 @@ It is equivalent to ``SmvApp`` on Scala side
 import os
 import sys
 import re
-import json
 import pkgutil
 from collections import namedtuple
 
@@ -510,14 +509,6 @@ class SmvApp(object):
 
     def outputDir(self):
         return self.all_data_dirs().outputDir
-
-    def scalaOption(self, val):
-        """Returns a Scala Option containing the value"""
-        return self._jvm.scala.Option.apply(val)
-
-    def scalaNone(self):
-        """Returns a Scala None value"""
-        return self.scalaOption(None)
 
     def discoverSchema(self, path, attrs = {}):
         spark = self.sparkSession

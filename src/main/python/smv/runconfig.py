@@ -16,8 +16,6 @@ This module defined the SmvRunConfig class which can be mixed-in into an
 SmvModule to get user configuration parameters at run-time.
 """
 
-from smv.utils import scala_seq_to_list
-
 class SmvRunConfig(object):
     """DEPRECATED
 

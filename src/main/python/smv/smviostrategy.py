@@ -16,7 +16,6 @@ import re
 import binascii
 
 from pyspark.sql import DataFrame
-from smv.utils import scala_seq_to_list
 import smv
 from smv.error import SmvRuntimeError
 from smv.smvschema import SmvSchema

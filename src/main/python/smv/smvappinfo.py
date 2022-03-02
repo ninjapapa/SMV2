@@ -11,10 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from smv.utils import scala_seq_to_list
 import json
-
-from smv.modulesvisitor import ModulesVisitor
 
 class SmvAppInfo(object):
     """Provides SmvApp module list, dependency graph etc. for shell and plot.

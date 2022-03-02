@@ -13,10 +13,7 @@
 import smv
 from smv.modulesvisitor import ModulesVisitor
 from smv.smviostrategy import SmvCsvOnHdfsIoStrategy, SmvJsonOnHdfsPersistenceStrategy, SmvSchemaOnHdfsIoStrategy
-from smv.smvmetadata import SmvMetaHistory
 from smv.runinfo import SmvRunInfoCollector
-from smv.utils import scala_seq_to_list, is_string
-from smv.error import SmvRuntimeError, SmvMetadataValidationError
 from smv.smvschema import SmvSchema
 
 class SmvModuleRunner(object):

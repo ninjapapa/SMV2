@@ -15,9 +15,7 @@ import unittest
 from test_support.testconfig import TestConfig
 
 import pyspark
-from pyspark.context import SparkContext
 from pyspark.sql import *
-from smv.utils import smv_copy_array
 
 import os, shutil, sys
 

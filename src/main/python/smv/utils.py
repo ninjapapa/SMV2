@@ -30,67 +30,6 @@ def lazy_property(fn):
         return getattr(self, attr_name)
     return _lazy_property
 
-def smv_copy_array(sc, *cols):
-    """Copy Python list to appropriate Java array
-    """
-    if (len(cols) == 0):        # may need to pass the correct java type somehow
-        return sc._gateway.new_array(sc._jvm.java.lang.String, 0)
-
-    elem = cols[0]
-    if is_string(elem):
-        jcols = sc._gateway.new_array(sc._jvm.java.lang.String, len(cols))
-        for i in range(0, len(jcols)):
-            jcols[i] = cols[i]
-    elif isinstance(elem, Column):
-        jcols = sc._gateway.new_array(sc._jvm.org.apache.spark.sql.Column, len(cols))
-        for i in range(0, len(jcols)):
-            jcols[i] = cols[i]._jc
-    elif (isinstance(elem, DataFrame)):
-        jcols = sc._gateway.new_array(sc._jvm.org.apache.spark.sql.Dataset, len(cols))
-        for i in range(0, len(jcols)):
-            jcols[i] = cols[i]._jdf
-    elif isinstance(elem, list): # a list of list
-        # use Java List as the outermost container; an Array[Array]
-        # will not always work, because the inner list may be of
-        # different lengths
-        jcols = sc._jvm.java.util.ArrayList()
-        for i in range(0, len(cols)):
-            jcols.append(smv_copy_array(sc, *cols[i]))
-    elif isinstance(elem, tuple):
-        jcols = sc._jvm.java.util.ArrayList()
-        for i in range(0, len(cols)):
-            # Use Java List for tuple
-            je = sc._jvm.java.util.ArrayList()
-            for e in cols[i]: je.append(e)
-            jcols.append(je)
-    else:
-        raise RuntimeError("Cannot copy array of type", type(elem))
-
-    return jcols
-
-def scala_seq_to_list(_jvm, j_seq):
-    """Convert Scala Seq to Python list
-    """
-    j_list = _jvm.scala.collection.JavaConversions.seqAsJavaList(j_seq)
-    return [x for x in j_list]
-
-def check_socket(port):
-    """Check whether the given port is open to bind"""
-    import socket
-    from contextlib import closing
-
-    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
-        try:
-            sock.bind(('', port))
-        except:
-            #Port is not open
-            res = False
-        else:
-            #Port is open
-            res = True
-
-    return res
-
 def is_string(obj):
     """Check whether object is a string type with Python 2 and Python 3 compatibility
     """

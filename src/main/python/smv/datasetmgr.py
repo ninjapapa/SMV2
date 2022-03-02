@@ -16,7 +16,7 @@ This module provides the python entry point to DataSetMgr on scala side
 """
 import smv
 
-from smv.utils import smv_copy_array, scala_seq_to_list, list_distinct, infer_full_name_from_part
+from smv.utils import list_distinct, infer_full_name_from_part
 from smv.datasetresolver import DataSetResolver
 
 class DataSetMgr(object):

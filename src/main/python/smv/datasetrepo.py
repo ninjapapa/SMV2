@@ -18,7 +18,7 @@ import traceback
 
 import smv
 from smv.error import SmvRuntimeError
-from smv.utils import smv_copy_array, lazy_property
+from smv.utils import lazy_property
 
 """Python implementations of IDataSetRepoPy4J and IDataSetRepoFactoryPy4J interfaces
 """
