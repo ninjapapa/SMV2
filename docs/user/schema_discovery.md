@@ -8,22 +8,6 @@ However, when we just download the data from it's original source, there is no S
 data usable for SMV and Spark, we need to create the Schema file. SMV has a Schema discovery tool to
 help user quickly create it.
 
-## Where to put the Csv files
-
-SMV will look for `smv.inputDir` when it load the configuration(see [Application Configuration](app_config.md) for deatails). If multiple places defined the parameter, the order of
-priority from high to low is,
-
-* command line options
-* project user level config file (default: conf/smv-user-conf.props)
-* global user level config file (~/.smv/smv-user-conf.props)
-* app level config file (default: conf/smv-app-conf.props)  
-
-If `smv.inputDir` is not specified, the default value will be a sub-dir of `smv.dataDir` with name `input`.
-`smv.dataDir` must be specified for each Smv application.
-
-Please note that in a cluster environment, the `smv.inputDir` and `smv.dataDir` might be on `HDSF`, hdfs command might be
-needed to setup the directory structures.
-
 ## Discover Schema from Shell
 
 Within the SMV Spark shell environment (see [Run Spark Shell](run_shell.md) for details), a
@@ -48,7 +32,7 @@ Please see [SMV File](smv_input.md) for more CsvAttributes details.
 **Note** SMV currently can't handle Csv files with multiple lines of header. Other tools might be needed
 to remove extra header lines before try to discover schema.
 
-The shell `smvDiscoverSchemaToFile` method will create a schema file on the local running dir with name  `file.schema.toBeReviewed`. As
+The shell `smvDiscoverSchemaToFile` method will create a schema file in the same dir as the csv file with name  `file.schema.toBeReviewed`. As
 hinted by the file name, human need to review the schema file.
 
 Using the `CB1200CZ11.csv` file as an example,
@@ -61,7 +45,7 @@ The path here is relative to the project root dir, where I started the `smv-shel
 
 A `CB1200CZ11.schema.toBeReviewed` file is generated. The first a couple of lines are
 ```
-@delimiter = ,
+@delimiter = |
 @has-header = true
 @quote-char = "
 ST: Integer

@@ -66,14 +66,6 @@ ST EMP     cat_high_emp
 ....
 
 
->>> s2res.smvHist("cat_high_emp")
-Histogram of cat_high_emp: Boolean
-key                      count      Pct    cumCount   cumPct
-false                       20   38.46%          20   38.46%
-true                        32   61.54%          52  100.00%
--------------------------------------------------
-```
-
 ### List all the stages
 ```python
 >>> lsStage()

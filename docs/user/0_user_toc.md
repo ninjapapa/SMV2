@@ -6,7 +6,6 @@
   * [SMV Output (Files/Tables)](smv_output.md)
   * [SMV Schema](smv_schema.md)
   * [SMV Modules](smv_module.md)
-  * [SMV Stages](smv_stages.md)
   * [Modeling with Smv](smv_model.md)
   * [Validation & Data Quality Management (DQM)](dqm.md)
 

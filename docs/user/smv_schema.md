@@ -12,7 +12,6 @@ For example:
 # schema for input
 acct_id: String;  # this is the id
 user_id: String;
-store_id: String[,null];  # "null" is used in the data to represent null-value
 amt: Double;  // transaction amount!
 income: Decimal[10];
 ```
@@ -27,7 +26,7 @@ The schema file can specify the CSV attributes (delimiter, quote char, and heade
 </tr>
 <tr>
 <td>has-header</td>
-<td>true</td>
+<td>false</td>
 <td>Determine if CSV file has header.  Can only contain true/false</td>
 </tr>
 <tr>
@@ -40,6 +39,16 @@ separated files, use "semicolon"</td>
 <td>quote-char</td>
 <td>"</td>
 <td>character used to quote fields (only used if field contains characters that would confuse the parser). For NO-quote-char case use \0</td>
+</tr>
+<tr>
+<td>timestampFormat</td>
+<td>yyyy-MM-dd HH:mm:ss</td>
+<td>File level timestamp format. Spark can't specify different timestamp format for different fields. If that is the case, need to read in as String and convert in code. </td>
+</tr>
+<tr>
+<td>dateFormat</td>
+<td>yyyy-MM-dd</td>
+<td>File level Date format. Spark can't specify different date format for different fields. If that is the case, need to read in as String and convert in code. </td>
 </tr>
 </table>
 
@@ -58,27 +67,15 @@ user_id: String;
 ## userSchema
 Alternatively, the schema can be specified by overriding the `userSchema` method, for example:
 ```Python
-class acct_demo(smv.SmvCsvFile):
+class acct_demo(smv.iomod.SmvCsvInputFile):
   ...
   def userSchema(self):
-    return "acct_id:String;user_id:String;store_id:String[,null];amt:Double;income:Decimal[10]"
+    return "acct_id:String;user_id:String;store_id:String;amt:Double;income:Decimal[10]"
 ```
 
 ## Supported schema types
 ### Native types
 `Integer`, `Long`, `Float`, `Double`, `Boolean`, and `String` types correspond to their corresponding JVM type.
-
-We are planning to support "format" for all the native type, but current version does not support
-format parameter yet.
-
-For `String` type, since both empty value and null value are valid, we sometimes want to distinguish
-them. In that case we have to specify a special string to represent null-string.
-```
-store_id: String[,null]
-```
-Where "null" is used in the data to represent null-value.  
-
-Since we also use Csv to persist intermediate `SmvDataSet` results, internally we use `_SmvStrNull_` to represent null-value.
 
 ### Decimal type
 The `Decimal` type can be used to hold a `BigDecimal` field value.  An optional precision and scale values can also supplied.  They default to 10 and 0 respectively if not defined (same as `BigDecimal`).
@@ -93,11 +90,11 @@ The `Timestamp` type can be used to hold a date/timestamp field value.
 An optional format string can be used when defining a field of type `timestamp`.
 The field format is the standard [`java.text.SimpleDateFormat`](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
 
-If a format string is not specified, it defaults to `"yyyy-MM-dd HH:mm:ss.S"`.
+If a format string is not specified, it defaults to `"yyyy-MM-dd HH:mm:ss"`.
 Please note the difference between `HH`(Hour in day (0-23)) and `hh`(Hour in am/pm (1-12))
 ```
+@timestampFormat = yyyy-MM-dd HH:mm:ss
 std_date: Timestamp;
-evt_time: Timestamp[yyyy-MM-dd HH:mm:ss];
 ```
 
 ### Date type
@@ -105,15 +102,8 @@ The `Date` type is similar to `Timestamp` without the time part.
 An optional format string can be used.
 If a format string is not specified, it defaults to `"yyyy-MM-dd"`
 ```
+@dateFormat = yyyy-MM-dd
 std_date: Date
-evt_date: Date[yyyyMMdd]
+evt_date: Date
 ```
 
-### Map type
-The `map` type can be used to specify a field that contains a map of key/value pairs.
-The field definition must specify the key and value types.
-Only native types are supported as the key/value types.
-```
-str_to_int: map[String, Integer];
-int_to_double: map[Integer, Double];
-```
