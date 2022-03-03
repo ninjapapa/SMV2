@@ -15,6 +15,10 @@ if [ "$1" = "-h" ]; then
   exit 0
 fi
 
+# Unset PYSPARK_DRIVER_PYTHON
+OLD_PYSPARK_DRIVER_PYTHON="$PYSPARK_DRIVER_PYTHON"
+unset PYSPARK_DRIVER_PYTHON
+
 echo "START RUN =============================="
 date
 
@@ -23,3 +27,5 @@ LAUNCH_SCRIPT="${SMV_USER_SCRIPT:-${SMV_TOOLS}/../src/main/python/scripts/runapp
 run_pyspark_with "$LAUNCH_SCRIPT"
 
 date
+
+export PYSPARK_DRIVER_PYTHON="$OLD_PYSPARK_DRIVER_PYTHON"

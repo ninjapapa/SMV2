@@ -109,24 +109,8 @@ Note that for sequence/list type parameters (e.g. smv.stages), a "," or ":" can 
 <td>smv.dataDir</td>
 <td>N/A</td>
 <td>Required</td>
-<td>The top level data directory.
+<td>The top level data directory. Mainly for tmp persistence
 Can be overridden using <code>--data-dir</code> command line option</td>
-</tr>
-
-<tr>
-<td>smv.inputDir</td>
-<td>dataDir<code>/input</code></td>
-<td>Optional</td>
-<td>Data input directory
-Can be overridden using <code>--input-dir</code> command line option</td>
-</tr>
-
-<tr>
-<td>smv.outputDir</td>
-<td>dataDir<code>/output</code></td>
-<td>Optional</td>
-<td>Data output directory
-Can be overridden using <code>--output-dir</code> command line option</td>
 </tr>
 
 <tr>
@@ -180,34 +164,6 @@ Can be overridden using <code>--publish-dir</code> command line option</td>
 
 Please refer [Runtime User Configuration](run_config.md) for details and examples
 of how to use runtime user specified configuration.
-
-## Data Directories configuration
-SMV will access either local or HDFS for CSV input, module persistency and [publish](smv_stages.md).
-User have to specify `smv.dataDir` either through the configuration files or command line.
-
-There are 3 other parameters for specify the detail location of input, persisted and published data:
-* `smv.inputDir`
-* `smv.outputDir`
-* `smv.publishDir`
-
-With only `smv.dataDir` specified, 3 sub-dir, `input`, `output`, `publish` will be used as the default
-values.
-
-Typically for a team setup, each member should have their own project code, and their own `outputDir`.
-
-For example, all members share the same data input under `hdfs:///applications/project/data/landingzone`,
-and share a published dir `hdfs:///applications/project/shareddata`. The `smv-user-conf.props` for a
-team member will look like,
-
-```
-smv.dataDir = hdfs:///user/myunixname/data
-smv.inputDir = hdfs:///applications/project/data/landingzone
-smv.publishDir = hdfs:///applications/project/shareddata
-```
-
-In this case the persisted data will be under `hdfs:///user/myunixname/data/output`, and input/published
-data will in their specified location.
-
 
 ## Spark SQL configuration parameters.
 

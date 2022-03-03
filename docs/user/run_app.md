@@ -57,15 +57,6 @@ See <a href="app_config.md">Application Configuration</a> for details.
 </tr>
 
 <tr>
-<td>--edd</td>
-<td>off</td>
-<td>toggle edd creation on/off.
-<br>
-When enabled, all persisted modules will have a corresponding EDD file that shows some standard statistical information about the result.
-</td>
-</tr>
-
-<tr>
 <td>--graph / -g</td>
 <td>off</td>
 <td>Generate a dependency graph ".dot" file instead of running the given modules.<br>

@@ -1,16 +1,11 @@
 # SMV User Guide Table of Contents
 
-#### Installation & Setup
-  * [Installation](smv_install.md)
-  * [Docker](docker.md)
-
 #### Smv Framework
   * [SMV Introduction](smv_intro.md)
   * [SMV Input (Files/Tables)](smv_input.md)
   * [SMV Output (Files/Tables)](smv_output.md)
   * [SMV Schema](smv_schema.md)
   * [SMV Modules](smv_module.md)
-  * [SMV Stages](smv_stages.md)
   * [Modeling with Smv](smv_model.md)
   * [Validation & Data Quality Management (DQM)](dqm.md)
 
