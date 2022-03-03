@@ -96,22 +96,25 @@ $ ../SMV2/tools/smv-run --run-app
 
 This command must be run from the root of the project.
 
-The output csv file and schema can be found in the `data/output` directory. Note that 'XXXXXXXX' here substitutes for a number which is like the version of the module.
+The output csv file and schema can be found in the `data/output` directory. 
 
 ```shell
-$ cat data/output/stage1.employment.EmploymentByState_XXXXXXXX.csv/part-* | head -5
+$ cat data/output/employment_by_state.csv/part-* | head -5
 "50",245058
 "51",2933665
 "53",2310426
 "54",531834
 "55",2325877
 
-$ cat data/output/stage1.employment.EmploymentByState_XXXXXXXX.schema/part-*
-@delimiter = ,
+$ cat data/output/employment_by_state.schema
 @has-header = false
+@delimiter = ,
 @quote-char = "
-ST: String
-EMP: Long
+@timestampFormat = yyyy-MM-dd HH:mm:ss
+@dateFormat = yyyy-MM-dd
+
+ST: string @metadata={}
+EMP: long @metadata={}
 ```
 
 Or you can run it SMV interactive shell (using PySpark shell):

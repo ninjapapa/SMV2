@@ -1,9 +1,5 @@
 # SMV User Guide Table of Contents
 
-#### Installation & Setup
-  * [Installation](smv_install.md)
-  * [Docker](docker.md)
-
 #### Smv Framework
   * [SMV Introduction](smv_intro.md)
   * [SMV Input (Files/Tables)](smv_input.md)

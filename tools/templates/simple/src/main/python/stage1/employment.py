@@ -3,14 +3,17 @@ import pyspark.sql.functions as F
 
 __all__ = ['EmploymentByState']
 
-class Employment(smv.SmvCsvFile):
-    def path(self):
+class Employment(smv.iomod.SmvCsvInputFile):
+    def connectionName(self):
+        return "myinput"
+
+    def fileName(self):
         return "employment/CB1200CZ11.csv"
 
     def csvReaderMode(self):
         return "DROPMALFORMED"
 
-class EmploymentByState(smv.SmvModule, smv.SmvOutput):
+class EmploymentByState(smv.SmvModule):
     """Python ETL Example: employ by state"""
 
     def requiresDS(self):
@@ -19,3 +22,13 @@ class EmploymentByState(smv.SmvModule, smv.SmvOutput):
     def run(self, i):
         df = i[Employment]
         return df.groupBy(F.col("ST")).agg(F.sum(F.col("EMP")).alias("EMP"))
+
+class EmploymentByStateOut(smv.iomod.SmvCsvOutputFile):
+    def requiresDS(self):
+        return [EmploymentByState]
+
+    def connectionName(self):
+        return "myoutput"
+
+    def fileName(self):
+        return "employment_by_state.csv"

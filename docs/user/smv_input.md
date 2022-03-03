@@ -24,7 +24,7 @@ From a user angle, a connection has a name, a type and some attributes. For exam
 an HDFS directory can be a connection, it have a name which user can define, it has 
 type `hdfs`, and a single attribute `path`.
 
-Differnt connetion types are supported through different SmvHiveConnectionInfo`
+Different connection types are supported through different SmvConnectionInfo`
 classes internally:
 
 * `hdfs` - `SmvHdfsConnectionInfo`
@@ -32,7 +32,7 @@ classes internally:
 * `hive` - `SmvHiveConnectionInfo`
 
 To use a connection, user need to specify the name, type and attributes through
-standard smv-app-conf.props or smv-user-conf.props. For example,
+standard `smv-app-conf.props` or `smv-user-conf.props` under `conf` folder. For example,
 
 ```
 smv.conn.myhdfsinput.type = hdfs
@@ -95,7 +95,7 @@ class acct_demo(smv.iomod.SmvMultiCsvInputFiles):
 ```
 
 By default use the CSV attributes defined in the schema file. If no CSV attributes in the schema file,
-use comma as the delimiter with header.
+use comma as the delimiter without header.
 
 Please see the API doc for all the interface methods.
 
