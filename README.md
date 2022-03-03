@@ -1,17 +1,17 @@
 
-<img height="128" src="https://github.com/TresAmigosSD/SMV/raw/master/docs/images/smv-logo-100px.png"/>
+![SMV2](docs/images/smv2-logo-100px.png)
 
-# Spark Modularized View (SMV)
+# Spark Modularized View 2 (SMV2)
 
-[![Build Status](https://travis-ci.org/TresAmigosSD/SMV.svg?branch=master)](https://travis-ci.org/TresAmigosSD/SMV)
-[![Join the chat at https://gitter.im/TresAmigosSD/SMV](https://badges.gitter.im/TresAmigosSD/SMV.svg)](https://gitter.im/TresAmigosSD/SMV?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+SMV2 is based on [SMV](https://github.com/TresAmigosSD/SMV) with the following changes:
 
-
+* Totally removed the SCALA/JAVA dependency, pure Python
+* Removed most SMV specific DataFrame functions and helpers (additional DF and Column methods) since current PySpark functions are pretty comprehensive, no need and should not encourage using SMV functions
+* Removed [EDD](https://github.com/TresAmigosSD/SMV/blob/master/docs/user/edd.md). Although EDD has an elegant design and implementation, we barely use it in real world projects. Could bring back when see need.
+  
 Spark Modularized View enables users to build enterprise scale applications on Apache Spark platform.
 
-* [Quick Start](#smv-quickstart)
 * [User Guide](docs/user/0_user_toc.md)
-* [Python API docs](http://tresamigossd.github.io/SMV/pythondocs/2.4r1/index.html)
 
 # SMV Quickstart
 
