@@ -13,42 +13,76 @@ Spark Modularized View enables users to build enterprise scale applications on A
 
 * [User Guide](docs/user/0_user_toc.md)
 
-# SMV Quickstart
+# SMV2 Quickstart
 
 ## Installation
 
-### Pip Install
+Current SMV2 is tested on 
 
-SMV is now [distributed as a package on PyPi](https://pypi.org/project/smv/). It comes in two flavors -- with and without a dependnecy on `pyspark`. The first is for consumers who might be installing to a machine outside of a cluster that does not already have `pyspark` installed, while the second is targeted for those installing to a gateway machine in a cluster that already has Spark available in the environment.
+* Spark 2.4.5 (Should work on any Spark 2 distribution)
+* Python 2.7.* (for better interactive experience, install IPython for Python2)
 
-#### Without Pyspark
+SMV2 can easily setup on Linux and MACOS (Intel silicon, M1 chip MAC book does not have full Python2.7 support) env with or without Hadoop. 
 
-```bash
-pip install smv
+### Python 2.7 
+There are a lot tutorial online for how to setup different python versions on your system. Need to make sure you have `pip` command also set up 
+on the Python 2.7 so that you can install python packages as needed.
+
+There are some challenges of using Python 2.7 on M1 chip Mac books. Although Python 2.7 is supported, no easy way to setup `pip`. 
+
+SMV2 should work on Python 3. It is on roadmap to test it on Python 3.
+
+### Setup Spark
+Download a Spark2 bin tar release, such as: https://archive.apache.org/dist/spark/spark-2.4.8/spark-2.4.8-bin-hadoop2.7.tgz
+
+```sh
+$ cd ~
+$ tar zx spark-2.4.8-bin-hadoop2.7.tgz
 ```
 
-#### With Pyspark
+Need to setup `SPARK_HOME` env var in `bashrc` or other profile file for the shell you use:
+```
+export SPARK_HOME="${HOME}/park-2.4.8-bin-hadoop2.7"
+export PATH="${SPARK_HOME}/bin:${PATH}"
+```
+Then reload shell to have the env vars take effect.
 
-```bash
-pip install smv[pyspark]
+You can test spark by:
+
+```sh
+$ pyspark
 ```
 
-### Docker
-
-We avidly recommend using [Docker](https://docs.docker.com/engine/installation/) to install SMV. Using Docker, start an SMV container with
+You should see something like
 
 ```
-docker run -it --rm tresamigos/smv
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  '_/
+   /__ / .__/\_,_/_/ /_/\_\   version 2.3.3
+      /_/
+
+Using Python version 2.7.18 (default, Mar  8 2021 13:02:45)
+SparkSession available as 'spark'.
 ```
 
-If Docker is not an option on your system, see the [installation guide](docs/user/smv_install.md).
+To enhance the interactive experience in `pyspark` shell, you can set the pyshell to IPython by an env var:
+```
+export PYSPARK_DRIVER_PYTHON=ipython2
+```
+where the value of the var is thc command of IPython on your env.
+
+### Install SMV2 
+
+Just download the lasted release from https://github.com/ninjapapa/SMV2/releases. And unarchive to `${HOME}` dir. It typically under `SMV2` folder.
 
 ## Create Example App
 
 SMV provides a shell script to easily create template applications. We will use a simple example app to explore SMV.
 
 ```shell
-$ smv-init -s MyApp
+$ SMV2/tools/smv-init -s MyApp
 ```
 
 ## Run Example App
@@ -56,7 +90,8 @@ $ smv-init -s MyApp
 Run the entire application with
 
 ```shell
-$ smv-run --run-app
+$ cd MyAPP
+$ ../SMV2/tools/smv-run --run-app
 ```
 
 This command must be run from the root of the project.
@@ -75,9 +110,32 @@ $ cat data/output/stage1.employment.EmploymentByState_XXXXXXXX.schema/part-*
 @delimiter = ,
 @has-header = false
 @quote-char = "
-ST: String[,_SmvStrNull_]
+ST: String
 EMP: Long
 ```
+
+Or you can run it SMV interactive shell (using PySpark shell):
+```shell
+$ cd MyApp
+$ ../SMV2/tools/smv-shell
+```
+
+You can run some command in the shell like below:
+```
+In [1]: ls()
+
+stage1:
+  (I) employment.Employment
+  (O) employment.EmploymentByState
+
+In [2]: data1 = df("EmploymentByState")
+
+In [3]: data1.peek()
+ST : string = 51
+EMP : bigint = 2933665
+```
+
+Basically you can access the output of an `SmvModule` (e.g. "EmploymentByState") by calling `df` function and get the `DataFrame` to play with.
 
 ## Edit Example App
 
@@ -92,91 +150,39 @@ class EmploymentByState(SmvModule, SmvOutput):
 
     def run(self, i):
         df = i[inputdata.Employment]
-        df1 = df.groupBy(col("ST")).agg(sum(col("EMP")).alias("EMP"))
-        return df1
+        return df.groupBy(col("ST")).agg(sum(col("EMP")).alias("EMP"))
 ```
 
-The `run` method of a module defines the operations needed to get the output based on the input. We would like to filter the table based on if each row's state is greater or less than 1,000,000. To accomplish this, we need to add a filter to the `run` method:
+The `run` method of a module defines the operations needed to get the output based on the input. We would like to create a new column to indicate 
+whether a state has more than 1M employees:
 
 ```shell
   def run(self, i):
       df = i[inputdata.Employment]
       df1 = df.groupBy(col("ST")).agg(sum(col("EMP")).alias("EMP"))
-      df2 = df1.filter((col("EMP") > lit(1000000)))
-      return df2
+      df2 = df1.withColumn('is_large', F.col("EMP") > 1000000)
+      return df
 ```
 
-Now run the module again with
+The best practice is to open an Smv-shell and an editor in a different window (either VS-Code or just Vim) of the code editing. 
+After finished editing and save the file, you can access the new module results from the shell.
 
-```shell
-smv-run --run-app
-```
-(make sure you run this from the from the root of the project)
-
-Inspect the new output to see the changes.
-
-```shell
-$ cat data/output/stage1.employment.EmploymentByState_XXXXXXXX.csv/part-* | head -5
-"51",2933665
-"53",2310426
-"55",2325877
-"01",1501148
-"04",2027240
-
-$ cat data/output/stage1.employment.EmploymentByState_XXXXXXXX.schema/part-*
-@delimiter = ,
-@has-header = false
-@quote-char = "
-ST: String[,_SmvStrNull_]
-EMP: Long
-```
-
-### Publish to Hive Table
-
-If you would like to publish your module to a hive table, add a `tableName` method to EmploymentByState. It should return the name of the Hive table as a string.
-
-```python
-class EmploymentByState(SmvModule, SmvOutput):
-    ...
-    def tableName(self):
-        return "myTableName"
-    def requiresDS(self): ...
-    def run(self, i): ...
-```
-
-Then use
-```bash
-$ smv-run --publish-hive -m stage1.employment.EmploymentByState
-```
-
-## smv-pyshell
-
-We can also view the results in the smv-pyshell. To start the shell, run
+For example continuing on the previous smv-shell example, we can call `df` method again
 
 ```
-$ smv-pyshell
+In [4]: data2 = df("EmploymentByState")
+
+In [5]: data2.peek()
+ST : string = 51
+EMP : bigint = 2933665
+is_large : boolean = True
+
+In [6]: data1.peek()
+ST : string = 51
+EMP : bigint = 2933665
 ```
 
-To get the `DataFrame` of `EmploymentByState`,
-
-```shell
->>> x = df('stage1.employment.EmploymentByState')
-
-```
-
-To peek at the first row of results,
-
-```shell
->>> x.peek(1)
-ST:String            = 50
-EMP:Long             = 245058
-cat_high_emp:Boolean = false
-```
+Please note, at this point you can still access the old DataFrame `data1`, so you can even do a comparison check between the new one 
+and old one.
 
 See the [user guide](docs/user/0_user_toc.md) for further examples and documentation.
-
-
-
-# Contributions
-
-Please see [SMV Development Best Practices](docs/dev/00_DevProcess/best_practice.md).
