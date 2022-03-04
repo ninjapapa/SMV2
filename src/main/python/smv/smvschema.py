@@ -16,6 +16,7 @@ import json
 import pyspark.sql.types as T
 from smv.error import SmvRuntimeError
 from smv.utils import is_string
+from csv_attributes import CsvAttributes
 
 # make it as a class with spark-schema, attrs (consider date, time formats as attr)
 class SmvSchema(object):
@@ -27,13 +28,7 @@ class SmvSchema(object):
         elif isinstance(_schema, T.StructType):
             (s, a) = (
                 _schema,
-                {
-                    "has-header": "false",
-                    "delimiter": ",",
-                    "quote-char": "\"",
-                    "dateFormat": "yyyy-MM-dd",
-                    "timestampFormat": "yyyy-MM-dd HH:mm:ss"
-                }
+                CsvAttributes(),        # Default csv attributes
             )
         else:
             raise SmvRuntimeError("Unsupported schema type: {}".format(type(_schema)))

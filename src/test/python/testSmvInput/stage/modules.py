@@ -37,6 +37,12 @@ class D1WithError(SmvCsvStringData):
     def dataStr(self):
         return "a1,10;a2,x;a3,2;a4,;a5,y"
 
+class D1WithEscape(SmvCsvStringData):
+    def schemaStr(self):
+        return "a:String;b:Integer"
+    def dataStr(self):
+        return 'a1,10;""a3"",2;a4,'
+
 class MultiCsv(SmvMultiCsvFiles):
     def dir(self):
         return "multiCsvTest"
