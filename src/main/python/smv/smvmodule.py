@@ -102,7 +102,8 @@ class SparkDfGenMod(SmvGenericModule):
         return (res, secondsElapsed)
 
     def persistStrategy(self):
-        return SmvParquetPersistenceStrategy(self.smvApp, self.versioned_fqn)
+        path = self.smvApp.output_path_from_base(self.versioned_fqn, 'parquet')
+        return SmvParquetPersistenceStrategy(self.smvApp, path)
 
     # @lazy_property
     # def _dqmValidator(self):
@@ -268,7 +269,8 @@ class SmvModel(SmvProcessModule):
         return "Model"
 
     def persistStrategy(self):
-        return SmvPicklablePersistenceStrategy(self.smvApp, self.versioned_fqn)
+        path = self.smvApp.output_path_from_base(self.versioned_fqn, "pickle")
+        return SmvPicklablePersistenceStrategy(self.smvApp, path)
 
 
 class SmvModelExec(SmvModule):

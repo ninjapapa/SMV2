@@ -173,6 +173,15 @@ class SmvApp(object):
         dds = self.py_smvconf.all_data_dirs()
         return namedtuple("DataDirs", dds.keys())(*dds.values())
 
+    def output_path_from_base(self, basename, postfix = None):
+        """Add outputpather base file name"""
+        output_dir = self.all_data_dirs().outputDir
+        if postfix is None:
+            file_path = "{}/{}".format(output_dir, basename)
+        else:
+            file_path = "{}/{}.{}".format(output_dir, basename, postfix)
+        return file_path
+
     def appName(self):
         return self.py_smvconf.app_name()
 
@@ -553,6 +562,8 @@ class SmvApp(object):
         if attrs.get('quote-char'):
             builder = builder.option("quote", attrs.get('quote-char'))
 
+        # For PERMISSIVE mode add a column named "_corrupt_record" as string to hold 
+        # corrupted records and be able to output to "data/output" 
         if (mode == "PERMISSIVE"):
             builder = builder.option("columnNameOfCorruptRecord", "_corrupt_record")
 

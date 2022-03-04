@@ -18,6 +18,7 @@ from test_support.test_runner import SmvTestRunner
 if __name__ == "__main__":
     print("Testing with Python " + sys.version)
 
+    TestConfig.rm_hivedir()
     TestPath = TestConfig.test_path()
 
     runner = SmvTestRunner(TestPath)

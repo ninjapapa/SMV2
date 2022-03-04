@@ -123,8 +123,8 @@ class SmvJsonOnHdfsPersistenceStrategy(SmvFileOnHdfsPersistenceStrategy):
 
 
 class SmvPicklablePersistenceStrategy(SmvFileOnHdfsPersistenceStrategy):
-    def __init__(self, smvApp, versioned_fqn, file_path=None):
-        super(SmvPicklablePersistenceStrategy, self).__init__(smvApp, versioned_fqn, 'pickle', file_path)
+    def __init__(self, smvApp, path):
+        super(SmvPicklablePersistenceStrategy, self).__init__(smvApp, None, None, path)
 
     def _read(self):
         # reverses result of applying _write. see _write for explanation.
@@ -153,8 +153,8 @@ class SmvParquetPersistenceStrategy(SmvFileOnHdfsPersistenceStrategy):
                 a data file path. However if "file_path" is provided, all the other 2
                 parameters are ignored
     """
-    def __init__(self, smvApp, versioned_fqn, file_path=None):
-        super(SmvParquetPersistenceStrategy, self).__init__(smvApp, versioned_fqn, 'parquet', file_path)
+    def __init__(self, smvApp, path):
+        super(SmvParquetPersistenceStrategy, self).__init__(smvApp, None, None, path)
 
     @property
     def _semaphore_path(self):
@@ -327,7 +327,7 @@ class SmvSchemaOnHdfsIoStrategy(SmvIoStrategy):
 
 class SmvCsvOnHdfsIoStrategy(SmvIoStrategy):
     """Simply read/write of csv, given schema. Not for persisting"""
-    def __init__(self, smvApp, path, smvSchema, mode="FAILFAST", write_mode="overwrite"):
+    def __init__(self, smvApp, path, smvSchema=None, mode="FAILFAST", write_mode="overwrite"):
         self.smvApp = smvApp
         self._file_path = path
         self._smv_schema = smvSchema
