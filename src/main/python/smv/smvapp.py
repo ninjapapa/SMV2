@@ -173,6 +173,15 @@ class SmvApp(object):
         dds = self.py_smvconf.all_data_dirs()
         return namedtuple("DataDirs", dds.keys())(*dds.values())
 
+    def output_path_from_base(self, basename, postfix = None):
+        """Add outputpather base file name"""
+        output_dir = self.all_data_dirs().outputDir
+        if postfix is None:
+            file_path = "{}/{}".format(output_dir, basename)
+        else:
+            file_path = "{}/{}.{}".format(output_dir, basename, postfix)
+        return file_path
+
     def appName(self):
         return self.py_smvconf.app_name()
 

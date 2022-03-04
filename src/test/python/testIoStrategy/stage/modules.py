@@ -21,7 +21,8 @@ class M1(SmvModule):
         return self.smvApp.createDF("k:String;v:Integer", "a,1;b,2")
 
     def persistStrategy(self):
-        return SmvParquetPersistenceStrategy(self.smvApp, self.versioned_fqn)
+        path = self.smvApp.output_path_from_base(self.versioned_fqn, 'parquet')
+        return SmvParquetPersistenceStrategy(self.smvApp, path)
 
 class M2(SmvModule):
     def requiresDS(self):
