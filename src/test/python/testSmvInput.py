@@ -136,6 +136,12 @@ id:integer"""
         corrupted_path = self.smvApp.output_path_from_base("{}_corrupted".format(fqn), "csv")
         self.assertTrue(os.path.exists(corrupted_path))
 
+    def test_SmvCsvStringData_with_double_quote_escape(self):
+        fqn = "stage.modules.D1WithEscape"
+        df = self.df(fqn)
+        expect = self.createDF("a:String;b:Integer", 'a1,10;""a3"",2;a4,')
+        self.should_be_same(expect, df)
+
     def test_SmvMultiCsvFiles(self):
         self.createTempInputFile("multiCsvTest/f1", "col1\na\n")
         self.createTempInputFile("multiCsvTest/f2", "col1\nb\n")
