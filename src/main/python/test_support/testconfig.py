@@ -21,6 +21,20 @@ from smv.smvapp import SmvApp
 class TestConfig(object):
     smvApp = None
 
+    @classmethod 
+    def hivedir(cls):
+        import tempfile
+        import getpass
+        hivedir = "file://{0}/{1}/smv_hive_test".format(tempfile.gettempdir(), getpass.getuser())
+        return hivedir
+
+    @classmethod
+    def rm_hivedir(cls):
+        import shutil
+        hivedir = cls.hivedir()
+        noprefix = hivedir.replace("file://", "")
+        shutil.rmtree(noprefix)
+
     @classmethod
     def sparkSession(cls):
         if not hasattr(cls, "spark"):
@@ -35,9 +49,7 @@ class TestConfig(object):
             #   * Create python SparkSession
             jgw = launch_gateway(None)
             jvm = jgw.jvm
-            import tempfile
-            import getpass
-            hivedir = "file://{0}/{1}/smv_hive_test".format(tempfile.gettempdir(), getpass.getuser())
+            hivedir = cls.hivedir()
             sConf = SparkConf(False, _jvm=jvm).set("spark.sql.test", "")\
                                               .set("spark.sql.hive.metastore.barrierPrefixes",
                                                    "org.apache.spark.sql.hive.execution.PairSerDe")\
