@@ -11,8 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import abc
 import os
+import re
 import json
 
 from pyspark.sql import DataFrame
@@ -31,6 +33,11 @@ from smv.utils import lazy_property, smvhash
 from smv.error import SmvRuntimeError
 from smv.smvhdfs import SmvHDFS
 
+
+if sys.version_info >= (3, 4):
+    ABC = abc.ABC
+else:
+    ABC = abc.ABCMeta('ABC', (), {})
 
 class SmvJdbcInputTable(SparkDfGenMod, SmvInput, AsTable):
     """
@@ -90,24 +97,24 @@ class SmvHiveInputTable(SparkDfGenMod, SmvInput, AsTable):
         return res
 
 
-class WithUserSchema(object):
-    """"""
+class SchemaString(ABC):
+    """Abstract class to provide a schema string (any form, could be SmvSchema string for CSV or as JSON string)
+    """
+    @abc.abstractmethod
+    def schemaString(self):
+        """Return the schema string"""
+
     def userSchema(self):
         """User-defined schema
-
-            Override this method to define your own schema for the target file.
-            Schema declared in this way take priority over .schema files. For Csv
-            input, Schema should be specified in the format
-            "colName1:colType1;colName2:colType2"
+            Optional method. Override this method to define your own schema string
 
             Returns:
                 (string):
         """
         return None
 
-
-class InputFileWithSchema(SmvInput, WithUserSchema, AsFile):
-    """Base class for input files which has input schema"""
+class WithSchemaFile(SchemaString, SmvInput, AsFile):
+    """Implementation of SchemaString from input schema file"""
 
     def schemaConnectionName(self):
         """Optional method to specify a schema connection"""
@@ -157,6 +164,13 @@ class InputFileWithSchema(SmvInput, WithUserSchema, AsFile):
         return os.path.join(self._get_schema_connection().path,
             self._get_schema_file_name())
 
+    def schemaString(self):
+        if (self.userSchema() is not None):
+            return self.userSchema()
+        else:
+            s_path = self._full_schema_path()
+            return SmvTextOnHdfsIoStrategy(self.smvApp, s_path).read()
+
     def _file_hash(self, path, msg):
         _file_path_hash = smvhash(path)
         smv.logger.debug("{} {} file path hash: {}".format(self.fqn(), msg, _file_path_hash))
@@ -190,7 +204,7 @@ class InputFileWithSchema(SmvInput, WithUserSchema, AsFile):
         return res
 
 
-class SmvXmlInputFile(SparkDfGenMod, InputFileWithSchema):
+class SmvXmlInputFile(SparkDfGenMod, WithSchemaFile):
     """Input from file in XML format
         User need to implement:
 
@@ -209,18 +223,11 @@ class SmvXmlInputFile(SparkDfGenMod, InputFileWithSchema):
 
     def _schema(self):
         """load schema from userSchema (as a json string) or a json file"""
-        def str_to_schema(s):
+        try:
+            s = self.schemaString()
             return StructType.fromJson(json.loads(s))
-
-        if (self.userSchema() is not None):
-            return str_to_schema(self.userSchema())
-        else:
-            s_path = self._get_schema_file_name()
-            try:
-                s = SmvTextOnHdfsIoStrategy(self.smvApp, s_path).read()
-                return str_to_schema(s)
-            except:
-                return None
+        except:
+            return None
 
     def _get_input_data(self):
         """readin xml data"""
@@ -232,35 +239,7 @@ class SmvXmlInputFile(SparkDfGenMod, InputFileWithSchema):
             self._schema()
         ).read()
 
-class WithCsvParser(SmvInput):
-    """Mixin for input modules to parse csv data"""
-
-    def csvReaderMode(self):
-        """When set, any parsing error will throw an exception to make sure we can stop early.
-            To tolerant some parsing error, user can
-
-            - Override csvReadermode 
-                "DROPMALFORMED"
-                "PERMISSIVE"
-        """
-        return "FAILFAST"
-
-    def doRun(self, know):
-        raw_csv = super(WithCsvParser, self).doRun(know)
-        if (self.csvReaderMode() == "PERMISSIVE"):
-            # When using PERMISSive mode, corrupted records are kept in a new column
-            # The following will extract the clean records and return, but output the
-            # corrupted records to a file
-            # column name "_corrupt_record" is defined in buildCsvIO() of SmvApp
-            clean_df = raw_csv.where(F.col("_corrupt_record").isNull()).drop("_corrupt_record")
-            corrupted = raw_csv.where(F.col("_corrupt_record").isNotNull()).select("_corrupt_record")
-            path = self.smvApp.output_path_from_base("{}_corrupted".format(self.fqn()), "csv")
-            SmvCsvOnHdfsIoStrategy(self.smvApp, path).write(corrupted)
-            return clean_df
-        else:
-            return raw_csv
-
-class WithSmvSchema(InputFileWithSchema):
+class WithSmvSchema(SchemaString):
     def csvAttr(self):
         """Specifies the csv file format.  Corresponds to the CsvAttributes case class in Scala.
             Derive from smvSchema if not specified by user.
@@ -278,22 +257,56 @@ class WithSmvSchema(InputFileWithSchema):
                 - schema_file_name under schema_connection
 
         """
-        if (self.userSchema() is not None):
-            schema = SmvSchema(self.userSchema())
-        else:
-            schema_file_name = self._get_schema_file_name()
-            conn = self._get_schema_connection()
-            abs_file_path = os.path.join(conn.path, schema_file_name)
-
-            schema = SmvSchemaOnHdfsIoStrategy(self.smvApp, abs_file_path).read()
+        one_str = re.sub(r"[\r\n]+", ";", self.schemaString().encode("utf-8"))
+        smv_schema = SmvSchema(one_str)
 
         if (self.csvAttr() is not None):
-            return schema.addCsvAttributes(self.csvAttr())
+            return smv_schema.addCsvAttributes(self.csvAttr())
         else:
-            return schema
+            return smv_schema
 
 
-class SmvCsvInputFile(SparkDfGenMod, WithSmvSchema, WithCsvParser):
+class WithCsvParser(WithSmvSchema, SmvInput):
+    """Mixin for input modules to parse csv data"""
+
+    def csvReaderMode(self):
+        """When set, any parsing error will throw an exception to make sure we can stop early.
+            To tolerant some parsing error, user can
+
+            - Override csvReadermode 
+                "DROPMALFORMED"
+                "PERMISSIVE"
+        """
+        return "FAILFAST"
+
+    def smvSchema(self):
+        orig_smvSchema = super(WithCsvParser, self).smvSchema()
+        if (self.csvReaderMode() == "PERMISSIVE"):
+            s = orig_smvSchema.schema       # StructType
+            s = s.add("_corrupt_record", StringType(), True)
+            return SmvSchema(s).updateAttrs(orig_smvSchema.attributes)
+        else:
+            return orig_smvSchema
+
+    def doRun(self, know):
+        raw_csv = super(WithCsvParser, self).doRun(know)
+        if (self.csvReaderMode() == "PERMISSIVE"):
+            # When using PERMISSive mode, corrupted records are kept in a new column
+            # The following will extract the clean records and return, but output the
+            # corrupted records to a file
+            # column name "_corrupt_record" is defined in buildCsvIO() of SmvApp
+            raw_csv.cache()
+            clean_df = raw_csv.where(F.col("_corrupt_record").isNull()).drop("_corrupt_record")
+            corrupted = raw_csv.where(F.col("_corrupt_record").isNotNull()).select("_corrupt_record")
+            path = self.smvApp.output_path_from_base("{}_corrupted".format(self.fqn()), "csv")
+            SmvCsvOnHdfsIoStrategy(self.smvApp, path).write(corrupted)
+            raw_csv.unpersist()
+            return clean_df
+        else:
+            return raw_csv
+
+
+class SmvCsvInputFile(SparkDfGenMod, WithCsvParser, WithSchemaFile):
     """Csv file input
         User need to implement:
 
@@ -319,7 +332,7 @@ class SmvCsvInputFile(SparkDfGenMod, WithSmvSchema, WithCsvParser):
         ).read()
 
 
-class SmvMultiCsvInputFiles(SparkDfGenMod, WithSmvSchema, WithCsvParser):
+class SmvMultiCsvInputFiles(SparkDfGenMod, WithCsvParser, WithSchemaFile):
     """Multiple Csv files under the same dir input
         User need to implement:
 
@@ -380,7 +393,7 @@ class SmvMultiCsvInputFiles(SparkDfGenMod, WithSmvSchema, WithCsvParser):
         return combinedDf
 
 
-class SmvCsvStringInputData(SparkDfGenMod, WithUserSchema, WithCsvParser):
+class SmvCsvStringInputData(SparkDfGenMod, WithCsvParser):
     """Input data defined by a schema string and data string
 
         User need to implement:
@@ -390,17 +403,8 @@ class SmvCsvStringInputData(SparkDfGenMod, WithUserSchema, WithCsvParser):
             - csvReaderMode(): optional
     """
 
-    def _extendSchemaStr(self):
-        if (self.csvReaderMode() == "PERMISSIVE"):
-            return self.userSchema() + ";_corrupt_record:String"
-        else:
-            return self.userSchema()
-
-    def smvSchema(self):
-        return SmvSchema(self._extendSchemaStr()) 
-
     def _get_input_data(self):
-        return self.smvApp.createDF(self._extendSchemaStr(), self.dataStr(), self.csvReaderMode())
+        return self.smvApp.createDF(self.smvSchema(), self.dataStr(), self.csvReaderMode())
 
     @abc.abstractmethod
     def schemaStr(self):
@@ -412,7 +416,7 @@ class SmvCsvStringInputData(SparkDfGenMod, WithUserSchema, WithCsvParser):
                 (str): schema
         """
 
-    def userSchema(self):
+    def schemaString(self):
         return self.schemaStr()
 
     @abc.abstractmethod

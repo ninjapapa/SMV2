@@ -141,6 +141,16 @@ class NewCsvFile1(SmvCsvInputFile):
     def fileName(self):
         return "csvtest/csv1.csv"
 
+class NewCsvFileWithError(SmvCsvInputFile):
+    def csvReaderMode(self):
+        return "PERMISSIVE"
+
+    def connectionName(self):
+        return "my_hdfs"
+
+    def fileName(self):
+        return "csvtest/csv2.csv"
+
 class NewCsvFile2(SmvCsvInputFile):
     def connectionName(self):
         return "my_hdfs"
