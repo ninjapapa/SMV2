@@ -295,10 +295,12 @@ class WithCsvParser(WithSmvSchema, SmvInput):
             # The following will extract the clean records and return, but output the
             # corrupted records to a file
             # column name "_corrupt_record" is defined in buildCsvIO() of SmvApp
+            raw_csv.cache()
             clean_df = raw_csv.where(F.col("_corrupt_record").isNull()).drop("_corrupt_record")
             corrupted = raw_csv.where(F.col("_corrupt_record").isNotNull()).select("_corrupt_record")
             path = self.smvApp.output_path_from_base("{}_corrupted".format(self.fqn()), "csv")
             SmvCsvOnHdfsIoStrategy(self.smvApp, path).write(corrupted)
+            raw_csv.unpersist()
             return clean_df
         else:
             return raw_csv

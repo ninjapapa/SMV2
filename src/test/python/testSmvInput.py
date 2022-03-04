@@ -252,12 +252,13 @@ class SmvNewInputTest(SmvBaseTest):
             'smv.conn.my_hdfs_2.path=' + data_path + "/conn2",
         ]
 
-    def _create_csv_file(self, name):
-        self.createTempInputFile(name,
-            """"Name","ID"
+    def _create_csv_file(self, name, withError = False):
+        data = """"Name","ID"
 Bob,1
 Fred,2"""
-        )
+        if (withError):
+            data = data + "\nKarl,badid"
+        self.createTempInputFile(name, data)
 
     def _create_csv_schema(self, name):
         self.createTempInputFile(name,
@@ -273,6 +274,16 @@ id:integer"""
         res = self.df("stage.modules.NewCsvFile1")
         exp = self.createDF("name:String;id:Integer", "Bob,1;Fred,2")
         self.should_be_same(res, exp)
+
+    def test_basic_csv_input_with_error(self):
+        self._create_csv_file("csvtest/csv2.csv", True)
+        self._create_csv_schema("csvtest/csv2.schema")
+        fqn = "stage.modules.NewCsvFileWithError"
+        df = self.df(fqn)
+        exp = self.createDF("name:String;id:Integer", "Bob,1;Fred,2")
+        self.should_be_same(exp, df)
+        corrupted_path = self.smvApp.output_path_from_base("{}_corrupted".format(fqn), "csv")
+        self.assertTrue(os.path.exists(corrupted_path))
 
     def test_csv_diff_schema_conn(self):
         self._create_csv_file("csvtest/csv1.csv")
