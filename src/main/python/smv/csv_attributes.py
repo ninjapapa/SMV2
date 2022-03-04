@@ -16,11 +16,12 @@ This module defined the SmvRunConfig class which can be mixed-in into an
 SmvModule to get user configuration parameters at run-time.
 """
 
-from smv.smvapp import SmvApp
-
-def CsvAttributes(delimiter=',', quotechar='"', hasHeader="false"):
+def CsvAttributes(delimiter=',', quotechar='"', hasHeader="false", escape='"'):
     return {
         "has-header": hasHeader,
         "delimiter": delimiter,
         "quote-char": quotechar,
+        "escape": escape,
+        "dateFormat": "yyyy-MM-dd",
+        "timestampFormat": "yyyy-MM-dd HH:mm:ss"
     }

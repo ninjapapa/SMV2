@@ -20,6 +20,7 @@ import sys
 import re
 import pkgutil
 from collections import namedtuple
+from smv.csv_attributes import CsvAttributes
 
 from pyspark.java_gateway import launch_gateway
 
@@ -520,7 +521,7 @@ class SmvApp(object):
     def outputDir(self):
         return self.all_data_dirs().outputDir
 
-    def discoverSchema(self, path, attrs = {}):
+    def discoverSchema(self, path, attrs = CsvAttributes()):
         spark = self.sparkSession
         builder = spark.read\
             .option("mode", "DROPMALFORMED")\
@@ -534,6 +535,8 @@ class SmvApp(object):
             builder = builder.option("timestampFormat", attrs.get('timestampFormat'))
         if attrs.get('delimiter'):
             builder = builder.option("sep", attrs.get('delimiter'))
+        if attrs.get('escape'):
+            builder = builder.option("escape", attrs.get('escape'))
         if attrs.get('quote-char'):
             builder = builder.option("quote", attrs.get('quote-char'))
 
@@ -560,6 +563,8 @@ class SmvApp(object):
             builder = builder.option("header", attrs.get('has-header'))
         if attrs.get('delimiter'):
             builder = builder.option("sep", attrs.get('delimiter'))
+        if attrs.get('escape'):
+            builder = builder.option("escape", attrs.get('escape'))
         if attrs.get('quote-char'):
             builder = builder.option("quote", attrs.get('quote-char'))
 
