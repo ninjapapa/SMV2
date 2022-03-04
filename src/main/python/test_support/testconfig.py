@@ -33,7 +33,10 @@ class TestConfig(object):
         import shutil
         hivedir = cls.hivedir()
         noprefix = hivedir.replace("file://", "")
-        shutil.rmtree(noprefix)
+        try:
+            shutil.rmtree(noprefix)
+        except:
+            pass
 
     @classmethod
     def sparkSession(cls):

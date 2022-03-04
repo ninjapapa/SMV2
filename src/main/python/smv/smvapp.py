@@ -36,6 +36,7 @@ from smv.conn import SmvHdfsConnectionInfo
 from smv.smvmetadata import SmvMetaHistory
 from smv.smvhdfs import SmvHDFS
 from smv.smvschema import SmvSchema
+from smv.utils import is_string
 from py4j.protocol import Py4JJavaError
 
 
@@ -569,9 +570,12 @@ class SmvApp(object):
 
         return builder.schema(s) if (wr == 'r') else builder
 
-    def createDF(self, schemaStr, data = "", mode = "FAILFAST"):
+    def createDF(self, schema, data = "", mode = "FAILFAST"):
         spark = self.sparkSession
-        smvSchema = SmvSchema(schemaStr)
+        if (is_string(schema)):
+            smvSchema = SmvSchema(schema)
+        else:
+            smvSchema = schema
         d = spark.sparkContext.parallelize(data.split(";"))
         reader_builder = self.buildCsvIO(smvSchema, "r", None, mode)
         dataframe = reader_builder.csv(d)

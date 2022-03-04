@@ -13,7 +13,7 @@
 import smv
 
 
-class R0(smv.SmvCsvStringData):
+class R0(smv.iomod.SmvCsvStringInputData):
     def schemaStr(self):
         return "a:String;b:Integer"
 
