@@ -13,6 +13,7 @@
 
 import unittest
 import json
+import os
 
 from test_support.smvbasetest import SmvBaseTest
 from smv import *
@@ -127,25 +128,13 @@ id:integer"""
         expect = self.createDF("a:String;b:Integer;c:Date[MM/dd/yyyy]", "x,10,2/28/2021;y,1,3/12/2011")
         self.should_be_same(expect, df)
 
-    # TODO: create a test for mode
-    # def test_SmvCsvStringData_with_error(self):
-    #     fqn = "stage.modules.D1WithError"
-    #     try:
-    #         df = self.df(fqn)
-    #         # df.show()
-    #         # +----+----+---------------+
-    #         # |   a|   b|_corrupt_record|
-    #         # +----+----+---------------+
-    #         # |  a1|  10|           null|
-    #         # |null|null|           a2,x|
-    #         # |  a3|   2|           null|
-    #         # |  a4|null|           null|
-    #         # |null|null|           a5,y|
-    #         # +----+----+---------------+
-    #     except SmvDqmValidationError as e:
-    #         self.assertEqual(e.dqmValidationResult["passed"], False)
-    #         self.assertEqual(e.dqmValidationResult["dqmStateSnapshot"]["totalRecords"], 3)
-    #         self.assertEqual(e.dqmValidationResult["dqmStateSnapshot"]["parseError"]["total"],2)
+    def test_SmvCsvStringData_with_error(self):
+        fqn = "stage.modules.D1WithError"
+        df = self.df(fqn)
+        expect = self.createDF("a:String;b:Integer", "a1,10;a3,2;a4,")
+        self.should_be_same(expect, df)
+        corrupted_path = self.smvApp.output_path_from_base("{}_corrupted".format(fqn), "csv")
+        self.assertTrue(os.path.exists(corrupted_path))
 
     def test_SmvMultiCsvFiles(self):
         self.createTempInputFile("multiCsvTest/f1", "col1\na\n")

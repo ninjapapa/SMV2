@@ -18,6 +18,7 @@ import json
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StructField, StringType
 from py4j.protocol import Py4JJavaError
+import pyspark.sql.functions as F
 
 import smv
 from smv.iomod.base import SmvInput, AsTable, AsFile
@@ -243,6 +244,21 @@ class WithCsvParser(SmvInput):
                 "PERMISSIVE"
         """
         return "FAILFAST"
+
+    def doRun(self, know):
+        raw_csv = super(WithCsvParser, self).doRun(know)
+        if (self.csvReaderMode() == "PERMISSIVE"):
+            # When using PERMISSive mode, corrupted records are kept in a new column
+            # The following will extract the clean records and return, but output the
+            # corrupted records to a file
+            # column name "_corrupt_record" is defined in buildCsvIO() of SmvApp
+            clean_df = raw_csv.where(F.col("_corrupt_record").isNull()).drop("_corrupt_record")
+            corrupted = raw_csv.where(F.col("_corrupt_record").isNotNull()).select("_corrupt_record")
+            path = self.smvApp.output_path_from_base("{}_corrupted".format(self.fqn()), "csv")
+            SmvCsvOnHdfsIoStrategy(self.smvApp, path).write(corrupted)
+            return clean_df
+        else:
+            return raw_csv
 
 class WithSmvSchema(InputFileWithSchema):
     def csvAttr(self):

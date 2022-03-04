@@ -562,6 +562,8 @@ class SmvApp(object):
         if attrs.get('quote-char'):
             builder = builder.option("quote", attrs.get('quote-char'))
 
+        # For PERMISSIVE mode add a column named "_corrupt_record" as string to hold 
+        # corrupted records and be able to output to "data/output" 
         if (mode == "PERMISSIVE"):
             builder = builder.option("columnNameOfCorruptRecord", "_corrupt_record")
 

@@ -30,7 +30,7 @@ class D1WithDate(SmvCsvStringData):
 
 class D1WithError(SmvCsvStringData):
     def csvReaderMode(self):
-        return "DROPMALFORMED"
+        return "PERMISSIVE"
 
     def schemaStr(self):
         return "a:String;b:Integer"

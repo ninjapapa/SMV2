@@ -327,7 +327,7 @@ class SmvSchemaOnHdfsIoStrategy(SmvIoStrategy):
 
 class SmvCsvOnHdfsIoStrategy(SmvIoStrategy):
     """Simply read/write of csv, given schema. Not for persisting"""
-    def __init__(self, smvApp, path, smvSchema, mode="FAILFAST", write_mode="overwrite"):
+    def __init__(self, smvApp, path, smvSchema=None, mode="FAILFAST", write_mode="overwrite"):
         self.smvApp = smvApp
         self._file_path = path
         self._smv_schema = smvSchema
