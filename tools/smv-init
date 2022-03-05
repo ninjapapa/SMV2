@@ -77,7 +77,6 @@ if [ $# -ne 1 ]; then
     echo "USAGE: $0 [-q][-o] [-s|-t|-b] [-d] [-n] [--mn] project_path"
     echo "project types:"
     echo "  -s: simple (default)"
-    echo "  -e: enterprise"
     echo "  -t: test (for developers only)"
     echo "  -b: blank/empty project"
     echo "  -d: data directory"
