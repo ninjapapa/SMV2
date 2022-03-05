@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from smv import SmvApp, SmvModule, SmvOutput, SmvHiveTable
+from smv import SmvApp, SmvModule, SmvOutput 
 from smv.iomod import SmvHiveInputTable, SmvHiveOutputTable
 
 class M(SmvModule, SmvOutput):
@@ -27,9 +27,6 @@ class MAdv(SmvModule, SmvOutput):
     def publishHiveSql(self): return "INSERT OVERWRITE TABLE M SELECT * from dftable"
     def run(self, i):
         return self.smvApp.createDF("k:String;v:Integer", "x,1;y,2")
-
-class MyHive(SmvHiveTable):
-    def tableName(self): return "M"
 
 
 class NewHiveInput(SmvHiveInputTable):

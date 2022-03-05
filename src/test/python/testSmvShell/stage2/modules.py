@@ -12,9 +12,10 @@
 # limitations under the License.
 
 from smv import *
+from smv.iomod import SmvCsvStringInputData
 import stage.modules
 
-class CsvStr2(SmvCsvStringData):
+class CsvStr2(SmvCsvStringInputData):
     def schemaStr(self):
         return "name:String;id:integer"
     def dataStr(self):

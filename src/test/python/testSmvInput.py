@@ -19,6 +19,7 @@ from test_support.smvbasetest import SmvBaseTest
 from smv import *
 from smv.datasetrepo import DataSetRepo
 from smv.conn import SmvHdfsConnectionInfo
+from py4j.protocol import Py4JJavaError
 
 class SmvInputTest(SmvBaseTest):
     @classmethod
@@ -142,35 +143,6 @@ id:integer"""
         expect = self.createDF("a:String;b:Integer", 'a1,10;""a3"",2;a4,')
         self.should_be_same(expect, df)
 
-    def test_SmvMultiCsvFiles(self):
-        self.createTempInputFile("multiCsvTest/f1", "col1\na\n")
-        self.createTempInputFile("multiCsvTest/f2", "col1\nb\n")
-        self.createTempInputFile("multiCsvTest.schema", "@has-header = true\ncol1: String\n")
-
-        fqn = "stage.modules.MultiCsv"
-        df = self.df(fqn)
-        exp = self.createDF("col1: String", "a;b")
-        self.should_be_same(df, exp)
-
-    def test_SmvMultiCsvFilesWithUserSchema(self):
-        self.createTempInputFile("test3/f1", "a\n")
-        self.createTempInputFile("test3/f2", "b\n")
-        self.createTempInputFile("test3.schema", "col1: String\n")
-
-        fqn = "stage.modules.MultiCsvWithUserSchema"
-        df = self.df(fqn)
-        exp = self.createDF("1loc: String", "a;b")
-        self.should_be_same(df, exp)
-
-    def test_SmvCsvFileWithUserSchema(self):
-        self.createTempInputFile("test3.csv", "a\nb\n")
-        self.createTempInputFile("test3.schema", "col1: String\n")
-
-        fqn = "stage.modules.CsvFile"
-        df = self.df(fqn)
-        exp = self.createDF("1loc: String", "a;b")
-        self.should_be_same(df, exp)
-
     def test_SmvSqlModule(self):
         fqn = "stage.modules.SqlMod"
         exp = self.createDF("a: String; b: String", "def,mno;ghi,jkl")
@@ -182,23 +154,6 @@ id:integer"""
         tableNames = [r.tableName for r in tablesDF.collect()]
         self.assertNotIn("a", tableNames)
         self.assertNotIn("b", tableNames)
-
-    def test_SmvSqlCsvFile(self):
-        self.createTempInputFile("test3.csv", "a1,100,c1\na2,200,c2\n")
-        self.createTempInputFile("test3.schema", "a: String;b: Integer;c: String\n")
-
-        fqn = "stage.modules.SqlCsvFile"
-        df = self.df(fqn)
-        exp = self.createDF("a: String; b:Integer",
-             """a1,100;
-                a2,200""")
-        self.should_be_same(df, exp)
-
-        # verify that the table have been dropped
-        tablesDF = self.smvApp.sqlContext.tables()
-        tableNames = [r.tableName for r in tablesDF.collect()]
-        self.assertNotIn("a", tableNames)
-
 
     def test_SmvXmvFile_infer_schema(self):
         fqn = "stage.modules.Xml1"
@@ -219,30 +174,6 @@ id:integer"""
             """No comment,Tesla,S,2012;
                 Go get one now they are going fast,Ford,E350,1997""")
         self.should_be_same(expect, df)
-
-    def test_SmvCsvFile_run_method(self):
-        fqn = "stage.modules.Csv1"
-        self._create_csv_file('csvtest/csv1.csv')
-        self._create_csv_schema('csvtest/csv1.schema')
-        res = self.df(fqn)
-        expected = self.createDF(
-            "name:String;id:Integer;name_id:String",
-            """Bob,1,Bob1;
-            Fred,2,Fred2"""
-        )
-        self.should_be_same(res, expected)
-
-    def test_SmvCsvFile_with_userSchema(self):
-        fqn = "stage.modules.Csv2"
-        self._create_csv_file('csvtest/csv1.csv')
-        self._create_csv_schema('csvtest/csv1.schema')
-        res = self.df(fqn)
-        expected = self.createDF(
-            "eman:String;di:Integer",
-            """Bob,1;
-            Fred,2"""
-        )
-        self.should_be_same(res, expected)
 
 
 class SmvNewInputTest(SmvBaseTest):
@@ -290,6 +221,22 @@ id:integer"""
         self.should_be_same(exp, df)
         corrupted_path = self.smvApp.output_path_from_base("{}_corrupted".format(fqn), "csv")
         self.assertTrue(os.path.exists(corrupted_path))
+
+    def test_basic_csv_input_with_error_failfast(self):
+        self._create_csv_file("csvtest/csv2.csv", True)
+        self._create_csv_schema("csvtest/csv2.schema")
+        fqn = "stage.modules.NewCsvFileWithErrorFail"
+        with self.assertRaises(Py4JJavaError) as e:
+            df = self.df(fqn)
+            df.count()
+ 
+    def test_basic_csv_input_with_error(self):
+        self._create_csv_file("csvtest/csv2.csv", True)
+        self._create_csv_schema("csvtest/csv2.schema")
+        fqn = "stage.modules.NewCsvFileWithErrorIgnore"
+        df = self.df(fqn)
+        exp = self.createDF("name:String;id:Integer", "Bob,1;Fred,2")
+        self.should_be_same(exp, df)
 
     def test_csv_diff_schema_conn(self):
         self._create_csv_file("csvtest/csv1.csv")

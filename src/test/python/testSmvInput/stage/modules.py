@@ -12,23 +12,23 @@
 # limitations under the License.
 
 from smv import *
-from smv.iomod import SmvCsvInputFile, SmvMultiCsvInputFiles, SmvXmlInputFile
+from smv.iomod import SmvCsvInputFile, SmvMultiCsvInputFiles, SmvXmlInputFile, SmvCsvStringInputData
 
 import pyspark.sql.functions as F
 
-class D1(SmvCsvStringData):
+class D1(SmvCsvStringInputData):
     def schemaStr(self):
         return "a:String;b:Integer"
     def dataStr(self):
         return "x,10;y,1"
 
-class D1WithDate(SmvCsvStringData):
+class D1WithDate(SmvCsvStringInputData):
     def schemaStr(self):
         return "@dateFormat = MM/dd/yyyy;a:String;b:Integer;c:Date"
     def dataStr(self):
         return "x,10,2/28/2021;y,1,3/12/2011"
 
-class D1WithError(SmvCsvStringData):
+class D1WithError(SmvCsvStringInputData):
     def csvReaderMode(self):
         return "PERMISSIVE"
 
@@ -37,45 +37,11 @@ class D1WithError(SmvCsvStringData):
     def dataStr(self):
         return "a1,10;a2,x;a3,2;a4,;a5,y"
 
-class D1WithEscape(SmvCsvStringData):
+class D1WithEscape(SmvCsvStringInputData):
     def schemaStr(self):
         return "a:String;b:Integer"
     def dataStr(self):
         return 'a1,10;""a3"",2;a4,'
-
-class MultiCsv(SmvMultiCsvFiles):
-    def dir(self):
-        return "multiCsvTest"
-
-class MultiCsvWithUserSchema(SmvMultiCsvFiles):
-    UserSchema = "1loc: String"
-
-    def dir(self):
-        return "test3"
-
-    def userSchema(self):
-        return self.UserSchema
-
-class CsvFile(SmvCsvFile):
-    UserSchema = "1loc: String"
-
-    def path(self):
-        return "test3.csv"
-
-    def userSchema(self):
-        return self.UserSchema
-
-class SqlCsvFile(SmvSqlCsvFile):
-    UserSchema = "a: String; b: Integer; c: String"
-
-    def path(self):
-        return "test3.csv"
-
-    def userSchema(self):
-        return self.UserSchema
-
-    def query(self):
-        return "select a, b from df"
 
 class SqlMod(SmvSqlModule):
     def tables(self):
@@ -121,25 +87,6 @@ class Xml2(SmvXmlInputFile):
         return 'ROW'
 
 
-class Csv1(SmvCsvFile):
-    def path(self):
-        return "csvtest/csv1.csv"
-    def csvAttr(self):
-        return CsvAttributes(",", '"', "true")
-    def run(self, df):
-        return df.withColumn("name_id",
-            F.concat(F.col("name"), F.col("id"))
-        )
-
-class Csv2(SmvCsvFile):
-    def path(self):
-        return "csvtest/csv1.csv"
-    def csvAttr(self):
-        return CsvAttributes(",", '"', "true")
-    def userSchema(self):
-        return "eman:String;di:integer"
-
-
 class NewCsvFile1(SmvCsvInputFile):
     def connectionName(self):
         return "my_hdfs"
@@ -151,6 +98,23 @@ class NewCsvFileWithError(SmvCsvInputFile):
     def csvReaderMode(self):
         return "PERMISSIVE"
 
+    def connectionName(self):
+        return "my_hdfs"
+
+    def fileName(self):
+        return "csvtest/csv2.csv"
+
+class NewCsvFileWithErrorIgnore(SmvCsvInputFile):
+    def csvReaderMode(self):
+        return "PERMISSIVE"
+
+    def connectionName(self):
+        return "my_hdfs"
+
+    def fileName(self):
+        return "csvtest/csv2.csv"
+
+class NewCsvFileWithErrorFail(SmvCsvInputFile):
     def connectionName(self):
         return "my_hdfs"
 

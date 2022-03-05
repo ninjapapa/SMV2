@@ -460,7 +460,7 @@ class SmvGenericModule(ABC):
 
     def _dataset_hash(self):
         """current module's hash value, depend on code and potentially
-            linked data (such as for SmvCsvFile)
+            linked data (such as for SmvCsvInputFile)
         """
         log = smv.logger
         _instanceValHash = self.instanceValHash()

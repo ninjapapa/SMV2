@@ -12,8 +12,9 @@
 # limitations under the License.
 
 from smv import *
+from smv.iomod import SmvCsvStringInputData
 
-class X(SmvCsvStringData):
+class X(SmvCsvStringInputData):
     """This is the test DS X's docstring
         It is multi lines.
         with "double" quotes and 'single' quote

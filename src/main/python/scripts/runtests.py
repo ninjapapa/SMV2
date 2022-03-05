@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-from unittest import *
 from test_support.testconfig import TestConfig
 from test_support.test_runner import SmvTestRunner
 
