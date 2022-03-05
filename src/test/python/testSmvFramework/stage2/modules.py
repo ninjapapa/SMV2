@@ -14,7 +14,7 @@
 from smv import *
 import stage.modules
 
-CsvLink = SmvModuleLink(stage.modules.CsvFile)
+CsvLink = SmvModuleLink(stage.modules.CsvStrWithNullData)
 
 class DependsOnLink(SmvModule):
     def requiresDS(self):
@@ -22,13 +22,6 @@ class DependsOnLink(SmvModule):
 
     def run(self, i):
         return i[CsvLink]
-
-class DependsOutputModuleDirectly(SmvModule):
-    def requiresDS(self):
-        return [stage.modules.CsvFile]
-
-    def run(self, i):
-        return i[stage.modules.CsvFile]
 
 class DependsNonOutputModuleDirectly(SmvModule):
     def requiresDS(self):

@@ -95,16 +95,8 @@ class ModuleHashTest(SmvBaseTest):
         """hash will not change if we change module that is listed in module's requiresDS"""
         self.assert_hash_should_not_change("stage.modules.Downstream")
 
-    def test_change_hive_table_version_should_change_hash(self):
-        """updating version of SmvHiveTable will force change of hash"""
-        self.assert_hash_should_change("stage.modules.HiveTableWithVersion")
-
-    def test_change_csv_file_run_method_should_change_hash(self):
-        """updating run method of SmvCsvFile will change hash"""
-        self.assert_hash_should_change("stage.modules.CsvFileWithRun")
-
     def test_change_csv_file_attribute_shoule_change_hash(self):
-        """updating csv attribute through userSchema of SmvCsvFile will change hash"""
+        """updating csv attribute through userSchema of SmvCsvStringInputData will change hash"""
         self.assert_hash_should_change("stage.modules.CsvFileWithAttr")
 
     def test_change_relevant_conf_value_should_change_hash(self):

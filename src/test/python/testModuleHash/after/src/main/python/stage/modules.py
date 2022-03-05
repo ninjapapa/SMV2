@@ -12,7 +12,8 @@
 # limitations under the License.
 import udl as lib
 import same as unchanged
-from smv import SmvApp, SmvModule, SmvHiveTable, SmvCsvFile
+from smv import SmvApp, SmvModule
+from smv.iomod import SmvCsvStringInputData
 
 def sameFunc():
     """a function which is the same in before/after"""
@@ -102,26 +103,10 @@ class Parent(SmvModule):
     def run(self,i):
         return self.smvApp.createDF("k:String;v:Integer", "a,;b,31")
 
-class HiveTableWithVersion(SmvHiveTable):
-    def requiresDS(self):
-        return []
-    def tableName(self):
-        return "HiveTableWithVersion"
-    def version(self):
-        return "1.1"
-
-class CsvFileWithRun(SmvCsvFile):
-    def requiresDS(self):
-        return []
-    def path(self):
+class CsvFileWithAttr(SmvCsvStringInputData):
+    def dataStr(self):
         return "foo"
-    def run(self, df):
-        return df.select("bar")
-
-class CsvFileWithAttr(SmvCsvFile):
-    def path(self):
-        return "foo"
-    def userSchema(self):
+    def schemaStr(self):
         return "@quote-char=';eman:String;di:integer"
 
 class Child(Parent):

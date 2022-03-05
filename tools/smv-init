@@ -37,20 +37,8 @@ FLAG=$1
         PROJ_TYPE="simple"
         shift
         ;;
-    -e|-enterprise)
-        PROJ_TYPE="enterprise"
-        shift
-        ;;
     -t|-test)
         PROJ_TYPE="test"
-        shift
-        ;;
-    --bc|--bigChain)
-        PROJ_TYPE="bigChain"
-        shift
-        ;;
-    --bt|--bigTree)
-        PROJ_TYPE="bigTree"
         shift
         ;;
     -d|--dataDir)
@@ -86,14 +74,11 @@ TEMPLATE_DATA_DIR="$ALL_TEMPLATES_DIR/data"
 
 if [ $# -ne 1 ]; then
     echo "ERROR: Invalid number of arguments"
-    echo "USAGE: $0 [-q][-o] [-s|-e|-t|-b|--bc|--bt] [-d] [-n] [--mn] project_path"
+    echo "USAGE: $0 [-q][-o] [-s|-t|-b] [-d] [-n] [--mn] project_path"
     echo "project types:"
     echo "  -s: simple (default)"
-    echo "  -e: enterprise"
     echo "  -t: test (for developers only)"
     echo "  -b: blank/empty project"
-    echo "  --bc: big chain project"
-    echo "  --bt: big tree project"
     echo "  -d: data directory"
     echo "  -n: project name"
     echo "  --mn: module number"
@@ -102,7 +87,6 @@ if [ $# -ne 1 ]; then
     echo "example:"
     echo "    simple:     \$ ./tools/smv-init /project/path"
     echo "    blank:      \$ ./tools/smv-init -b -n projec_name -dd /data/dir /project/path"
-    echo "    enterprise: \$ ./tools/smv-init -e /project/path"
     exit 1
 fi
 

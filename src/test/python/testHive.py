@@ -76,21 +76,6 @@ class AdvancedPublishModuleToHiveTest(HiveTest):
         hiveDf = self.smvApp.sqlContext.sql("select * from " + "M")
         self.should_be_same(madvDf, hiveDf)
 
-class ReadHiveTableTest(HiveTest):
-    @classmethod
-    def smvAppInitArgs(cls):
-        return super(ReadHiveTableTest, cls).smvAppInitArgs() + ['--publish-hive', '-m', "stage.modules.M"]
-
-    @classmethod
-    def setUpClass(cls):
-        super(ReadHiveTableTest, cls).setUpClass()
-        cls.smvApp.run()
-
-    def test_smv_hive_table_can_read_hive_table(self):
-        mDf = self.df("stage.modules.M")
-        hiveDf = self.df("stage.modules.MyHive")
-        self.should_be_same(mDf,hiveDf)
-
 class NewHiveTableTest(HiveTest):
     @classmethod
     def smvAppInitArgs(cls):

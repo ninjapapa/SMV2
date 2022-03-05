@@ -1,18 +1,11 @@
 # flake8: noqa
 # Smv DataSet Framework
 from smv.smvmodule import *
-from smv.smvinput import *
 
 from smv.smvapp import SmvApp
 
 from smv.runconfig import SmvRunConfig
 from smv.csv_attributes import CsvAttributes
-
-# keep old py names for backwards compatibility
-SmvPyCsvFile = SmvCsvFile
-SmvPyModule = SmvModule
-SmvPyOutput = SmvOutput
-SmvPyModuleLink = SmvModuleLink
 
 import logging
 logger = logging.getLogger(__name__)

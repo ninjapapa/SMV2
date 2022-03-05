@@ -88,7 +88,7 @@ stage2:
 There are 4 values of the leading label
 * "O" - SmvOutput
 * "L" - SmvModuleLink
-* "I" - SmvInput (including SmvCsvFile, SmvHiveTable, etc.)
+* "I" - SmvInput (including SmvCsvInputFile, SmvHiveTable, etc.)
 * "M" - SmvModule (but neither SmvOutput nor SmvModuleLink)
 
 Please see [SMV Introduction](smv_intro.md) for details of the 4 types.

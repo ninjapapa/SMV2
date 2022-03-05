@@ -17,7 +17,7 @@ import sys
 import re
 import datetime
 
-from smv import SmvApp, SmvHiveTable
+from smv import SmvApp
 from smv.smvappinfo import SmvAppInfo
 from smv.conn import SmvHdfsEmptyConn
 from smv.iomod import SmvCsvInputFile
@@ -94,22 +94,6 @@ def getModel(name, forceRun = False):
     app = SmvApp.getInstance()
     fqn = app.dsm.inferFqn(name)
     return app.getModuleResult(fqn, forceRun)
-
-def openHive(tableName):
-    """Read in a Hive table as a DataFrame
-
-        Args:
-            tableName (str): The name of the Hive table
-
-        Returns:
-            (DataFrame): The resulting DataFrame
-    """
-    app = SmvApp.getInstance()
-    class TmpHive(SmvHiveTable):
-        def tableName(self):
-            return tableName
-
-    return DataFrame(TmpHive(app).doRun(None), app.sqlContext)
 
 def openCsv(path):
     """Read in a CSV file as a DataFrame

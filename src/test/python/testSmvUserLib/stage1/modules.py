@@ -10,10 +10,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import smv
+from smv.iomod import SmvCsvStringInputData
 
-
-class R0(smv.SmvCsvStringData):
+class R0(SmvCsvStringInputData):
     def schemaStr(self):
         return "a:String;b:Integer"
 

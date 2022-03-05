@@ -49,15 +49,3 @@ class MyModule(smv.SmvModule):
   def isEphemeral(self): return False
   ....    
 ```
-
-## Simple Publish To Hive
-If you would like to publish the module to a Hive table, include a `tableName`, and use `--publish-hive` command line parameter to publish/export the output to the specified Hive table (For advanced use case, see section below).  For example:
-
-```python
-class MyModule(smv.SmvModule, smv.SmvOutput):
-  def tableName(self):
-    return "hiveschema.hivetable"
-  ...
-class MyFile(smv.SmvCsvFile, smv.SmvOutput):
-  ...
-```

@@ -12,6 +12,7 @@
 # limitations under the License.
 
 from smv import *
+from smv.iomod import SmvCsvInputFile, SmvCsvStringInputData
 from pyspark.sql.functions import col, lit
 
 class D4(SmvModule, SmvRunConfig):
@@ -57,11 +58,7 @@ class D4(SmvModule, SmvRunConfig):
     def run(self, i):
         return self.smvApp.createDF(self.schemaStr(), self.dataStr())
 
-class CsvFile(SmvCsvFile, SmvOutput):
-    def path(self):
-        return "test3.csv"
-
-class CsvStrWithNullData(SmvCsvStringData):
+class CsvStrWithNullData(SmvCsvStringInputData):
     def schemaStr(self):
         return "a:String"
 
