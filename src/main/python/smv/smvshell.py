@@ -266,7 +266,6 @@ __all__ = [
     'df',
     'dshash',
     'getModel',
-    'openHive',
     'openCsv',
     'help',
     'lsStage',

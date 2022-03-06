@@ -2,12 +2,5 @@
 # different from one team member's envirourment to another. 
 # Please use the smv-user-conf.props.example as a template to create your own
 
-# data dir
+# data dir. temparory persisted data will be stored in the "output" sub-dir in dataDir
 smv.dataDir = file://_PROJ_DIR_FULL_PATH_/data
-
-# Connections
-smv.conn.myinput.type = hdfs
-smv.conn.myinput.path = file://_PROJ_DIR_FULL_PATH_/data/input
-
-smv.conn.myoutput.type = hdfs
-smv.conn.myoutput.path = file://_PROJ_DIR_FULL_PATH_/data/output
