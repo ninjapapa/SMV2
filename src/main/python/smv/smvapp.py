@@ -145,7 +145,7 @@ class SmvApp(object):
         return line.strip()
 
     def exception_handling(func):
-        """ Decorator function to catch Py4JJavaError and raise SmvDqmValidationError if any.
+        """ Decorator function to catch Py4JJavaError and raise.
             Otherwise just pass through the original exception
         """
         def func_wrapper(*args, **kwargs):

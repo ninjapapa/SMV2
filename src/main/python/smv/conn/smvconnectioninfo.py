@@ -13,7 +13,6 @@
 
 import abc
 
-import smv
 from smv.utils import smvhash
 from smv.provider import SmvProvider
 

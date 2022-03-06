@@ -17,8 +17,7 @@ import os
 import re
 import json
 
-from pyspark.sql import DataFrame
-from pyspark.sql.types import StructType, StructField, StringType
+from pyspark.sql.types import StructType, StringType
 from py4j.protocol import Py4JJavaError
 import pyspark.sql.functions as F
 
@@ -26,10 +25,10 @@ import smv
 from smv.iomod.base import SmvInput, AsTable, AsFile
 from smv.smvmodule import SparkDfGenMod
 from smv.smviostrategy import SmvJdbcIoStrategy, SmvHiveIoStrategy, \
-    SmvSchemaOnHdfsIoStrategy, SmvCsvOnHdfsIoStrategy, SmvTextOnHdfsIoStrategy,\
+    SmvCsvOnHdfsIoStrategy, SmvTextOnHdfsIoStrategy,\
     SmvXmlOnHdfsIoStrategy
 from smv.smvschema import SmvSchema
-from smv.utils import lazy_property, smvhash
+from smv.utils import smvhash
 from smv.error import SmvRuntimeError
 from smv.smvhdfs import SmvHDFS
 

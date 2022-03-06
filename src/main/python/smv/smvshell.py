@@ -25,8 +25,6 @@ from smv.smviostrategy import SmvSchemaOnHdfsIoStrategy
 from test_support.test_runner import SmvTestRunner
 from test_support.testconfig import TestConfig
 
-from pyspark.sql import DataFrame
-
 
 def _appInfo():
     return SmvAppInfo(SmvApp.getInstance())

@@ -12,13 +12,11 @@
 # limitations under the License.
 
 import abc
-import importlib
 
 from pyspark.sql import DataFrame
 
 from smv.error import SmvRuntimeError
 from smv.utils import smvhash
-from smv.datasetrepo import DataSetRepo
 from smv.smvgenericmodule import SmvGenericModule
 from smv.smviostrategy import SmvNonOpPersistenceStrategy
 

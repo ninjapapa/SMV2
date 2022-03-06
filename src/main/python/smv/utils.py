@@ -11,11 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyspark.sql.column import Column
-from pyspark.sql import DataFrame
 import sys
-import itertools
-import pkgutil
 from smv.error import SmvRuntimeError
 
 def lazy_property(fn):
