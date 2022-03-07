@@ -5,7 +5,8 @@ Start the shell with
 ```shell
 $ smv-shell [smv-options] -- [standard spark-shell-options]
 ```
-**Note:**  The above command should be run from your project's top level directory.
+**Note:**  The above command should be run from your project's top level directory, 
+otherwise need to use `--smv-app-dir` to specify project dir.
 
 ## SMV Utility methods
 * `df(dataset_name, force_run=False, version=None, runConfig=None)` :  Load/Run the given dataset and return the resulting `DataFrame`. Force the module to rerun (ignoring cached data) if force_run is True.  If a version is specified, load the published data with the given version.

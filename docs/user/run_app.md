@@ -8,7 +8,8 @@ a convenient script `smv-run` is provided to make it easier to make running an a
 $ smv-run [smv-options] [what-to-run] -- [standard spark-submit-options]
 ```
 
-**Note:**  The above command should be run from the project top level directory.
+**Note:**  The above command should be run from your project's top level directory, 
+otherwise need to use `--smv-app-dir` to specify project dir.
 
 ### Options
 <br>
