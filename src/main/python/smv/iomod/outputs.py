@@ -97,6 +97,7 @@ class SmvCsvOutputFile(SmvSparkDfOutput, AsFile):
 
     def csvAttr(self):
         """Allow specify csv attributes when output
+        When specify csvAttr, assume output a single csv file (for easy sharing)
         """
         return None 
 
@@ -108,6 +109,7 @@ class SmvCsvOutputFile(SmvSparkDfOutput, AsFile):
         schema = SmvSchema(data.schema)
         if (self.csvAttr() is not None):
             schema = schema.addCsvAttributes(self.csvAttr())
+            data = data.repartition(1)
 
         SmvCsvOnHdfsIoStrategy(self.smvApp, file_path, schema, "FAILFAST", self.writeMode()).write(data)
         SmvSchemaOnHdfsIoStrategy(self.smvApp, schema_path, self.writeMode()).write(schema)
