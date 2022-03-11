@@ -88,11 +88,17 @@ class SmvCsvOutputFile(SmvSparkDfOutput, AsFile):
             - requiresDS
             - connectionName
             - fileName
+            - csvAttr: optional
     """
     def writeMode(self):
         """Default write mode is overwrite, and currently only support overwrite
         """
         return "overwrite"
+
+    def csvAttr(self):
+        """Allow specify csv attributes when output
+        """
+        return None 
 
     def doRun(self, known):
         data = self.get_spark_df(known)
@@ -100,8 +106,10 @@ class SmvCsvOutputFile(SmvSparkDfOutput, AsFile):
         schema_path = re.sub("\.csv$", ".schema", file_path)
 
         schema = SmvSchema(data.schema)
+        if (self.csvAttr() is not None):
+            schema = schema.addCsvAttributes(self.csvAttr())
 
-        SmvCsvOnHdfsIoStrategy(self.smvApp, file_path, None, "FAILFAST", self.writeMode()).write(data)
+        SmvCsvOnHdfsIoStrategy(self.smvApp, file_path, schema, "FAILFAST", self.writeMode()).write(data)
         SmvSchemaOnHdfsIoStrategy(self.smvApp, schema_path, self.writeMode()).write(schema)
         return data
 
