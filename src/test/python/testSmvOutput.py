@@ -56,3 +56,21 @@ class SmvOutputTest(SmvBaseTest):
         r2 = self.df("stage.modules.CsvOutRerun")
         global output_run_cnt
         self.assertEqual(output_run_cnt, 2)
+
+    def test_csv_out_with_header(self):
+        res = self.df("stage.modules.CsvOutHeader")
+        self.assertTrue(os.path.exists(self.tmpDataDir() + "/csv_out_test_header.csv"))
+
+        flist = os.listdir(self.tmpDataDir() + "/csv_out_test_header.csv")
+        dataf = [f for f in flist if f.startswith('part-')]
+
+        # when specify csvattr, should output 1 file
+        self.assertTrue(len(dataf) == 1)
+
+        fpath = self.tmpDataDir() + "/csv_out_test_header.csv/" + dataf[0]
+        with open(fpath) as f:
+            first_line = f.readline()
+        
+        # should have header line
+        self.assertTrue(first_line.strip() == 'a')
+
