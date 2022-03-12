@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from smv.csv_attributes import CsvAttributes
 from smv import *
 from smv.iomod import SmvCsvOutputFile
 
@@ -48,3 +49,16 @@ class CsvOutRerun(SmvCsvOutputFile):
         testSmvOutput.output_run_cnt += 1
         return super(CsvOutRerun, self).doRun(known)
 
+
+class CsvOutHeader(SmvCsvOutputFile):
+    def connectionName(self):
+        return "my_out_conn"
+
+    def fileName(self):
+        return "csv_out_test_header.csv"
+
+    def csvAttr(self):
+        return CsvAttributes(hasHeader="true")
+
+    def requiresDS(self):
+        return [MyData]
