@@ -654,9 +654,6 @@ class SmvApp(object):
     def _publish_modules(self, mods):
         SmvModuleRunner(mods, self).publish()
 
-    def _publish_modules_through_jdbc(self, mods):
-        SmvModuleRunner(mods, self).publish_to_jdbc()
-
     def _publish_modules_locally(self, mods):
         local_dir = self.cmd_line.exportCsv
         SmvModuleRunner(mods, self).publish_local(local_dir)
@@ -685,8 +682,6 @@ class SmvApp(object):
             self._generate_dot_graph()
         elif(self.cmd_line.publish):
             self._publish_modules(mods)
-        elif(self.cmd_line.publishJDBC):
-            self._publish_modules_through_jdbc(mods)
         elif(self.cmd_line.exportCsv):
             self._publish_modules_locally(mods)
         else:

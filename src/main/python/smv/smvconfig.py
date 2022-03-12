@@ -210,7 +210,6 @@ class SmvConfig(object):
 
         # All app run flags
         parser.add_argument('--force-run-all', dest='forceRunAll', action="store_true", help="ignore persisted data and force all modules to run")
-        parser.add_argument('--publish-jdbc', dest='publishJDBC', action="store_true", help="publish the given modules/stage/app through JDBC connection")
         parser.add_argument('--dead', dest='printDeadModules', action="store_true", help="print a list of the dead modules in this application")
         parser.add_argument('--graph', dest='graph', action="store_true", help="generate a dot dependency graph of the given modules (modules are not run)")
         parser.add_argument('--dry-run', dest='dryRun', action="store_true", help="determine which modules do not have persisted data and will need to be run")

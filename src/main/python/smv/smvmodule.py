@@ -141,11 +141,6 @@ class SmvSparkDfModule(SmvProcessModule, SparkDfGenMod):
     def dsType(self):
         return "Module"
 
-    # see testJdbc for example how it works
-    def publishThroughJDBC(self):
-        url = self.smvApp.jdbcUrl()
-        driver = self.smvApp.jdbcDriver()
-        self.data.write.jdbc(url, self.tableName(), properties={"driver": driver})
 
 class SmvModule(SmvSparkDfModule):
     """SmvModule is the same as SmvSparkDfModule. Since it was used in all the
