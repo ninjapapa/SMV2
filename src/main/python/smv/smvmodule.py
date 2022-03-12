@@ -141,67 +141,6 @@ class SmvSparkDfModule(SmvProcessModule, SparkDfGenMod):
     def dsType(self):
         return "Module"
 
-    #########################################################################
-    # User interface methods
-    #
-    # Inherited from SmvGenericModule:
-    #
-    # - isEphemeral: Optional, default False
-    # - description: Optional, default class docstr
-    # - requiresDS: Required
-    # - requiresConfig: Optional, default []
-    # - requiresLib: Optional, default []
-    # - metadata: Optional, default {}
-    # - validateMetadata: Optional, default None
-    # - metadataHistorySize: Optional, default 5
-    # - version: Optional, default "0" --- Deprecated!
-    #
-    # SmvSparkDfModule specific:
-    # - dqm: Optional, default SmvDQM()
-    # - publishHiveSql: Optional, default None
-    # - run: Required
-    #########################################################################
-
-    def publishHiveSql(self):
-        """An optional sql query to run to publish the results of this module when the
-           --publish-hive command line is used.  The DataFrame result of running this
-           module will be available to the query as the "dftable" table.
-
-            Example:
-                >>> return "insert overwrite table mytable select * from dftable"
-
-            Note:
-                If this method is not specified, the default is to just create the
-                table specified by tableName() with the results of the module.
-
-           Returns:
-               (string): the query to run.
-        """
-        return None
-
-
-
-    # All publish related methods should be moved to generic output module class
-    def exportToHive(self):
-        # if user provided a publish hive sql command, run it instead of default
-        # table creation from data frame result.
-        if (self.publishHiveSql() is None):
-            queries = [
-                "drop table if exists {}".format(self.tableName()),
-                "create table {} as select * from dftable".format(self.tableName())
-            ]
-        else:
-            queries = [l.strip() for l in self.publishHiveSql().split(";")]
-
-        smv.logger.info("Hive publish query: {}".format(";".join(queries)))
-        def run_query(df):
-            # register the dataframe as a temp table.  Will be overwritten on next register.
-            df.createOrReplaceTempView("dftable")
-            for l in queries:
-                self.smvApp.sqlContext.sql(l)
-
-        self._do_action_on_df(run_query, self.data, "PUBLISH TO HIVE")
-
     # see testJdbc for example how it works
     def publishThroughJDBC(self):
         url = self.smvApp.jdbcUrl()

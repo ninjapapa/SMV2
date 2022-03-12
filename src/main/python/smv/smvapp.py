@@ -465,14 +465,6 @@ class SmvApp(object):
         fqn = self.dsm.inferFqn(name)
         return self.getRunInfo(fqn)
 
-    @exception_handling
-    def publishModuleToHiveByName(self, name):
-        """Publish an SmvModule to Hive by its name (can be partial FQN)
-        """
-        fqn = self.dsm.inferFqn(name)
-        ds = self.load_single_ds(fqn)
-        return SmvModuleRunner([ds], self).publish_to_hive()
-
     def getMetadataJson(self, fqn):
         """Returns the metadata for a given fqn"""
         ds = self.load_single_ds(fqn)
@@ -662,9 +654,6 @@ class SmvApp(object):
     def _publish_modules(self, mods):
         SmvModuleRunner(mods, self).publish()
 
-    def _publish_modules_to_hive(self, mods):
-        SmvModuleRunner(mods, self).publish_to_hive()
-
     def _publish_modules_through_jdbc(self, mods):
         SmvModuleRunner(mods, self).publish_to_jdbc()
 
@@ -694,8 +683,6 @@ class SmvApp(object):
             self._dry_run(mods)
         elif(self.cmd_line.graph):
             self._generate_dot_graph()
-        elif(self.cmd_line.publishHive):
-            self._publish_modules_to_hive(mods)
         elif(self.cmd_line.publish):
             self._publish_modules(mods)
         elif(self.cmd_line.publishJDBC):

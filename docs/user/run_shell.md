@@ -17,7 +17,6 @@ otherwise need to use `--smv-app-dir` to specify project dir.
 * `lsDead()`: list `dead` datasets in the project, `dead` dataset is defined as "no contribution to any Output module"
 * `lsDead(stage_name)`: list `dead` datasets in the stage
 * `props()`: Dump json of the final configuration properties used by the running app (includes dynamic runConfig)
-* `exportToHive(dataset_name)`: export the running result of the dataset to a hive table
 * `ancestors(dataset_name)`: list `ancestors` of the dataset, `ancestors` are all the datasets current dataset depends
 * `now()`: current system time
 * `smvDiscoverSchemaToFile(path, n, csvAttr)` : use the first `n` (default 100000) rows of csv file at given path to discover the schema of the file based on heuristic rules.  The discovered schema is saved to the current path with postfix ".schema.toBeReviewed"
