@@ -94,18 +94,6 @@ class SmvModuleRunner(object):
             hist = self.smvApp._read_meta_hist(m)
             SmvJsonOnHdfsPersistenceStrategy(m.smvApp, publish_hist_path).write(hist.toJson())
 
-    def publish_to_hive(self):
-        # run before publish
-        self.run()
-
-        for m in self.roots:
-            m.exportToHive()
-
-    def publish_to_jdbc(self):
-        self.run()
-
-        for m in self.roots:
-            m.publishThroughJDBC()
 
     def publish_local(self, local_dir):
         self.run()

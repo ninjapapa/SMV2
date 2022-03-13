@@ -12,15 +12,11 @@
  * limitations under the License.
  */
 
-package org.apache.spark.sql.jdbc
+package org.tresamigos.smv.test.jdbc
 
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.jdbc._
 import java.sql.Types
-
-object JdbcDialectHelper {
-  def registerDerby() = JdbcDialects.registerDialect(DerbyDialect)
-}
 
 /**
  * Tells spark how to create queries for Derby. This dialect is copied over from
@@ -29,7 +25,7 @@ object JdbcDialectHelper {
  *
  * NOTE: This should be used for tests only!
  */
-object DerbyDialect extends JdbcDialect {
+class DerbyDialect extends JdbcDialect {
 
   override def canHandle(url: String): Boolean = url.startsWith("jdbc:derby")
 

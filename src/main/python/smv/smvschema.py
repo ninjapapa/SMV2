@@ -16,7 +16,7 @@ import json
 import pyspark.sql.types as T
 from smv.error import SmvRuntimeError
 from smv.utils import is_string
-from csv_attributes import CsvAttributes
+from smv.csv_attributes import CsvAttributes
 
 # make it as a class with spark-schema, attrs (consider date, time formats as attr)
 class SmvSchema(object):

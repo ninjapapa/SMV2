@@ -79,21 +79,6 @@ graphvis must be used to convert the ".dot" file to an image or doc.  For exampl
 </tr>
 
 <tr>
-<td>--publish-hive</td>
-<td>off</td>
-<td>publish the specified modules to specified Hive tables</td>
-</tr>
-
-<tr>
-<td>--publish-jdbc</td>
-<td>off</td>
-<td>
-publish the specified modules through JDBC
-**NOTE:** You must specify the JDBC url to use via the config property `smv.jdbc.url`
-</td>
-</tr>
-
-<tr>
 <td>--export-csv (previously --publish-local)</td>
 <td>None</td>
 <td>
@@ -210,12 +195,6 @@ The above would ensure that SMV users the spark 2.2 version on the system.
 Run modules `M1` and `M2` and all its dependencies.  Note the use of the module FQN.
 ```shell
 $ smv-run -m com.mycom.myproj.stage1.M1 com.mycom.myproj.stage1.M2
-```
-
-Run modules `M1` and `M2` and all its dependencies. Publish to the Hive tables as specified
-by the `tableName` method of `M1` and `M2`.
-```shell
-$ smv-run --publish-hive -m com.mycom.myproj.stage1.M1 com.mycom.myproj.stage1.M2
 ```
 
 Run all modules in application and generate edd report for all modules that needed to run (including dependencies)

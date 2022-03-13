@@ -14,20 +14,10 @@
 from smv import SmvApp, SmvModule, SmvOutput 
 from smv.iomod import SmvHiveInputTable, SmvHiveOutputTable
 
-class M(SmvModule, SmvOutput):
+class M(SmvModule):
     def requiresDS(self): return []
-    def tableName(self): return "M"
     def run(self, i):
         return self.smvApp.createDF("k:String;v:Integer", "a,;b,2")
-
-class MAdv(SmvModule, SmvOutput):
-    """Advanced Hive publish module that uses the publishHiveSql method to override
-       the output of table M in hive."""
-    def requiresDS(self): return []
-    def publishHiveSql(self): return "INSERT OVERWRITE TABLE M SELECT * from dftable"
-    def run(self, i):
-        return self.smvApp.createDF("k:String;v:Integer", "x,1;y,2")
-
 
 class NewHiveInput(SmvHiveInputTable):
     def tableName(self): return "M"
@@ -35,6 +25,6 @@ class NewHiveInput(SmvHiveInputTable):
 
 class NewHiveOutput(SmvHiveOutputTable):
     def requiresDS(self):
-        return [NewHiveInput]
-    def tableName(self): return "WriteOutM"
+        return [M]
+    def tableName(self): return "M"
     def connectionName(self): return "my_hive"

@@ -158,14 +158,6 @@ def lsDead(stageName = None):
     """
     print(_appInfo().ls_dead(stageName))
 
-def exportToHive(dsname):
-    """Export dataset's running result to a Hive table
-
-        Args:
-            dsname (str): The name of an SmvModule
-    """
-    SmvApp.getInstance().publishModuleToHiveByName(dsname)
-
 def ancestors(dsname):
     """List all ancestors of a dataset
 
@@ -270,7 +262,6 @@ __all__ = [
     'ls',
     'lsDead',
     'props',
-    'exportToHive',
     'ancestors',
     'descendants',
     'now',
