@@ -4,7 +4,7 @@ organization := "org.tresamigos"
 
 version := "2-SNAPSHOT"
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.10"
 
 scalacOptions ++= Seq("-deprecation", "-feature")
 

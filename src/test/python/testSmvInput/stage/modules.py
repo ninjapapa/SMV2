@@ -26,7 +26,7 @@ class D1WithDate(SmvCsvStringInputData):
     def schemaStr(self):
         return "@dateFormat = MM/dd/yyyy;a:String;b:Integer;c:Date"
     def dataStr(self):
-        return "x,10,2/28/2021;y,1,3/12/2011"
+        return "x,10,02/28/2021;y,1,03/12/2011"
 
 class D1WithError(SmvCsvStringInputData):
     def csvReaderMode(self):
