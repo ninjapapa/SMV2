@@ -226,7 +226,7 @@ id:integer"""
         self._create_csv_file("csvtest/csv2.csv", True)
         self._create_csv_schema("csvtest/csv2.schema")
         fqn = "stage.modules.NewCsvFileWithErrorFail"
-        with self.assertRaises(Py4JJavaError) as e:
+        with self.assertRaisesRegexp(Exception, r"Parse Mode: FAILFAST"):
             df = self.df(fqn)
             df.count()
  

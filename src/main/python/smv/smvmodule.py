@@ -178,7 +178,7 @@ class SmvSqlModule(SmvModule):
         # temporarily register DataFrame inputs as tables
         for tbl_name in tbl_name_2_ds:
             ds = tbl_name_2_ds[tbl_name]
-            i[ds].registerTempTable(tbl_name)
+            i[ds].createOrReplaceTempView(tbl_name)
 
         res = self.smvApp.sqlContext.sql(self.query())
 
