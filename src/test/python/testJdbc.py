@@ -14,13 +14,15 @@
 from test_support.smvbasetest import SmvBaseTest
 from pyspark.sql import DataFrame
 from smv.smvmodulerunner import SmvModuleRunner
+# from py4j.java_gateway import java_import
 
 
 class NewJdbcTest(SmvBaseTest):
     @classmethod
     def setUpClass(cls):
         super(NewJdbcTest, cls).setUpClass()
-        cls.smvApp._jvm.org.apache.spark.sql.jdbc.JdbcDialectHelper.registerDerby()
+        cls.smvApp._jvm.org.apache.spark.sql.jdbc.JdbcDialects.registerDialect(
+            cls.smvApp._jvm.org.tresamigos.smv.test.jdbc.DerbyDialect())
 
     @classmethod
     def url(cls):

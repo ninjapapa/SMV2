@@ -13,7 +13,6 @@ val sparkVersion = "2.4.4"
 
 libraryDependencies ++= Seq(
   "org.apache.spark"             %% "spark-sql"         % sparkVersion % "provided",
-  "org.apache.spark"             %% "spark-hive"        % sparkVersion % "provided",
   "com.databricks"               %% "spark-xml"         % "0.13.0"
 )
 
