@@ -256,7 +256,7 @@ class WithSmvSchema(SchemaString):
                 - schema_file_name under schema_connection
 
         """
-        one_str = re.sub(r"[\r\n]+", ";", self.schemaString().encode("utf-8"))
+        one_str = re.sub(r"[\r\n]+", ";", str(self.schemaString()))
         smv_schema = SmvSchema(one_str)
 
         if (self.csvAttr() is not None):
