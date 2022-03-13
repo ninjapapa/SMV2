@@ -33,10 +33,6 @@ assemble-fat-jar: xml-jar
 xml-jar: 
 	curl -OL --progress-bar --fail https://repo1.maven.org/maven2/com/databricks/spark-xml_2.11/0.13.0/spark-xml_2.11-0.13.0.jar > spark-xml_2.11-0.13.0.jar
 
-publish-scala: assemble-fat-jar
-	sbt publish-local
-
-
 BUNDLE_NAME = smv2_$(SMV_VERSION).tgz
 BUNDLE_PATH = docker/smv/$(BUNDLE_NAME)
 BUNDLE_EXCLUDE = venv metastore_db .tox .ivy2 $(SPARKS_DIR) .git admin $(BUNDLE_NAME) .sparks
@@ -103,12 +99,6 @@ $(PYDOC_DEST): install-spark-default
 
 SCALADOC_DEST = $(DOC_DIR)/scala
 
-scala-doc:
-	mkdir -p $(SCALADOC_DEST)
-	sbt doc
-	cp -R target/scala-*/api/* $(SCALADOC_DEST)
-
-
 # install-spark x.y.z
 # Easier to remember than the .sparks/x.y.z that we define below
 INSTALL_SPARK_RULES = $(addprefix install-spark-, $(SPARK_VERSIONS))
@@ -129,10 +119,7 @@ install-spark-all: $(INSTALL_SPARK_RULES)
 test: test-quick
 
 # Run all the basic tests tests with the default Python and Spark
-test-quick: test-scala test-python test-integration
-
-test-scala:
-	sbt test
+test-quick: test-python test-integration
 
 test-python: install-basic
 	tox -e $(DEFAULT_PYTHON_MAJOR) -- bash tools/smv-pytest --spark-home $(DEFAULT_SPARK_HOME)
@@ -142,18 +129,3 @@ test-integration: install-basic
 
 test-ingration-pip:
 	tox -e $(DEFAULT_PYTHON_MAJOR) -- bash src/test/scripts/run-integration-test.sh --pip-install
-
-# test-spark-x.y.z
-# Run python unit tests and integrations tests against target spark versions
-# TODO: is it really necessary to test every spark version with every python version
-TEST_SPARK_RULES = $(addprefix test-spark-, $(SPARK_VERSIONS))
-
-$(TEST_SPARK_RULES) : test-spark-% : install-spark-% assemble-fat-jar publish-scala
-	# e.g. tox -e py26 -e py35 -- bash ...
-	tox $(addprefix "-e ", $(PYTHON_VERSIONS)) -- \
-		bash tools/smv-pytest --spark-home $(SPARKS_DIR)/$*
-	tox $(addprefix "-e ", $(PYTHON_VERSIONS)) -- \
-		bash src/test/scripts/run-integration-test.sh --spark-home $(SPARKS_DIR)/$*
-
-# Test all supported Spark and Python versions
-test-thorough: install-full test-scala $(TEST_SPARK_RULES)
