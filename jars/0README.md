@@ -1,0 +1,1 @@
+This folder store JARs which SMV depends on at runtime.

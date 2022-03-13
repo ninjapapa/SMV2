@@ -39,7 +39,7 @@ BUNDLE_NAME = smv2_$(SMV_VERSION).tgz
 BUNDLE_PATH = docker/smv/$(BUNDLE_NAME)
 BUNDLE_INCLUDE = LICENSE README.md docs log4j.properties releases setup.cfg setup.py jars src/main/python tools
 
-local_bundle:
+local_bundle: xml-jar
 	# cleanup some unneeded binary files.
 	# use the `find ... -exec` variant instead of xargs
 	# because we don't want `rm` to execute if `find` returns nothing
