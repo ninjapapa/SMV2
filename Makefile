@@ -35,18 +35,17 @@ xml-jar:
 
 BUNDLE_NAME = smv2_$(SMV_VERSION).tgz
 BUNDLE_PATH = docker/smv/$(BUNDLE_NAME)
-BUNDLE_EXCLUDE = venv metastore_db .tox .ivy2 $(SPARKS_DIR) .git admin $(BUNDLE_NAME) .sparks
+BUNDLE_INCLUDE = LICENSE README.md docs log4j.properties releases setup.cfg setup.py $(shell \\ls spark-xml*.jar) src tools
+pwd
 
 local_bundle:
 	# cleanup some unneeded binary files.
-	rm -rf project/target project/project
-	rm -rf target
 	# use the `find ... -exec` variant instead of xargs
 	# because we don't want `rm` to execute if `find` returns nothing
 	find src -name '*.pyc' -exec rm -f \{\} +
 	find src -name '__pycache__' -exec rm -rf \{\} +
 
-	tar zcvf $(SMV_ROOT)/../$(BUNDLE_NAME) -C $(SMV_ROOT)/.. $(addprefix --exclude=, $(BUNDLE_EXCLUDE)) $(shell basename $(SMV_ROOT))
+	tar zcvf $(SMV_ROOT)/../$(BUNDLE_NAME) -C $(SMV_ROOT)/.. $(addprefix $(shell basename $(SMV_ROOT))/, $(BUNDLE_INCLUDE))
 	mv $(SMV_ROOT)/../$(BUNDLE_NAME) $(SMV_ROOT)/$(BUNDLE_NAME)
 
 # This will upload the bundle as "latest.tgz" to the CI release if we built on master.
