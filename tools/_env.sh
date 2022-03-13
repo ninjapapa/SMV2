@@ -139,12 +139,12 @@ function find_file_in_dir()
 function find_fat_jar()
 {
   local smv_tools_dir="$(get_smv_tools_dir)"
-  SMV_FAT_JAR="${smv_tools_dir}/../target/scala-2.11"
+  SMV_FAT_JAR="${smv_tools_dir}/../target/scala-2.12"
 
   # try sbt-build location first if not found try mvn-build location next.
   # then repeat from the parent directory, because the shell is
   # sometimes run from a notebook subdirectory of a data project
-  dirs=("target/scala-2.11" "target" "../target/scala-2.11" "../target" "$SMV_FAT_JAR" "${SMV_HOME}/target" "${SMV_HOME}/target/scala-2.11")
+  dirs=("target/scala-2.12" "target" "../target/scala-2.12" "../target" "$SMV_FAT_JAR" "${SMV_HOME}/target" "${SMV_HOME}/target/scala-2.12")
   APP_JAR=$(find_file_in_dir "smv*jar-with-dependencies.jar" "${dirs[@]}")
 
 }
@@ -218,16 +218,7 @@ function installed_spark_major_version() {
   local installed_version=$(${SMV_SPARK_SUBMIT_FULLPATH} --version 2>&1 | \
     grep -v "Spark Command" | grep version | head -1 | sed -e 's/.*version //')
   local sanitized_version=$(sanitize_version $installed_version)
-  echo ${sanitized_version:0:1}
-}
-
-function verify_spark_version() {
-  local installed_major_version=$(installed_spark_major_version)
-  local required_major_version=2
-  if [[ $installed_major_version != $required_major_version ]]; then
-    echo "Spark $installed_major_version detected. Please install Spark $required_major_version."
-    exit 1
-  fi
+  export SPARK_MAJOR_VERSION="${sanitized_version:0:1}"
 }
 
 function show_run_usage_message() {
@@ -259,6 +250,18 @@ function print_help() {
   "${SMV_SPARK_SUBMIT_FULLPATH}" --class ${SMV_APP_CLASS}  "${APP_JAR}" --help
 }
 
+function find_dependent_jars() {
+  if [ "$SPARK_MAJOR_VERSION" == "2" ]; then 
+    DEPENDENT_JARS="${SMV_HOME}/jars/spark-xml_2.11-0.13.0.jar"
+  elif [ "$SPARK_MAJOR_VERSION" == "3" ]; then
+    DEPENDENT_JARS="${SMV_HOME}/jars/spark-xml_2.12-0.13.0.jar"
+  else
+    echo "Spark $SPARK_MAJOR_VERSION detected. Need either Spark 2 or Spark 3."
+    exit 1
+  fi
+  export DEPENDENT_JARS
+}
+
 # We eagerly add the basename of the APP_JAR so that this same command
 # works in YARN Cluster mode, where the JAR gets added to the root directory
 # of the container. Also note the colon separator
@@ -275,11 +278,10 @@ function run_pyspark_with_fat_jar () {
   local PYTHONDONTWRITEBYTECODE=1
   local SPARK_PRINT_LAUNCH_COMMAND=1
   local SMV_LAUNCH_SCRIPT="${SMV_LAUNCH_SCRIPT:-${SMV_SPARK_SUBMIT_FULLPATH}}"
-  local XML_JAR="${SMV_HOME}/spark-xml_2.11-0.13.0.jar"
 
   ( export PYTHONDONTWRITEBYTECODE SPARK_PRINT_LAUNCH_COMMAND PYTHONPATH; \
     "${SMV_LAUNCH_SCRIPT}" "${SPARK_ARGS[@]}" \
-    --jars "$APP_JAR,$XML_JAR,$EXTRA_JARS" \
+    --jars "$APP_JAR,$DEPENDENT_JARS,$EXTRA_JARS" \
     --driver-class-path "$APP_JAR:$(basename ${APP_JAR}):$EXTRA_DRIVER_CLASSPATHS" \
     $1 "${SMV_ARGS[@]}"
   )
@@ -294,11 +296,11 @@ function run_pyspark_with () {
   local PYTHONDONTWRITEBYTECODE=1
   local SPARK_PRINT_LAUNCH_COMMAND=1
   local SMV_LAUNCH_SCRIPT="${SMV_LAUNCH_SCRIPT:-${SMV_SPARK_SUBMIT_FULLPATH}}"
-  local XML_JAR="${SMV_HOME}/spark-xml_2.11-0.13.0.jar"
+  local XML_JAR="$(\ls ${SMV_HOME}/spark-xml_*.jar)"
 
   ( export PYTHONDONTWRITEBYTECODE SPARK_PRINT_LAUNCH_COMMAND PYTHONPATH; \
     "${SMV_LAUNCH_SCRIPT}" "${SPARK_ARGS[@]}" \
-    --jars "${XML_JAR},$EXTRA_JARS" \
+    --jars "$DEPENDENT_JARS,$EXTRA_JARS" \
     --driver-class-path "$EXTRA_DRIVER_CLASSPATHS" \
     $1 "${SMV_ARGS[@]}"
   )
@@ -311,6 +313,7 @@ SMV_APP_CLASS="org.tresamigos.smv.SmvApp"
 split_smv_spark_args "$@"
 set_smv_spark_paths
 set_smv_home
-verify_spark_version
+installed_spark_major_version
 check_help_option
+find_dependent_jars
 find_fat_jar

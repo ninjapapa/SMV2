@@ -31,11 +31,13 @@ assemble-fat-jar: xml-jar
 	sbt assembly
 
 xml-jar: 
+	curl -OL --progress-bar --fail https://repo1.maven.org/maven2/com/databricks/spark-xml_2.12/0.13.0/spark-xml_2.12-0.13.0.jar > spark-xml_2.12-0.13.0.jar
 	curl -OL --progress-bar --fail https://repo1.maven.org/maven2/com/databricks/spark-xml_2.11/0.13.0/spark-xml_2.11-0.13.0.jar > spark-xml_2.11-0.13.0.jar
+	mv spark-xml*jar jars
 
 BUNDLE_NAME = smv2_$(SMV_VERSION).tgz
 BUNDLE_PATH = docker/smv/$(BUNDLE_NAME)
-BUNDLE_INCLUDE = LICENSE README.md docs log4j.properties releases setup.cfg setup.py $(shell \ls spark-xml*.jar) src/main/python tools
+BUNDLE_INCLUDE = LICENSE README.md docs log4j.properties releases setup.cfg setup.py jars src/main/python tools
 
 local_bundle:
 	# cleanup some unneeded binary files.

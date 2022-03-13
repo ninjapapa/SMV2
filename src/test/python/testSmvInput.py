@@ -126,7 +126,7 @@ id:integer"""
     def test_SmvCsvStringDataWithDate(self):
         fqn = "stage.modules.D1WithDate"
         df = self.df(fqn)
-        expect = self.createDF("a:String;b:Integer;c:Date[MM/dd/yyyy]", "x,10,2/28/2021;y,1,3/12/2011")
+        expect = self.createDF("a:String;b:Integer;c:Date[MM/dd/yyyy]", "x,10,02/28/2021;y,1,03/12/2011")
         self.should_be_same(expect, df)
 
     def test_SmvCsvStringData_with_error(self):

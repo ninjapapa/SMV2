@@ -283,7 +283,7 @@ class SmvXmlOnHdfsIoStrategy(SmvIoStrategy):
     def read(self):
         # TODO: look for possibilities to feed to readerLogger
         reader = self.smvApp.sqlContext\
-            .read.format('com.databricks.spark.xml')\
+            .read.format('xml')\
             .options(rowTag=self._rowTag)
 
         # If no schema specified, infer from data
