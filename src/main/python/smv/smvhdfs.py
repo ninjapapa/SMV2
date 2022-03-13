@@ -60,7 +60,7 @@ class SmvHDFS(object):
             path = self.Path(dirName)
             hdfs = self._getFileSystem(dirName)
             status = hdfs.listStatus(path)
-            names = [s.getPath().getName().encode("utf-8") for s in status]
+            names = [str(s.getPath().getName()) for s in status]
         except:
             names = []
 

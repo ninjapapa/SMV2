@@ -179,7 +179,7 @@ class ColumnHelper(object):
     def __init__(self, col):
         self.col = col
 
-        fullstr = self.col._jc.toString().encode('utf8')
+        fullstr = str(self.col._jc.toString())
         self.name = fullstr.split(" AS ")[1].strip('`') if " AS " in fullstr else fullstr
 
 

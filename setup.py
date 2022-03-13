@@ -58,7 +58,7 @@ VERSION = read_file('.smv_version')
 # README_CONTENTS = read_file('README.md')
 
 # What packages are required for this module to be executed?
-requirements_file_path = os.path.join("docker", "smv", "requirements.txt")
+requirements_file_path = os.path.join("tools", "requirements.txt")
 requirements_file_as_list = read_file(requirements_file_path).split('\n')
 
 # What packages are optional?
