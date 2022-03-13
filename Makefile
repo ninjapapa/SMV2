@@ -27,8 +27,11 @@ install-basic: install-spark-default assemble-fat-jar
 
 install-full: install-spark-all assemble-fat-jar
 
-assemble-fat-jar:
+assemble-fat-jar: xml-jar
 	sbt assembly
+
+xml-jar: 
+	curl -OL --progress-bar --fail https://repo1.maven.org/maven2/com/databricks/spark-xml_2.11/0.13.0/spark-xml_2.11-0.13.0.jar > spark-xml_2.11-0.13.0.jar
 
 publish-scala: assemble-fat-jar
 	sbt publish-local

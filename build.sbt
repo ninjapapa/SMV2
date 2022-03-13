@@ -12,8 +12,7 @@ scalacOptions ++= Seq("-deprecation", "-feature")
 val sparkVersion = "2.4.4"
 
 libraryDependencies ++= Seq(
-  "org.apache.spark"             %% "spark-sql"         % sparkVersion % "provided",
-  "com.databricks"               %% "spark-xml"         % "0.13.0"
+  "org.apache.spark"             %% "spark-sql"         % sparkVersion % "provided"
 )
 
 parallelExecution in Test := false

@@ -147,10 +147,6 @@ function find_fat_jar()
   dirs=("target/scala-2.11" "target" "../target/scala-2.11" "../target" "$SMV_FAT_JAR" "${SMV_HOME}/target" "${SMV_HOME}/target/scala-2.11")
   APP_JAR=$(find_file_in_dir "smv*jar-with-dependencies.jar" "${dirs[@]}")
 
-  if [ -z "$APP_JAR" ]; then
-    echo "ERROR: could not find an app jar in local target directory or SMV build target"
-    exit 1
-  fi
 }
 
 # creates the SMV_SPARK_SUBMIT_FULLPATH and SMV_PYSPARK_FULLPATH from user
@@ -267,6 +263,10 @@ function print_help() {
 # works in YARN Cluster mode, where the JAR gets added to the root directory
 # of the container. Also note the colon separator
 function run_pyspark_with_fat_jar () {
+  if [ -z "$APP_JAR" ]; then
+    echo "ERROR: could not find an app jar in local target directory or SMV build target"
+    exit 1
+  fi
   local tools_dir="$(get_smv_tools_dir)"
   local SMV_HOME="$(cd ${tools_dir}/..; pwd)"
   local PYTHONPATH="$SMV_HOME/src/main/python:$PYTHONPATH"
@@ -275,10 +275,11 @@ function run_pyspark_with_fat_jar () {
   local PYTHONDONTWRITEBYTECODE=1
   local SPARK_PRINT_LAUNCH_COMMAND=1
   local SMV_LAUNCH_SCRIPT="${SMV_LAUNCH_SCRIPT:-${SMV_SPARK_SUBMIT_FULLPATH}}"
+  local XML_JAR="${SMV_HOME}/spark-xml_2.11-0.13.0.jar"
 
   ( export PYTHONDONTWRITEBYTECODE SPARK_PRINT_LAUNCH_COMMAND PYTHONPATH; \
     "${SMV_LAUNCH_SCRIPT}" "${SPARK_ARGS[@]}" \
-    --jars "$APP_JAR,$EXTRA_JARS" \
+    --jars "$APP_JAR,$XML_JAR,$EXTRA_JARS" \
     --driver-class-path "$APP_JAR:$(basename ${APP_JAR}):$EXTRA_DRIVER_CLASSPATHS" \
     $1 "${SMV_ARGS[@]}"
   )
@@ -293,10 +294,11 @@ function run_pyspark_with () {
   local PYTHONDONTWRITEBYTECODE=1
   local SPARK_PRINT_LAUNCH_COMMAND=1
   local SMV_LAUNCH_SCRIPT="${SMV_LAUNCH_SCRIPT:-${SMV_SPARK_SUBMIT_FULLPATH}}"
+  local XML_JAR="${SMV_HOME}/spark-xml_2.11-0.13.0.jar"
 
   ( export PYTHONDONTWRITEBYTECODE SPARK_PRINT_LAUNCH_COMMAND PYTHONPATH; \
     "${SMV_LAUNCH_SCRIPT}" "${SPARK_ARGS[@]}" \
-    --jars "$EXTRA_JARS" \
+    --jars "${XML_JAR},$EXTRA_JARS" \
     --driver-class-path "$EXTRA_DRIVER_CLASSPATHS" \
     $1 "${SMV_ARGS[@]}"
   )

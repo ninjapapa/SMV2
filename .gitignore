@@ -1,5 +1,6 @@
 data/out
 target
+*.jar
 .idea
 *.iml
 /bin/
