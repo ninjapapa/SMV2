@@ -9,7 +9,7 @@ scalaVersion := "2.11.8"
 scalacOptions ++= Seq("-deprecation", "-feature")
 
 // Compile against earliest supported Spark - the jar will be foward compatible.
-val sparkVersion = "2.4.4"
+val sparkVersion = "2.4.8"
 
 libraryDependencies ++= Seq(
   "org.apache.spark"             %% "spark-sql"         % sparkVersion % "provided"
