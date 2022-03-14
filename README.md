@@ -12,6 +12,7 @@ SMV2 is based on [SMV](https://github.com/TresAmigosSD/SMV) with the following c
 Spark Modularized View enables users to build enterprise scale applications on Apache Spark platform.
 
 * [User Guide](docs/user/0_user_toc.md)
+* [Python API Doc](https://ninjapapa.github.io/SMV2/python_api/)
 
 # SMV2 Quickstart
 
