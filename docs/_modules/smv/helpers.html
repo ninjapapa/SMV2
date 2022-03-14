@@ -1,0 +1,320 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>smv.helpers &#8212; Spark Modularized View v1.1r1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Spark Modularized View v1.1r1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">smv.helpers</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for smv.helpers</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is licensed under the Apache License, Version 2.0</span>
+<span class="c1"># (the &quot;License&quot;); you may not use this file except in compliance with</span>
+<span class="c1"># the License.  You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="sd">&quot;&quot;&quot;SMV DataFrame Helpers and Column Helpers</span>
+
+<span class="sd">    This module provides the helper functions on DataFrame objects and Column objects</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+
+<span class="kn">import</span> <span class="nn">decorator</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql.column</span> <span class="kn">import</span> <span class="n">Column</span>
+<span class="kn">import</span> <span class="nn">pyspark.sql.functions</span> <span class="k">as</span> <span class="nn">F</span>
+
+<span class="kn">from</span> <span class="nn">smv.error</span> <span class="kn">import</span> <span class="n">SmvRuntimeError</span>
+
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
+
+<span class="k">def</span> <span class="nf">_getUnboundMethod</span><span class="p">(</span><span class="n">helperCls</span><span class="p">,</span> <span class="n">oldMethod</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">newMethod</span><span class="p">(</span><span class="n">_oldMethod</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_oldMethod</span><span class="p">(</span><span class="n">helperCls</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">decorator</span><span class="o">.</span><span class="n">decorate</span><span class="p">(</span><span class="n">oldMethod</span><span class="p">,</span> <span class="n">newMethod</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_helpCls</span><span class="p">(</span><span class="n">receiverCls</span><span class="p">,</span> <span class="n">helperCls</span><span class="p">):</span>
+    <span class="n">iscallable</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s2">&quot;__call__&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">oldMethod</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getmembers</span><span class="p">(</span><span class="n">helperCls</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="n">iscallable</span><span class="p">):</span>
+        <span class="c1"># We will use decorator.decorate to ensure that attributes of oldMethod, like</span>
+        <span class="c1"># docstring and signature, are inherited by newMethod. decorator.decorate</span>
+        <span class="c1"># won&#39;t accept an unbound method, so for Python 2 we extract oldMethod&#39;s</span>
+        <span class="c1"># implementing function __func__. In Python 3, inspect.getmembers will return</span>
+        <span class="c1"># the implementing functions insead of unbound method - this is due to</span>
+        <span class="c1"># Python 3&#39;s data model.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">impl</span> <span class="o">=</span> <span class="n">oldMethod</span><span class="o">.</span><span class="vm">__func__</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">impl</span> <span class="o">=</span> <span class="n">oldMethod</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
+            <span class="n">newMethod</span> <span class="o">=</span> <span class="n">_getUnboundMethod</span><span class="p">(</span><span class="n">helperCls</span><span class="p">,</span> <span class="n">impl</span><span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">receiverCls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">newMethod</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_mkUniq</span><span class="p">(</span><span class="n">collection</span><span class="p">,</span> <span class="n">candidate</span><span class="p">,</span> <span class="n">ignorcase</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">postfix</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Repeatedly changes `candidate` so that it is not found in the `collection`.</span>
+<span class="sd">    Useful when choosing a unique column name to add to a data frame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ignorcase</span><span class="p">:</span>
+        <span class="n">col_cmp</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">collection</span><span class="p">]</span>
+        <span class="n">can_cmp</span> <span class="o">=</span> <span class="n">candidate</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">col_cmp</span> <span class="o">=</span> <span class="n">collection</span>
+        <span class="n">can_cmp</span> <span class="o">=</span> <span class="n">candidate</span>
+    
+    <span class="n">can_to</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">can_cmp</span> <span class="k">if</span> <span class="n">postfix</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">can_cmp</span> <span class="o">+</span> <span class="n">postfix</span>
+    <span class="k">if</span> <span class="n">can_to</span> <span class="ow">in</span> <span class="n">col_cmp</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">_mkUniq</span><span class="p">(</span><span class="n">col_cmp</span><span class="p">,</span> <span class="n">can_to</span><span class="p">,</span> <span class="n">ignorcase</span><span class="p">,</span> <span class="n">postfix</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">can_to</span>
+
+    <span class="k">return</span> <span class="n">res</span>
+
+<div class="viewcode-block" id="DataFrameHelper"><a class="viewcode-back" href="../../smv.html#smv.helpers.DataFrameHelper">[docs]</a><span class="k">class</span> <span class="nc">DataFrameHelper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
+       
+<div class="viewcode-block" id="DataFrameHelper.smvJoinByKey"><a class="viewcode-back" href="../../smv.html#smv.helpers.DataFrameHelper.smvJoinByKey">[docs]</a>    <span class="k">def</span> <span class="nf">smvJoinByKey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">joinType</span><span class="p">,</span> <span class="n">isNullSafe</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;joins two DataFrames on a key</span>
+
+<span class="sd">            Check none key columns for duplicate and rename right DF duplicate column before join.</span>
+
+<span class="sd">            Same as Spark native join funcation if not NullSafe.</span>
+<span class="sd">            For NullSafe specified, replicate Spark native join behaviour on NullSafe case</span>
+<span class="sd">            Post join, only the left side keys will remain. In case of outer-join, the</span>
+<span class="sd">            `coalesce(leftkey, rightkey)` will replace the left key to be kept.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                other (DataFrame): the DataFrame to join with</span>
+<span class="sd">                keys (list(string)): a list of column names on which to apply the join</span>
+<span class="sd">                joinType (string): choose one of [&#39;inner&#39;, &#39;outer&#39;, &#39;leftouter&#39;, &#39;rightouter&#39;, &#39;leftsemi&#39;]</span>
+<span class="sd">                isNullSafe (boolean): if true matches null keys between left and right tables and keep in output. Default False. </span>
+
+<span class="sd">            Example:</span>
+<span class="sd">                &gt;&gt;&gt; df1.smvJoinByKey(df2, [&quot;k&quot;], &quot;inner&quot;)</span>
+<span class="sd">                &gt;&gt;&gt; df_with_null_key.smvJoinByKey(df2, [&quot;k&quot;], &quot;inner&quot;, True)</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                (DataFrame): result of the join operation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># Check right DF non-key col names for duplicates``</span>
+        <span class="n">left_nonkey_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span>
+        <span class="n">right_need_change</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">and</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">left_nonkey_cols</span><span class="p">]</span>
+
+        <span class="c1"># Rename right DF duplicated column with prefix &quot;_&quot;</span>
+        <span class="n">other_name_changed</span> <span class="o">=</span> <span class="n">other</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">right_need_change</span><span class="p">:</span>
+            <span class="n">other_name_changed</span> <span class="o">=</span> <span class="n">other_name_changed</span><span class="o">.</span><span class="n">withColumnRenamed</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">_mkUniq</span><span class="p">(</span><span class="n">left_nonkey_cols</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">ignorcase</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">isNullSafe</span><span class="p">:</span>
+            <span class="n">keys_rn</span> <span class="o">=</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span> <span class="n">_mkUniq</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">k</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span>
+            <span class="n">key_name_changed</span> <span class="o">=</span> <span class="n">other_name_changed</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">nk</span><span class="p">)</span> <span class="ow">in</span> <span class="n">keys_rn</span><span class="p">:</span>
+                <span class="n">key_name_changed</span> <span class="o">=</span> <span class="n">key_name_changed</span><span class="o">.</span><span class="n">withColumnRenamed</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">nk</span><span class="p">)</span>
+            <span class="n">joinOpt</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span> <span class="o">&amp;</span> <span class="n">b</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">eqNullSafe</span><span class="p">(</span><span class="n">key_name_changed</span><span class="p">[</span><span class="n">nk</span><span class="p">])</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">nk</span><span class="p">)</span> <span class="ow">in</span> <span class="n">keys_rn</span><span class="p">])</span>
+            <span class="n">joinOut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">key_name_changed</span><span class="p">,</span> <span class="n">joinOpt</span><span class="p">,</span> <span class="n">joinType</span><span class="p">)</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">joinOut</span>
+            <span class="c1"># for each key used in NullSafe, coalesce key value from left to right (replicate spark &quot;join&quot; on key behavior)</span>
+            <span class="c1"># Only impact outer join result, since inner join will have both key the same</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">nk</span><span class="p">)</span> <span class="ow">in</span> <span class="n">keys_rn</span><span class="p">:</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">F</span><span class="o">.</span><span class="n">coalesce</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">nk</span><span class="p">))</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">nk</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># native join on key can&#39;t do null safe</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">other_name_changed</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">joinType</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="DataFrameHelper.smvUnion"><a class="viewcode-back" href="../../smv.html#smv.helpers.DataFrameHelper.smvUnion">[docs]</a>    <span class="k">def</span> <span class="nf">smvUnion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dfother</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Unions DataFrames with different number of columns by column name and schema</span>
+
+<span class="sd">            Spark unionAll ignores column names &amp; schema, and can only be performed on tables with the same number of columns.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                dfOther (DataFrame): the dataframe to union with</span>
+
+<span class="sd">            Example:</span>
+<span class="sd">                &gt;&gt;&gt; df.smvUnion(df2)</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                (DataFrame): the union of all specified DataFrames</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># val leftNeed   = dfother.columns diff df.columns</span>
+        <span class="n">left_need</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">dfother</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+        <span class="n">left_name_type</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">dfother</span><span class="o">.</span><span class="n">schema</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">dataType</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">left_need</span><span class="p">]</span>
+        <span class="n">leftFull</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="n">F</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="ow">in</span> <span class="n">left_name_type</span><span class="p">])</span>
+
+        <span class="n">right_need</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">dfother</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+        <span class="n">right_name_type</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">schema</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">dataType</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">right_need</span><span class="p">]</span>
+        <span class="n">rightFull</span> <span class="o">=</span> <span class="n">dfother</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="n">F</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="ow">in</span> <span class="n">right_name_type</span><span class="p">])</span>
+
+        <span class="n">overlap</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">dfother</span><span class="o">.</span><span class="n">columns</span><span class="p">)))</span>
+        <span class="n">cols_diff_struct</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">overlap</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">schema</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">dataType</span> <span class="o">!=</span> <span class="n">dfother</span><span class="o">.</span><span class="n">schema</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">dataType</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="n">cols_diff_struct</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">SmvRuntimeError</span><span class="p">(</span><span class="s2">&quot;fail to union columns with same name but different StructTypes:&quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cols_diff_struct</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">leftFull</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">rightFull</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">leftFull</span><span class="o">.</span><span class="n">columns</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="DataFrameHelper.peek"><a class="viewcode-back" href="../../smv.html#smv.helpers.DataFrameHelper.peek">[docs]</a>    <span class="k">def</span> <span class="nf">peek</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Display a DataFrame row in transposed view</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                pos (integer): the n-th row to display, default as 1</span>
+<span class="sd">                colRegex (string): show the columns with name matching the regex, default as &quot;.*&quot;</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                (None)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">rows</span><span class="p">)):</span>
+            <span class="n">rec</span> <span class="o">=</span> <span class="n">rows</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># last row</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> : </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span> <span class="k">for</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">dtypes</span> <span class="p">]</span>
+            <span class="n">width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">])</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">rec</span><span class="p">[</span><span class="n">n</span><span class="p">]))</span></div></div>
+
+
+<div class="viewcode-block" id="ColumnHelper"><a class="viewcode-back" href="../../smv.html#smv.helpers.ColumnHelper">[docs]</a><span class="k">class</span> <span class="nc">ColumnHelper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">col</span> <span class="o">=</span> <span class="n">col</span>
+
+        <span class="n">fullstr</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="o">.</span><span class="n">_jc</span><span class="o">.</span><span class="n">toString</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">fullstr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; AS &quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;`&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot; AS &quot;</span> <span class="ow">in</span> <span class="n">fullstr</span> <span class="k">else</span> <span class="n">fullstr</span>
+
+
+<div class="viewcode-block" id="ColumnHelper.smvGetColName"><a class="viewcode-back" href="../../smv.html#smv.helpers.ColumnHelper.smvGetColName">[docs]</a>    <span class="k">def</span> <span class="nf">smvGetColName</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the name of a Column as a sting</span>
+
+<span class="sd">            Example:</span>
+<span class="sd">            &gt;&gt;&gt; df.a.smvGetColName()</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                (str)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span></div>
+
+<div class="viewcode-block" id="ColumnHelper.smvAsUTC"><a class="viewcode-back" href="../../smv.html#smv.helpers.ColumnHelper.smvAsUTC">[docs]</a>    <span class="k">def</span> <span class="nf">smvAsUTC</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Take the string part of a timestamp column and make it in UTC TZ.</span>
+<span class="sd">        Note: this actually changed the timestamp if the original TZ is not UTC</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">to_timestamp</span><span class="p">(</span>
+            <span class="n">F</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">date_format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="p">,</span> <span class="s1">&#39;yyyy-MM-dd HH:mm:SS&#39;</span><span class="p">),</span> <span class="n">F</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">)),</span> 
+            <span class="s1">&#39;yyyy-MM-dd HH:mm:SSz&#39;</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;smvAsUTC(</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ColumnHelper.smvDay70"><a class="viewcode-back" href="../../smv.html#smv.helpers.ColumnHelper.smvDay70">[docs]</a>    <span class="k">def</span> <span class="nf">smvDay70</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert a Timestamp to the number of days from 1970-01-01</span>
+<span class="sd">            d70 = 0 is a Thursday</span>
+<span class="sd">            If consider Sunday as the start of a week and define </span>
+<span class="sd">            week70=0 is the week where 1970-01-01 is in </span>
+
+<span class="sd">            week70 = (d70 - 3) / 7 + 1</span>
+
+<span class="sd">            Example:</span>
+<span class="sd">                &gt;&gt;&gt; df.select(col(&quot;dob&quot;).smvDay70())</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                (Column): IntegerType. Number of days from 1970-01-01 (start from 0)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">unix_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">smvAsUTC</span><span class="p">())</span> <span class="o">/</span> <span class="mi">24</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;smvDay70(</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ColumnHelper.smvMonth70"><a class="viewcode-back" href="../../smv.html#smv.helpers.ColumnHelper.smvMonth70">[docs]</a>    <span class="k">def</span> <span class="nf">smvMonth70</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert a Timestamp to the number of months from 1970-01-01</span>
+
+<span class="sd">            Example:</span>
+<span class="sd">                &gt;&gt;&gt; df.select(col(&quot;dob&quot;).smvMonth70())</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                (Column): IntegerType. Number of months from 1970-01-01 (start from 0)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">year</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">year</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="p">)</span>
+        <span class="n">month</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">month</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">year</span> <span class="o">-</span> <span class="mi">1970</span><span class="p">)</span> <span class="o">*</span> <span class="mi">12</span> <span class="o">+</span> <span class="n">month</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;smvMonth70(</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span></div></div>
+
+
+<span class="c1"># Initialize DataFrame and Column with helper methods. Called by SmvApp.</span>
+<div class="viewcode-block" id="init_helpers"><a class="viewcode-back" href="../../smv.html#smv.helpers.init_helpers">[docs]</a><span class="k">def</span> <span class="nf">init_helpers</span><span class="p">():</span>
+    <span class="n">_helpCls</span><span class="p">(</span><span class="n">Column</span><span class="p">,</span> <span class="n">ColumnHelper</span><span class="p">)</span>
+    <span class="n">_helpCls</span><span class="p">(</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">DataFrameHelper</span><span class="p">)</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Spark Modularized View v1.1r1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">smv.helpers</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, TresAmigosSD.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>
