@@ -1,0 +1,244 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>smv.smvschema &#8212; Spark Modularized View v1.1r1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Spark Modularized View v1.1r1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">smv.smvschema</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for smv.smvschema</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># This file is licensed under the Apache License, Version 2.0</span>
+<span class="c1"># (the &quot;License&quot;); you may not use this file except in compliance with</span>
+<span class="c1"># the License.  You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">pyspark.sql.types</span> <span class="k">as</span> <span class="nn">T</span>
+<span class="kn">from</span> <span class="nn">smv.error</span> <span class="kn">import</span> <span class="n">SmvRuntimeError</span>
+<span class="kn">from</span> <span class="nn">smv.utils</span> <span class="kn">import</span> <span class="n">is_string</span>
+<span class="kn">from</span> <span class="nn">smv.csv_attributes</span> <span class="kn">import</span> <span class="n">CsvAttributes</span>
+
+<span class="c1"># make it as a class with spark-schema, attrs (consider date, time formats as attr)</span>
+<div class="viewcode-block" id="SmvSchema"><a class="viewcode-back" href="../../smv.html#smv.smvschema.SmvSchema">[docs]</a><span class="k">class</span> <span class="nc">SmvSchema</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_schema</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">is_string</span><span class="p">(</span><span class="n">_schema</span><span class="p">):</span>
+            <span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fullStrToSchema</span><span class="p">(</span><span class="n">_schema</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_schema</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">StructType</span><span class="p">):</span>
+            <span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">_schema</span><span class="p">,</span>
+                <span class="n">CsvAttributes</span><span class="p">(),</span>        <span class="c1"># Default csv attributes</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SmvRuntimeError</span><span class="p">(</span><span class="s2">&quot;Unsupported schema type: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">_schema</span><span class="p">)))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">s</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="n">a</span>
+        
+<div class="viewcode-block" id="SmvSchema.updateAttrs"><a class="viewcode-back" href="../../smv.html#smv.smvschema.SmvSchema.updateAttrs">[docs]</a>    <span class="k">def</span> <span class="nf">updateAttrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+    <span class="k">def</span> <span class="nf">_strToStructField</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fieldStr</span><span class="p">):</span>
+        <span class="c1"># *? is for non-greedy match</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;&quot;&quot;\s*(?P&lt;name&gt;[^:]*?)\s*:    # Col Name part</span>
+<span class="s2">                                \s*(?P&lt;dtype&gt;[^@]*?)\s*    # Type part</span>
+<span class="s2">                                (@metadata=(?P&lt;meta&gt;.*))?  # Meta if any</span>
+<span class="s2">                                \Z                         #end of string&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">)</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">fieldStr</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;dtype&#39;</span><span class="p">)</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># Timestamp, date, decimal</span>
+        <span class="n">dfmtStr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">tfmtStr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[Dd]ecimal&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)):</span>
+            <span class="n">dpat</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;&quot;&quot;[Dd]ecimal(\[ *(?P&lt;precision&gt;\d+) *(, *(?P&lt;scale&gt;\d+) *)?\])?&quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="n">dmatch</span> <span class="o">=</span> <span class="n">dpat</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="n">precision</span> <span class="o">=</span> <span class="n">dmatch</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;precision&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">10</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="n">dmatch</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;scale&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span>
+            <span class="n">dtypeStr</span> <span class="o">=</span> <span class="s2">&quot;decimal(</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">precision</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[Dd]ate&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)):</span>
+            <span class="n">dmatch</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[Dd]ate(\[(?P&lt;fmt&gt;.+)\])?&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+            <span class="n">dfmtStr</span> <span class="o">=</span> <span class="n">dmatch</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;fmt&#39;</span><span class="p">)</span>
+            <span class="n">dtypeStr</span> <span class="o">=</span> <span class="s2">&quot;date&quot;</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[Tt]imestamp&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)):</span>
+            <span class="n">dmatch</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[Tt]imestamp(\[(?P&lt;fmt&gt;.+)\])?&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+            <span class="n">tfmtStr</span> <span class="o">=</span> <span class="n">dmatch</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;fmt&#39;</span><span class="p">)</span>
+            <span class="n">dtypeStr</span> <span class="o">=</span> <span class="s2">&quot;timestamp&quot;</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[Ss]tring&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)):</span>
+            <span class="c1"># smv allow String[,_SmvStrNull_] type of value. Ignor here</span>
+            <span class="n">dtypeStr</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dtypeStr</span> <span class="o">=</span> <span class="n">dtype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="n">fieldJson</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">dtypeStr</span><span class="p">,</span>
+            <span class="s2">&quot;nullable&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="n">field</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">StructField</span><span class="o">.</span><span class="n">fromJson</span><span class="p">(</span><span class="n">fieldJson</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">dfmtStr</span><span class="p">,</span> <span class="n">tfmtStr</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_strToAttr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrStr</span><span class="p">):</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;@\s*(?P&lt;name&gt;\S*)\s*=\s*(?P&lt;value&gt;\S*)\s*&quot;</span><span class="p">)</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">attrStr</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_strListToSchema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smvStrs</span><span class="p">):</span>
+        <span class="n">no_comm</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;;[ </span><span class="se">\t</span><span class="s1">]*$&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">smvStrs</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^(//|#).*$&quot;</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="ow">or</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[ \t]*$&quot;</span><span class="p">,</span> <span class="n">r</span><span class="p">))]</span>
+        <span class="n">attrStrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">no_comm</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">)]</span>
+        <span class="n">fieldStrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">no_comm</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">)]</span>
+
+        <span class="n">attrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_strToAttr</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">attrStrs</span><span class="p">])</span>
+
+        <span class="n">fieldlist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">dfmtlist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">tfmtlist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">fieldStrs</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">dfmt</span><span class="p">,</span> <span class="n">tfmt</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_strToStructField</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="n">fieldlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dfmt</span><span class="p">:</span>
+                <span class="n">dfmtlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dfmt</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tfmt</span><span class="p">:</span>
+                <span class="n">tfmtlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tfmt</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">dfmtlist</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SmvRuntimeError</span><span class="p">(</span><span class="s2">&quot;Date type has multiple formats: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">dfmtlist</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">dfmtlist</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">dateFormat</span> <span class="o">=</span> <span class="n">dfmtlist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dateFormat</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">tfmtlist</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SmvRuntimeError</span><span class="p">(</span><span class="s2">&quot;TimeStamp type has multiple formats: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">tfmtlist</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">tfmtlist</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">timestampFormat</span> <span class="o">=</span> <span class="n">tfmtlist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">timestampFormat</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">dateFormat</span><span class="p">:</span>
+            <span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;dateFormat&quot;</span><span class="p">:</span> <span class="n">dateFormat</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">timestampFormat</span><span class="p">:</span>
+            <span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;timestampFormat&quot;</span><span class="p">:</span> <span class="n">timestampFormat</span><span class="p">})</span>
+
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">StructType</span><span class="p">(</span><span class="n">fieldlist</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_fullStrToSchema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smvStr</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_strListToSchema</span><span class="p">(</span><span class="n">smvStr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SmvSchema.toStrForFile"><a class="viewcode-back" href="../../smv.html#smv.smvschema.SmvSchema.toStrForFile">[docs]</a>    <span class="k">def</span> <span class="nf">toStrForFile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">attrStr</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;@</span><span class="si">{}</span><span class="s2"> = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span>
+        <span class="n">fmtStr</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+            <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2"> @metadata=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">s</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">dataType</span><span class="o">.</span><span class="n">typeName</span><span class="p">(),</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">metadata</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">fieldNames</span><span class="p">()</span>
+        <span class="p">])</span>
+        <span class="k">return</span> <span class="n">attrStr</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">fmtStr</span></div>
+
+<div class="viewcode-block" id="SmvSchema.addCsvAttributes"><a class="viewcode-back" href="../../smv.html#smv.smvschema.SmvSchema.addCsvAttributes">[docs]</a>    <span class="k">def</span> <span class="nf">addCsvAttributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="SmvSchema.dicoverFromInferedDF"><a class="viewcode-back" href="../../smv.html#smv.smvschema.SmvSchema.dicoverFromInferedDF">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">dicoverFromInferedDF</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="n">raw_schema</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">schema</span>
+        <span class="n">first_row</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">new_schema</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">StructType</span><span class="p">([])</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">raw_schema</span><span class="o">.</span><span class="n">fieldNames</span><span class="p">():</span>
+            <span class="n">name_norm</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\W+&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="n">dtype</span> <span class="o">=</span> <span class="n">raw_schema</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">dataType</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;smvDesc&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">first_row</span><span class="p">[</span><span class="n">n</span><span class="p">])}</span>
+            <span class="n">new_schema</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name_norm</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">meta</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">new_schema</span><span class="p">)</span><span class="o">.</span><span class="n">addCsvAttributes</span><span class="p">({</span><span class="s2">&quot;has-header&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">})</span></div></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Spark Modularized View v1.1r1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">smv.smvschema</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, TresAmigosSD.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>
