@@ -1,6 +1,0 @@
-# Please note smv-user-conf.props is typically Git-ignored since it could be
-# different from one team member's envirourment to another. 
-# Please use the smv-user-conf.props.example as a template to create your own
-
-# data dir. temparory persisted data will be stored in the "output" sub-dir in dataDir
-smv.dataDir = file://_PROJ_DIR_FULL_PATH_/data

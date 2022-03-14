@@ -1,8 +1,0 @@
-# application name
-smv.appName = App A
-
-# stage definitions
-smv.stages = stage
-
-# static appId for testing
-smv.appId = PROJECT_A
