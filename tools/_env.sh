@@ -135,20 +135,6 @@ function find_file_in_dir()
   done
 }
 
-# find latest fat jar in target directory.
-function find_fat_jar()
-{
-  local smv_tools_dir="$(get_smv_tools_dir)"
-  SMV_FAT_JAR="${smv_tools_dir}/../target/scala-2.12"
-
-  # try sbt-build location first if not found try mvn-build location next.
-  # then repeat from the parent directory, because the shell is
-  # sometimes run from a notebook subdirectory of a data project
-  dirs=("target/scala-2.12" "target" "../target/scala-2.12" "../target" "$SMV_FAT_JAR" "${SMV_HOME}/target" "${SMV_HOME}/target/scala-2.12")
-  APP_JAR=$(find_file_in_dir "smv*jar-with-dependencies.jar" "${dirs[@]}")
-
-}
-
 # creates the SMV_SPARK_SUBMIT_FULLPATH and SMV_PYSPARK_FULLPATH from user
 # specified spark home and possibly overriden command names (for cloudera support).
 # users can specify SMV_SPARK_SUBMIT_CMD and SMV_PYSPARK_CMD to override the
@@ -262,29 +248,24 @@ function find_dependent_jars() {
   export DEPENDENT_JARS
 }
 
-# We eagerly add the basename of the APP_JAR so that this same command
-# works in YARN Cluster mode, where the JAR gets added to the root directory
-# of the container. Also note the colon separator
-function run_pyspark_with_fat_jar () {
+# find latest app jar (only for testing) in target directory.
+function find_app_jar()
+{
+  local smv_tools_dir="$(get_smv_tools_dir)"
+  SMV_APP_JAR="${smv_tools_dir}/../target/scala-2.12"
+
+  # try sbt-build location first if not found try mvn-build location next.
+  # then repeat from the parent directory, because the shell is
+  # sometimes run from a notebook subdirectory of a data project
+  dirs=("target/scala-2.12" "target" "../target/scala-2.12" "../target" "$SMV_APP_JAR" "${SMV_HOME}/target" "${SMV_HOME}/target/scala-2.12")
+  APP_JAR=$(find_file_in_dir "smv*jar-with-dependencies.jar" "${dirs[@]}")
+
   if [ -z "$APP_JAR" ]; then
     echo "ERROR: could not find an app jar in local target directory or SMV build target"
     exit 1
   fi
-  local tools_dir="$(get_smv_tools_dir)"
-  local SMV_HOME="$(cd ${tools_dir}/..; pwd)"
-  local PYTHONPATH="$SMV_HOME/src/main/python:$PYTHONPATH"
-  # Suppress creation of .pyc files. These cause complications with
-  # reloading code and have led to discovering deleted modules (#612)
-  local PYTHONDONTWRITEBYTECODE=1
-  local SPARK_PRINT_LAUNCH_COMMAND=1
-  local SMV_LAUNCH_SCRIPT="${SMV_LAUNCH_SCRIPT:-${SMV_SPARK_SUBMIT_FULLPATH}}"
-
-  ( export PYTHONDONTWRITEBYTECODE SPARK_PRINT_LAUNCH_COMMAND PYTHONPATH; \
-    "${SMV_LAUNCH_SCRIPT}" "${SPARK_ARGS[@]}" \
-    --jars "$APP_JAR,$DEPENDENT_JARS,$EXTRA_JARS" \
-    --driver-class-path "$APP_JAR:$(basename ${APP_JAR}):$EXTRA_DRIVER_CLASSPATHS" \
-    $1 "${SMV_ARGS[@]}"
-  )
+  export DEPENDENT_JARS="$APP_JAR,$DEPENDENT_JARS"
+  export EXTRA_DRIVER_CLASSPATHS="$APP_JAR:$(basename ${APP_JAR}):$EXTRA_DRIVER_CLASSPATHS"
 }
 
 function run_pyspark_with () {
@@ -296,7 +277,6 @@ function run_pyspark_with () {
   local PYTHONDONTWRITEBYTECODE=1
   local SPARK_PRINT_LAUNCH_COMMAND=1
   local SMV_LAUNCH_SCRIPT="${SMV_LAUNCH_SCRIPT:-${SMV_SPARK_SUBMIT_FULLPATH}}"
-  local XML_JAR="$(\ls ${SMV_HOME}/spark-xml_*.jar)"
 
   ( export PYTHONDONTWRITEBYTECODE SPARK_PRINT_LAUNCH_COMMAND PYTHONPATH; \
     "${SMV_LAUNCH_SCRIPT}" "${SPARK_ARGS[@]}" \
@@ -316,4 +296,3 @@ set_smv_home
 installed_spark_major_version
 check_help_option
 find_dependent_jars
-find_fat_jar

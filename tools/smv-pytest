@@ -32,6 +32,7 @@ SPARK_ARGS=("${SPARK_ARGS[@]}" "--conf" "spark.driver.extraJavaOptions=-Dlog4j.c
 OLD_PYSPARK_DRIVER_PYTHON="$PYSPARK_DRIVER_PYTHON"
 unset PYSPARK_DRIVER_PYTHON
 
-run_pyspark_with_fat_jar ${SMV_TOOLS}/../src/main/python/scripts/runtests.py "$@"
+find_app_jar
+run_pyspark_with ${SMV_TOOLS}/../src/main/python/scripts/runtests.py "$@"
 
 export PYSPARK_DRIVER_PYTHON="$OLD_PYSPARK_DRIVER_PYTHON"
