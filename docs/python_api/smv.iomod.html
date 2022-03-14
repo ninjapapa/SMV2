@@ -258,7 +258,7 @@ User need to implement:</p>
 <li><p>schemaFileName: optional</p></li>
 <li><p>userSchema: optional</p></li>
 <li><p>csvAttr: optional</p></li>
-<li><p>csvReaderMode: optional, default True</p></li>
+<li><p>csvReaderMode: optional, default FAILFAST (could be PERMISSIVE or DROPMALFORMED)</p></li>
 </ul>
 </div></blockquote>
 </dd></dl>
@@ -273,7 +273,7 @@ User need to implement:</p>
 <div><ul class="simple">
 <li><p>schemaStr(): required</p></li>
 <li><p>dataStr(): required</p></li>
-<li><p>csvReaderMode(): optional</p></li>
+<li><p>csvReaderMode: optional, default FAILFAST (could be PERMISSIVE or DROPMALFORMED)</p></li>
 </ul>
 </div></blockquote>
 <dl class="py method">
@@ -390,7 +390,7 @@ User need to implement:</p>
 <li><p>schemaFileName: optional</p></li>
 <li><p>userSchema: optional</p></li>
 <li><p>csvAttr: optional</p></li>
-<li><p>csvReaderMode: optional, default True</p></li>
+<li><p>csvReaderMode: optional, default FAILFAST (could be PERMISSIVE or DROPMALFORMED)</p></li>
 </ul>
 </div></blockquote>
 <dl class="py method">

@@ -352,7 +352,7 @@
 <span class="sd">            - schemaFileName: optional</span>
 <span class="sd">            - userSchema: optional</span>
 <span class="sd">            - csvAttr: optional</span>
-<span class="sd">            - csvReaderMode: optional, default True</span>
+<span class="sd">            - csvReaderMode: optional, default FAILFAST (could be PERMISSIVE or DROPMALFORMED)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_get_input_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -378,7 +378,7 @@
 <span class="sd">            - schemaFileName: optional</span>
 <span class="sd">            - userSchema: optional</span>
 <span class="sd">            - csvAttr: optional</span>
-<span class="sd">            - csvReaderMode: optional, default True</span>
+<span class="sd">            - csvReaderMode: optional, default FAILFAST (could be PERMISSIVE or DROPMALFORMED)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SmvMultiCsvInputFiles.dirName"><a class="viewcode-back" href="../../../smv.iomod.html#smv.iomod.inputs.SmvMultiCsvInputFiles.dirName">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
@@ -436,7 +436,7 @@
 
 <span class="sd">            - schemaStr(): required</span>
 <span class="sd">            - dataStr(): required</span>
-<span class="sd">            - csvReaderMode(): optional</span>
+<span class="sd">            - csvReaderMode: optional, default FAILFAST (could be PERMISSIVE or DROPMALFORMED)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_get_input_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
