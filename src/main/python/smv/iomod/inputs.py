@@ -314,7 +314,7 @@ class SmvCsvInputFile(SparkDfGenMod, WithCsvParser, WithSchemaFile):
             - schemaFileName: optional
             - userSchema: optional
             - csvAttr: optional
-            - csvReaderMode: optional, default True
+            - csvReaderMode: optional, default FAILFAST (could be PERMISSIVE or DROPMALFORMED)
     """
 
     def _get_input_data(self):
@@ -340,7 +340,7 @@ class SmvMultiCsvInputFiles(SparkDfGenMod, WithCsvParser, WithSchemaFile):
             - schemaFileName: optional
             - userSchema: optional
             - csvAttr: optional
-            - csvReaderMode: optional, default True
+            - csvReaderMode: optional, default FAILFAST (could be PERMISSIVE or DROPMALFORMED)
     """
 
     @abc.abstractmethod
@@ -398,7 +398,7 @@ class SmvCsvStringInputData(SparkDfGenMod, WithCsvParser):
 
             - schemaStr(): required
             - dataStr(): required
-            - csvReaderMode(): optional
+            - csvReaderMode: optional, default FAILFAST (could be PERMISSIVE or DROPMALFORMED)
     """
 
     def _get_input_data(self):
