@@ -48,9 +48,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Spark Modularized View'
-copyright = u'2017, TresAmigosSD'
-author = u'TresAmigosSD'
+project = u'Spark Modularized View 2'
+copyright = u'2022, Bo Zhang'
+author = u'Bo Zhang'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
