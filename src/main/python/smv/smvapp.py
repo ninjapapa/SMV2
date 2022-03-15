@@ -96,7 +96,7 @@ class SmvApp(object):
             sc.setLogLevel("ERROR")
 
             self.sc = sc
-            self.sqlContext = self.sparkSession._wrapped
+            # self.sqlContext = self.sparkSession._wrapped
             self._jvm = sc._jvm
         else:
             _gw = launch_gateway(None)
@@ -108,7 +108,7 @@ class SmvApp(object):
         # configure spark sql params
         if (self.sparkSession is not None):
             for k, v in self.py_smvconf.spark_sql_props().items():
-                self.sqlContext.setConf(k, v)
+                self.sparkSession._wrapped.setConf(k, v)
 
         # issue #429 set application name from smv config
         if (self.sparkSession is not None):

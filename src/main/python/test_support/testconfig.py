@@ -63,7 +63,6 @@ class TestConfig(object):
             run.
         """
         cls.smvApp = app
-        cls.sqlc = app.sqlContext
         cls.sc = app.sc
 
     @classmethod
@@ -74,13 +73,6 @@ class TestConfig(object):
     @classmethod
     def sparkContext(cls):
         return cls.sparkSession().sparkContext
-
-    # shared HiveContext
-    @classmethod
-    def sqlContext(cls):
-        if not hasattr(cls, 'sqlc'):
-            cls.sqlc = HiveContext(cls.sparkContext())
-        return cls.sqlc
 
     # smv args specified via command line
     @classmethod

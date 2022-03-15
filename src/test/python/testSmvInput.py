@@ -150,7 +150,7 @@ id:integer"""
         self.should_be_same(df, exp)
 
         # verify that the tables have been dropped
-        tablesDF = self.smvApp.sqlContext.tables()
+        tablesDF = self.smvApp.sparkSession.sql('show tables from default')
         tableNames = [r.tableName for r in tablesDF.collect()]
         self.assertNotIn("a", tableNames)
         self.assertNotIn("b", tableNames)

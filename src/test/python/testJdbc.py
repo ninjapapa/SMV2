@@ -51,7 +51,7 @@ class NewJdbcTest(SmvBaseTest):
 
     def test_SmvJdbcOutputTable(self):
         df = self.df("stage.modules.NewJdbcOutputTable")
-        res = self.smvApp.sqlContext.read\
+        res = self.smvApp.sparkSession.read\
             .format("jdbc")\
             .option("url", self.url())\
             .option("dbtable", "MyJdbcTable")\

@@ -44,12 +44,12 @@ class NewHiveTableTest(HiveTest):
 
     def test_new_hive_output(self):
         res = self.df("stage.modules.M")
-        readBack = self.smvApp.sqlContext.sql("select * from M")
+        readBack = self.smvApp.sparkSession.sql("select * from M")
         self.should_be_same(res, readBack)
 
     def test_new_hive_input(self):
         res = self.df("stage.modules.NewHiveInput")
-        exp = self.smvApp.sqlContext.sql("select * from M")
+        exp = self.smvApp.sparkSession.sql("select * from M")
         self.should_be_same(res, exp)
 
     def test_get_conn_contents(self):

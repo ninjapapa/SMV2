@@ -242,7 +242,7 @@ class SmvHiveIoStrategy(SmvIoStrategy):
 
     def read(self):
         query = "select * from {}".format(self._table_with_schema())
-        return self.smvApp.sqlContext.sql(query)
+        return self.smvApp.sparkSession.sql(query)
 
     def write(self, raw_data):
         # TODO: write_mode == 'Ignore'
@@ -250,10 +250,10 @@ class SmvHiveIoStrategy(SmvIoStrategy):
         raw_data.createOrReplaceTempView("dftable")
         if (_write_mode == 'overwrite' or _write_mode == 'errorifexists'):
             if (_write_mode == 'overwrite'):
-                self.smvApp.sqlContext.sql("drop table if exists {}".format(self._table_with_schema()))
-            self.smvApp.sqlContext.sql("create table {} as select * from dftable".format(self._table_with_schema()))
+                self.smvApp.sparkSession.sql("drop table if exists {}".format(self._table_with_schema()))
+            self.smvApp.sparkSession.sql("create table {} as select * from dftable".format(self._table_with_schema()))
         elif (_write_mode == 'append'):
-            self.smvApp.sqlContext.sql("insert into table {} select * from dftable".format(self._table_with_schema()))
+            self.smvApp.sparkSession.sql("insert into table {} select * from dftable".format(self._table_with_schema()))
 
     # TODO: we should allow persisting intermidiate results in Hive also
     # For that case, however need to specify a convention to store semaphore
@@ -282,7 +282,7 @@ class SmvXmlOnHdfsIoStrategy(SmvIoStrategy):
 
     def read(self):
         # TODO: look for possibilities to feed to readerLogger
-        reader = self.smvApp.sqlContext\
+        reader = self.smvApp.sparkSession\
             .read.format('xml')\
             .options(rowTag=self._rowTag)
 

@@ -34,7 +34,7 @@ class SmvJdbcConnectionInfo(SmvConnectionInfo):
 
 
     def _connect_for_read(self, smvApp):
-        builder = smvApp.sqlContext.read\
+        builder = smvApp.sparkSession.read\
             .format('jdbc')\
             .option('url', self.url)
 
@@ -75,7 +75,7 @@ class SmvHiveConnectionInfo(SmvConnectionInfo):
             query = 'show tables'
         else:
             query = 'show tables from {}'.format(self.schema)
-        tables_df = smvApp.sqlContext.sql(query)
+        tables_df = smvApp.sparkSession.sql(query)
         tablenames = [str(f[0]) for f in tables_df.select('tableName').collect()]
         return tablenames
 

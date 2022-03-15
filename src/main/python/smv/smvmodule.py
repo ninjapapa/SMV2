@@ -180,14 +180,14 @@ class SmvSqlModule(SmvModule):
             ds = tbl_name_2_ds[tbl_name]
             i[ds].createOrReplaceTempView(tbl_name)
 
-        res = self.smvApp.sqlContext.sql(self.query())
+        res = self.smvApp.sparkSession.sql(self.query())
 
         # drop temporary tables
         for tbl_name in tbl_name_2_ds:
             # This currently causes an "error" to be reported saying "table does
             # not exist". This happens even when using "drop table if exists ".
             # It is annoying but can be safely ignored.
-            self.smvApp.sqlContext.sql("drop table " + tbl_name)
+            self.smvApp.sparkSession.sql("drop table " + tbl_name)
 
         return res
 
