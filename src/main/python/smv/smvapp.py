@@ -105,11 +105,6 @@ class SmvApp(object):
         self.py_module_hotload = py_module_hotload
         self.py_smvconf = SmvConfig(arglist)
 
-        # configure spark sql params
-        if (self.sparkSession is not None):
-            for k, v in self.py_smvconf.spark_sql_props().items():
-                self.sparkSession._wrapped.setConf(k, v)
-
         # issue #429 set application name from smv config
         if (self.sparkSession is not None):
             sc._conf.setAppName(self.appName())

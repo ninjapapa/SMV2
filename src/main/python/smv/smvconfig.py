@@ -66,12 +66,6 @@ class SmvConfig(object):
         res.update(self.dynamic_props)
         return res
 
-    def spark_sql_props(self):
-        return {k:v
-            for k, v in self.merged_props().items()
-            if k.startswith("spark.sql")
-        }
-
     def read_props_from_kernel_config_file(self):
         """Read props from the kernel config file
             The specfic props `smv.kernelConfigFile` defines the relative path of kernel config file
