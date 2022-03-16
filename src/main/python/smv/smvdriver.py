@@ -38,7 +38,7 @@ class SmvDriver(object):
 
         # When SmvDriver is in use, user will call smv-run and interact
         # through command-line, so no need to do py module hotload
-        return SmvApp.createInstance(smv_args, sparkSession, py_module_hotload=False)
+        return SmvApp.createInstance(smvconf, sparkSession, py_module_hotload=False)
 
     def main(self, app, driver_args):
         """Override this to define the driver logic

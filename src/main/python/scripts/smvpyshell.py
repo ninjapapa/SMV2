@@ -28,6 +28,7 @@ except ImportError:
 import rlcompleter
 
 from smv import SmvApp
+from smv.smvconfig import SmvConfig
 
 historyPath = os.path.expanduser("~/.pysparkhistory")
 
@@ -54,7 +55,8 @@ with open(".smv_shell_all_args") as fp:
     args = fp.readline()
 
 user_args = args.split()
-app = SmvApp.createInstance(user_args, spark)
+smvconf = SmvConfig(user_args)
+app = SmvApp.createInstance(smvconf, spark)
 
 from smv.smvshell import *
 

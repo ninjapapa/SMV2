@@ -12,7 +12,6 @@
 # limitations under the License.
 
 from test_support.smvbasetest import SmvBaseTest
-from smv import SmvApp
 
 class SmvConfigTest(SmvBaseTest):
     @classmethod

@@ -186,12 +186,14 @@ class SmvAppWithoutSparkTest(SmvBaseTest):
     @classmethod
     def setUpClass(cls):
         from smv.smvapp import SmvApp
+        from smv.smvconfig import SmvConfig
         from test_support.testconfig import TestConfig
 
         args = TestConfig.smv_args() + cls.smvAppInitArgs() + ['--data-dir', cls.tmpDataDir()]
+        smvconf = SmvConfig(args)
         # The test's SmvApp must be set as the singleton for correct results of some tests
         # The original SmvApp (if any) will be restored when the test is torn down
-        cls.smvApp = SmvApp.createInstance(args, None)
+        cls.smvApp = SmvApp.createInstance(smvconf, None)
 
         sys.path.append(cls.resourceTestDir())
 
