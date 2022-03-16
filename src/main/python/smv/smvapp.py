@@ -197,7 +197,7 @@ class SmvApp(object):
             raise SmvRuntimeError("JDBC driver is not specified in SMV config")
         return res
 
-    def getConf(self, key):
+    def getDynamicRunConf(self, key):
         return self.py_smvconf.get_run_config(key)
 
     def setAppDir(self, appDir):
@@ -300,15 +300,6 @@ class SmvApp(object):
 
     def appId(self):
         return self.py_smvconf.app_id()
-
-    def inputDir(self):
-        return self.all_data_dirs().inputDir
-
-    def input_connection(self):
-        return SmvHdfsConnectionInfo(
-            "inputdir",
-            {"smv.conn.inputdir.path": self.inputDir()}
-        )
 
     def get_graph_json(self):
         """Generate a json string representing the dependency graph.
@@ -625,20 +616,6 @@ class SmvApp(object):
         print("\n".join([m.fqn() for m in mods_need_to_run]))
         print("----------------------")
 
-    def _generate_dot_graph(self):
-        """Genrate app level graphviz dot file
-        """
-        dot_graph_str = SmvAppInfo(self).create_graph_dot()
-        path = "{}.dot".format(self.appName())
-        with open(path, "w") as f:
-            f.write(dot_graph_str)
-
-    def _print_dead_modules(self):
-        """Print dead modules:
-        Modules which do not contribute to any output modules are considered dead
-        """
-        SmvAppInfo(self).ls_dead()
-
     def _modules_to_run(self):
         modPartialNames = self.py_smvconf.mods_to_run
         stageNames      = [self.py_smvconf.infer_stage_full_name(f) for f in self.py_smvconf.stages_to_run]
@@ -669,12 +646,8 @@ class SmvApp(object):
             print("----------------------")
 
         #either generate graphs, publish modules, or run output modules (only one will occur)
-        if(self.cmd_line.printDeadModules):
-            self._print_dead_modules()
-        elif(self.cmd_line.dryRun):
+        if(self.cmd_line.dryRun):
             self._dry_run(mods)
-        elif(self.cmd_line.graph):
-            self._generate_dot_graph()
         elif(self.cmd_line.publish):
             self._publish_modules(mods)
         elif(self.cmd_line.exportCsv):

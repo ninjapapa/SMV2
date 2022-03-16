@@ -180,6 +180,18 @@ def descendants(dsname):
     """
     print(_appInfo().ls_descendants(dsname))
 
+def create_graph(dotfile=None):
+    """Create dependency graph in dot format
+    """
+    dot_graph_str = _appInfo().create_graph_dot()
+    if (dotfile is None):
+        appName = SmvApp.getInstance().appName()
+        path = "{}.dot".format(appName)
+    else:
+        path = dotfile
+    with open(path, "w") as f:
+        f.write(dot_graph_str)
+
 def now():
     """Print current time
     """

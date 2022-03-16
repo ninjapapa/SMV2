@@ -58,15 +58,6 @@ See <a href="app_config.md">Application Configuration</a> for details.
 </tr>
 
 <tr>
-<td>--graph / -g</td>
-<td>off</td>
-<td>Generate a dependency graph ".dot" file instead of running the given modules.<br>
-graphvis must be used to convert the ".dot" file to an image or doc.  For example:<br>
-<code>$ dot -Tpng MyApp.dot -o graph.png</code>
-</td>
-</tr>
-
-<tr>
 <td>--force-run-all</td>
 <td>off</td>
 <td>Remove <b>ALL</b> files in output directory that <b>are</b> the  current version of the outputs in the app, forcing all specified modules to run even if they have been run recently.
@@ -90,13 +81,6 @@ publish the specified modules to the local file system
 <td>--dry-run </td>
 <td>off</td>
 <td>Find which modules do not have persisted data, among the modules that need to be run. When specified, no modules are actually executed.
-</td>
-</tr>
-
-<tr>
-<td>--dead</td>
-<td>off</td>
-<td>Print a list of the dead modules in this application
 </td>
 </tr>
 
