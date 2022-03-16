@@ -75,7 +75,8 @@ class SmvApp(object):
     def createInstance(cls, arglist, _sparkSession, py_module_hotload=True):
         """Create singleton instance. Also returns the instance.
         """
-        cls._instance = cls(arglist, _sparkSession, py_module_hotload)
+        smvconf = SmvConfig(arglist)
+        cls._instance = cls(smvconf, _sparkSession, py_module_hotload)
         return cls._instance
 
     @classmethod
@@ -84,7 +85,7 @@ class SmvApp(object):
         """
         cls._instance = app
 
-    def __init__(self, arglist, _sparkSession, py_module_hotload=True):
+    def __init__(self, smvconf, _sparkSession, py_module_hotload=True):
         self.smvHome = os.environ.get("SMV_HOME")
         if (self.smvHome is None):
             raise SmvRuntimeError("SMV_HOME env variable not set!")
@@ -103,7 +104,7 @@ class SmvApp(object):
             self._jvm = _gw.jvm
 
         self.py_module_hotload = py_module_hotload
-        self.py_smvconf = SmvConfig(arglist)
+        self.py_smvconf = smvconf
 
         # issue #429 set application name from smv config
         if (self.sparkSession is not None):

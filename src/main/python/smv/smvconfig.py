@@ -30,7 +30,7 @@ class SmvConfig(object):
             - dynamic configuration handling
     """
     def __init__(self, arglist):
-        self.cmdline = self._create_cmdline_conf(arglist)
+        self.cmdline, self.leftover = self._create_cmdline_conf(arglist)
 
         DEFAULT_SMV_APP_CONF_FILE  = "conf/smv-app-conf.props"
         DEFAULT_SMV_CONN_CONF_FILE  = "conf/connections.props"
@@ -219,8 +219,9 @@ class SmvConfig(object):
         # command line props override
         parser.add_argument('--smv-props', dest="smvProps", nargs='+', type=parse_props, default=[], help="key=value command line props override")
 
-        res = vars(parser.parse_args(arglist))
-        return res
+        res_ns, leftover = parser.parse_known_args(arglist)
+        res = vars(res_ns)
+        return res, leftover
 
     @staticmethod
     def load(path):
