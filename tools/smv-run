@@ -10,11 +10,6 @@ THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 source "${THIS_FILE_DIR}/_env.sh"
 SMV_TOOLS="$(get_smv_tools_dir)"
 
-if [ "$1" = "-h" ]; then
-  show_run_usage_message `basename $0`
-  exit 0
-fi
-
 # Unset PYSPARK_DRIVER_PYTHON
 OLD_PYSPARK_DRIVER_PYTHON="$PYSPARK_DRIVER_PYTHON"
 unset PYSPARK_DRIVER_PYTHON

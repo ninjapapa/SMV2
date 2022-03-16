@@ -224,16 +224,10 @@ function show_run_usage_message() {
 function check_help_option() {
   for opt in $SMV_ARGS; do
     if [ $opt = "--help" ] || [ $opt = "-h" ]; then
-      print_help
+      show_run_usage_message `basename $0`
       exit 0
     fi
   done
-}
-
-function print_help() {
-  # Find but don't print the app jar
-  find_fat_jar > /dev/null
-  "${SMV_SPARK_SUBMIT_FULLPATH}" --class ${SMV_APP_CLASS}  "${APP_JAR}" --help
 }
 
 function find_dependent_jars() {
