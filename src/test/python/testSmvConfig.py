@@ -19,7 +19,7 @@ class SmvConfigTest(SmvBaseTest):
     def smvAppInitArgs(cls):
         return ['--smv-app-dir', cls.resourceTestDir(),
                 '--smv-props', 'smv.test2=in_cmd_line',
-                '--input-dir', 'TestInput',
+                '--publish-dir', 'TestPublish',
                 '-m', "None"]
 
     def test_basic_props_priority(self):
@@ -43,5 +43,5 @@ class SmvConfigTest(SmvBaseTest):
 
     def test_input_dir_override(self):
         data_dirs = self.smvApp.py_smvconf.all_data_dirs()
-        self.assertEqual(data_dirs.get('inputDir'), 'TestInput')
+        self.assertEqual(data_dirs.get('publishDir'), 'TestPublish')
         self.assertEqual(data_dirs.get('outputDir'), self.tmpDataDir() + '/output')

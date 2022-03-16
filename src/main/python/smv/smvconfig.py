@@ -117,7 +117,6 @@ class SmvConfig(object):
 
         return {
             'dataDir': data_dir,
-            'inputDir': get_sub_dir('inputDir', "input"),
             'outputDir': get_sub_dir('outputDir', "output"),
             'lockDir': get_sub_dir('lockDir', "lock"),
             'historyDir': get_sub_dir('historyDir', "history"),
@@ -197,7 +196,6 @@ class SmvConfig(object):
 
         # Where to find/store data
         parser.add_argument('--data-dir', dest='dataDir', help="specify the top level data directory")
-        parser.add_argument('--input-dir', dest='inputDir', help="specify the input directory (default: datadir/input)")
         parser.add_argument('--output-dir', dest='outputDir', help="specify the output directory (default: datadir/output)")
         parser.add_argument('--hostory-dir', dest='historyDir', help="specify the history directory (default: datadir/history)")
         parser.add_argument('--publish-dir', dest='publishDir', help="specify the publish directory (default: datadir/publish)")
@@ -208,7 +206,6 @@ class SmvConfig(object):
 
         # Where to output CSVs
         parser.add_argument('--publish', dest='publish', help="publish the given modules/stage/app as given version")
-        parser.add_argument('--export-csv', dest='exportCsv', help="publish|export given modules/stage/app to a CSV file at the given path on the local file system")
 
         # What modules to run
         parser.add_argument('--run-app', dest='runAllApp', action='store_true', help="run all output modules in all stages in app")

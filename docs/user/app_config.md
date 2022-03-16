@@ -62,7 +62,6 @@ Here is an `smv-user-conf.props` example:
 ```
 # data dir
 smv.dataDir = hdfs:///user/myunixname/data
-smv.inputDir = hdfs:///applications/project/data/landingzone
 
 smv.config.sample=1pct
 ```

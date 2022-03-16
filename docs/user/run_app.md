@@ -145,12 +145,6 @@ One of the options below must be specified.
 </tr>
 
 <tr>
-<td>&#8209;&#8209;input&#8209;dir</td>
-<td>smv.inputDir</td>
-<td>option to override default location of input data directory</td>
-</tr>
-
-<tr>
 <td>&#8209;&#8209;output&#8209;dir</td>
 <td>smv.outputDir</td>
 <td>option to override default location of output data directory</td>
