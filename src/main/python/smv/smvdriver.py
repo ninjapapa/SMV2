@@ -1,7 +1,7 @@
 import sys
 
 from pyspark.sql import SparkSession
-from smv import SmvApp
+from smv import SmvApp, logger
 from smv.smvconfig import SmvConfig
 
 class SmvDriver(object):
@@ -11,7 +11,7 @@ class SmvDriver(object):
         To use SmvDriver, override `main` and in the main block of your driver script call construct your driver and
         call `run`.
     """
-    def create_smv_app(self, smv_args, driver_args):
+    def create_smv_app(self, smvconf):
         """Override this to define how this driver's SmvApp is created
 
             Default is just SmvApp.createInstance(smv_args). Note that it's important to use `createInstance` to ensure that
@@ -25,7 +25,6 @@ class SmvDriver(object):
         """
         spark_builder = SparkSession.builder.enableHiveSupport()
         # read the props from kernel config file and use them as spark conf
-        smvconf = SmvConfig(smv_args)
         kernel_conf = smvconf.read_props_from_kernel_config_file()
         for key in kernel_conf:
             # use the master setting in the config file if exists
@@ -49,6 +48,7 @@ class SmvDriver(object):
                 app (SmvApp): app which was constructed
                 driver_args (list(str)): CLI args for the driver
         """
+        logger.info("Running SmvApp with driver_args: {}".format(driver_args))
         app.run()
 
     def run(self):
@@ -56,16 +56,8 @@ class SmvDriver(object):
         """
         args = sys.argv[1:]
 
-        try:
-            smv_args_end = args.index("--script")
-        except ValueError:
-            smv_args_end = len(args)
+        smvconf = SmvConfig(args)
+        driver_args = smvconf.leftover
 
-        smv_args = args[:smv_args_end]
-        # First arg after smv_args_end is --script
-        # Second is the script name
-        # Then the driver args start
-        driver_args = args[smv_args_end+2:]
-
-        app = self.create_smv_app(smv_args, driver_args)
+        app = self.create_smv_app(smvconf)
         self.main(app, driver_args)
