@@ -20,21 +20,22 @@ Spark Modularized View enables users to build enterprise scale applications on A
 
 Current SMV2 is tested on 
 
-* Spark 2.4.5 (Should work on any Spark 2 distribution)
+* Spark 2.4.8 (Should work on any Spark 2 distribution)
+* Spark 3.2.1
 * Python 2.7.* (for better interactive experience, install IPython for Python2)
+* Python 3.8.* (for better interactive experience, install IPython)
 
 SMV2 can easily setup on Linux and MACOS (Intel silicon, M1 chip MAC book does not have full Python2.7 support) env with or without Hadoop. 
 
-### Python 2.7 
+### Python 
 There are a lot tutorial online for how to setup different python versions on your system. Need to make sure you have `pip` command also set up 
-on the Python 2.7 so that you can install python packages as needed.
+on the correct Python version so that you can install python packages as needed.
 
 There are some challenges of using Python 2.7 on M1 chip Mac books. Although Python 2.7 is supported, no easy way to setup `pip`. 
 
-SMV2 should work on Python 3. It is on roadmap to test it on Python 3.
-
 ### Setup Spark
-Download a Spark2 bin tar release, such as: https://archive.apache.org/dist/spark/spark-2.4.8/spark-2.4.8-bin-hadoop2.7.tgz
+Download a Spark bin tar release, such as: https://archive.apache.org/dist/spark/spark-2.4.8/spark-2.4.8-bin-hadoop2.7.tgz or other versions as in
+'.supported_spark'. 
 
 ```sh
 $ cd ~
@@ -77,6 +78,13 @@ where the value of the var is thc command of IPython on your env.
 ### Install SMV2 
 
 Just download the lasted release from https://github.com/ninjapapa/SMV2/releases. And unarchive to `${HOME}` dir. It typically under `SMV2` folder.
+
+Need to setup env vars for SMV_HOME, PATH and PYTHONPATH:
+```sh
+export SMV_HOME="${HOME}/SMV2"
+export PATH="${SMV_HOME}/tools:${PATH}"
+export PYTHONPATH="$SMV_HOME/src/main/python:$PYTHONPATH"
+```
 
 ## Create Example App
 
