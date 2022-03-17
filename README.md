@@ -29,9 +29,15 @@ SMV2 can easily setup on Linux and MACOS (Intel silicon, M1 chip MAC book does n
 
 ### Python 
 There are a lot tutorial online for how to setup different python versions on your system. Need to make sure you have `pip` command also set up 
-on the correct Python version so that you can install python packages as needed.
+on the correct Python version so that you can install python packages.
+
+Install python packages:
+```
+$ pip install -r tools/requirements.txt
+```
 
 There are some challenges of using Python 2.7 on M1 chip Mac books. Although Python 2.7 is supported, no easy way to setup `pip`. 
+
 
 ### Setup Spark
 Download a Spark bin tar release, such as: https://archive.apache.org/dist/spark/spark-2.4.8/spark-2.4.8-bin-hadoop2.7.tgz or other versions as in
