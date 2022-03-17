@@ -55,10 +55,10 @@ class SmvDriver(object):
     def main(self, smvapp, driver_args):
         """Override this to define the driver logic
 
-            Default is to just call `run` onthe `SmvApp`.
+            Default is to just call `run` on the `SmvApp`.
 
             Args:
-                app (SmvApp): app which was constructed
+                smvapp (SmvApp): app which was constructed
                 driver_args (list(str)): CLI args for the driver
         """
         logger.debug("Running SmvApp with driver_args: {}".format(driver_args))
