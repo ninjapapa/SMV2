@@ -184,7 +184,7 @@ class SmvConfig(object):
         """Parse arglist to a config dictionary
         """
         parser = argparse.ArgumentParser(
-            usage="smv-run -m ModuleToRun\n       smv-run --run-app",
+            usage="spark-submit src/main/python/driver.py -- -m ModuleToRun\n    spark-submit src/main/python/driver.py -- --run-app",
             description="For additional usage information, please refer to the user guide and API docs at: \nhttp://tresamigossd.github.io/SMV"
         )
 

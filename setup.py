@@ -102,7 +102,6 @@ setuptools.setup(
     },
     include_package_data=True,
     scripts=[
-        'tools/smv-run',
         'tools/smv-shell',
         'tools/smv-server',
         'tools/smv-init',
