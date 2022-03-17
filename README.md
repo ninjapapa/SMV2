@@ -97,18 +97,29 @@ export PYTHONPATH="$SMV_HOME/src/main/python:$PYTHONPATH"
 SMV provides a shell script to easily create template applications. We will use a simple example app to explore SMV.
 
 ```shell
-$ SMV2/tools/smv-init -s MyApp
+$ cd
+$ smv-init -s MyApp
 ```
 
 ## Run Example App
 
-Run the entire application with
+A project created by `smv-init` has a driver file under `src/main/python` with name `appdriver.py`. One can run `spark-submit` under the project folder on it to run the example app.
+
+Run the entire application with `spark-submit`:
 
 ```shell
 $ cd MyAPP
-$ ../SMV2/tools/smv-run --run-app
+$ spark-submit src/main/python/appdriver.py
 ```
 
+Or can run on a specific module
+
+```shell
+$ cd MyAPP
+$ spark-submit src/main/python/appdriver.py -- -m EmploymentByStateOut
+```
+
+Please note we used `--` in the command line to avoid spark-submit to parse the args.
 This command must be run from the root of the project.
 
 The output csv file and schema can be found in the `data/output` directory. 
@@ -132,10 +143,15 @@ ST: string @metadata={}
 EMP: long @metadata={}
 ```
 
-Or you can run it SMV interactive shell (using PySpark shell):
+User can edit the driver file `appdriver.py` to specify sparksession parameters, or use `spark-submit` command line parameters to specify configurations.
+
+
+## Use interactive shell (IPython)
+
+One can also run app in SMV interactive shell (using PySpark shell):
 ```shell
 $ cd MyApp
-$ ../SMV2/tools/smv-shell
+$ smv-shell
 ```
 
 You can run some command in the shell like below:
