@@ -109,9 +109,7 @@ class SmvConfig(object):
 
         def get_sub_dir(name, default):
             res = "{}/{}".format(data_dir, default)
-            if (self.cmdline.get(name)):
-                res = self.cmdline.get(name)
-            elif (props.get('smv.' + name)):
+            if (props.get('smv.' + name)):
                 res = props.get('smv.' + name)
             return res
 
@@ -196,9 +194,6 @@ class SmvConfig(object):
 
         # Where to find/store data
         parser.add_argument('--data-dir', dest='dataDir', help="specify the top level data directory")
-        parser.add_argument('--output-dir', dest='outputDir', help="specify the output directory (default: datadir/output)")
-        parser.add_argument('--hostory-dir', dest='historyDir', help="specify the history directory (default: datadir/history)")
-        parser.add_argument('--publish-dir', dest='publishDir', help="specify the publish directory (default: datadir/publish)")
 
         # All app run flags
         parser.add_argument('--force-run-all', dest='forceRunAll', action="store_true", help="ignore persisted data and force all modules to run")

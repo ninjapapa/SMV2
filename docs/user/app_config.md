@@ -124,7 +124,6 @@ Can be overridden using <code>--data-dir</code> command line option</td>
 <td>dataDir<code>/publish</code></td>
 <td>Optional</td>
 <td>Data publish directory
-Can be overridden using <code>--publish-dir</code> command line option</td>
 </tr>
 
 <tr>

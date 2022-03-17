@@ -18,7 +18,6 @@ class SmvConfigTest(SmvBaseTest):
     def smvAppInitArgs(cls):
         return ['--smv-app-dir', cls.resourceTestDir(),
                 '--smv-props', 'smv.test2=in_cmd_line',
-                '--publish-dir', 'TestPublish',
                 '--some-user-ops', 'user_ops',
                 '-m', "None"]
 
@@ -40,11 +39,6 @@ class SmvConfigTest(SmvBaseTest):
 
     def test_conf_stages(self):
         self.assertEqual(self.smvApp.py_smvconf.stage_names(), ['s1', 's2', 's3'])
-
-    def test_input_dir_override(self):
-        data_dirs = self.smvApp.py_smvconf.all_data_dirs()
-        self.assertEqual(data_dirs.get('publishDir'), 'TestPublish')
-        self.assertEqual(data_dirs.get('outputDir'), self.tmpDataDir() + '/output')
 
     def test_arg_leftovers(self):
         leftover = self.smvApp.py_smvconf.leftover
