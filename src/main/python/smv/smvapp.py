@@ -619,8 +619,13 @@ class SmvApp(object):
         modPartialNames = self.py_smvconf.mods_to_run
         stageNames      = [self.py_smvconf.infer_stage_full_name(f) for f in self.py_smvconf.stages_to_run]
 
-        return self.dsm.modulesToRun(modPartialNames, stageNames, self.cmd_line.runAllApp)
+        mods = self.dsm.modulesToRun(modPartialNames, stageNames, self.cmd_line.runAllApp)
 
+        # Default to runAllApp if no module specified
+        if len(mods) == 0: 
+            mods = self.dsm.modulesToRun(modPartialNames, stageNames, True)
+
+        return mods
 
     def _publish_modules(self, mods):
         SmvModuleRunner(mods, self).publish()
