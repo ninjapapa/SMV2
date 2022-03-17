@@ -31,9 +31,7 @@ from smv.error import SmvRuntimeError
 import smv.helpers
 from smv.modulesvisitor import ModulesVisitor
 from smv.smvmodulerunner import SmvModuleRunner
-from smv.smvconfig import SmvConfig
 from smv.smviostrategy import SmvJsonOnHdfsPersistenceStrategy
-from smv.conn import SmvHdfsConnectionInfo
 from smv.smvmetadata import SmvMetaHistory
 from smv.smvhdfs import SmvHDFS
 from smv.smvschema import SmvSchema
@@ -104,10 +102,6 @@ class SmvApp(object):
 
         self.py_module_hotload = py_module_hotload
         self.py_smvconf = smvconf
-
-        # issue #429 set application name from smv config
-        if (self.sparkSession is not None):
-            sc._conf.setAppName(self.appName())
 
         # CmdLine is static, so can be an attribute
         cl = self.py_smvconf.cmdline
@@ -180,7 +174,12 @@ class SmvApp(object):
         return file_path
 
     def appName(self):
-        return self.py_smvconf.app_name()
+        # Use the same name in sparkcontext as long as we have one
+        if (self.sparkSession is not None):
+            name = self.sc.getConf.get("spark.app.name")
+        else:
+            name = self.py_smvconf.app_name()
+        return name
 
     def appDir(self):
         return self.py_smvconf.app_dir
