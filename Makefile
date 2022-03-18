@@ -49,34 +49,6 @@ local_bundle: xml-jar
 	tar zcvf $(SMV_ROOT)/../$(BUNDLE_NAME) -C $(SMV_ROOT)/.. $(addprefix $(shell basename $(SMV_ROOT))/, $(BUNDLE_INCLUDE))
 	mv $(SMV_ROOT)/../$(BUNDLE_NAME) $(SMV_ROOT)/$(BUNDLE_NAME)
 
-# This will upload the bundle as "latest.tgz" to the CI release if we built on master.
-# Required env:
-#   ROBOT_CREDS : must be set to the D2D robot credentials
-#   SEMAPHORE_GIT_BRANCH : branch that semaphore is currently building (set by semaphore automatically)
-ci-upload-bundle:
-	@(\
-		if [ "${SEMAPHORE_GIT_BRANCH}" = "master" ]; then \
-			ln -s smv_v*.tgz latest.tgz; \
-			./admin/ci-latest-mgr -upload "${ROBOT_CREDS}"; \
-		fi; \
-	)
-
-DOCKER_BASE_NAME = local-smv-base-$(SMV_VERSION)
-DOCKER_SMV_NAME = local-smv-$(SMV_VERSION)
-DOCKERFILE = docker/smv/Dockerfile
-
-docker_base:
-	docker build --build-arg PYTHON_VERSION=$(DEFAULT_PYTHON_PATCH) --target smv-build \
-		-t $(DOCKER_BASE_NAME) -f $(DOCKERFILE) .
-
-release_bundle: docker_base
-	docker run -v $(shell pwd):/mount $(DOCKER_BASE_NAME) bash -c "cp /usr/lib/SMV/$(BUNDLE_NAME) /mount"
-
-docker_smv: docker_base
-	docker build --build-arg PYTHON_VERSION=$(DEFAULT_PYTHON_PATCH) -t $(DOCKER_SMV_NAME) --target smv -f $(DOCKERFILE) .
-
-docker: docker_smv
-
 
 DOC_DIR = docs
 
@@ -97,8 +69,6 @@ $(PYDOC_DEST): install-spark-default
 		PYTHONPATH="$(SMV_PY_DIR):$(SPARK_PY_DIR):$(PY4J_LIBS)" \
 		make html
 
-SCALADOC_DEST = $(DOC_DIR)/scala
-
 # install-spark x.y.z
 # Easier to remember than the .sparks/x.y.z that we define below
 INSTALL_SPARK_RULES = $(addprefix install-spark-, $(SPARK_VERSIONS))
@@ -114,18 +84,11 @@ install-spark-default: install-spark-$(DEFAULT_SPARK)
 
 install-spark-all: $(INSTALL_SPARK_RULES)
 
-
-# Quick tests are sufficient for day-to-day dev
-test: test-quick
-
 # Run all the basic tests tests with the default Python and Spark
-test-quick: test-python test-integration
+test: test-python test-integration
 
 test-python: install-basic
 	tox -e $(DEFAULT_PYTHON_MAJOR) -- bash tools/smv-pytest --spark-home $(DEFAULT_SPARK_HOME)
 
 test-integration: install-basic
 	tox -e $(DEFAULT_PYTHON_MAJOR) -- bash src/test/scripts/run-integration-test.sh --spark-home $(DEFAULT_SPARK_HOME)
-
-test-ingration-pip:
-	tox -e $(DEFAULT_PYTHON_MAJOR) -- bash src/test/scripts/run-integration-test.sh --pip-install
