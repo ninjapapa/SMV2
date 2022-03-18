@@ -186,7 +186,7 @@ def create_graph(dotfile=None):
     dot_graph_str = _appInfo().create_graph_dot()
     if (dotfile is None):
         appName = SmvApp.getInstance().appName()
-        path = "{}.dot".format(appName)
+        path = "{}.dot".format(appName.replace(" ", "_"))
     else:
         path = dotfile
     with open(path, "w") as f:

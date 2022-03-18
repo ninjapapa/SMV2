@@ -20,7 +20,7 @@ class SmvDriver(object):
                 AppDriver().run()
     """
 
-    def createSpark(self):
+    def createSpark(self, smvconf):
         """Override this to define SparkSession with customize parameters
             
             If not defined, will use parameters in kernel_config_file, which specified by "smv.kernelConfigFile" 
@@ -31,7 +31,7 @@ class SmvDriver(object):
     def _create_smv_app(self, smvconf):
         """Creeate SmvApp
         """
-        spark = self.createSpark()
+        spark = self.createSpark(smvconf)
 
         # if not specified, use default
         if (spark is None):

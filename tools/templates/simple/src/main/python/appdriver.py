@@ -12,10 +12,11 @@ class AppDriver(SmvDriver):
         # Run app
         smvapp.run()
 
-    def createSpark(self):
+    def createSpark(self, smvconf):
+        appName = smvconf.app_name()
         builder = SparkSession.builder.enableHiveSupport()
         builder = builder.master('local[*]')\
-            .appName("SampleApp")\
+            .appName(appName)\
             .config("spark.driver.cores", "2")
         return builder.getOrCreate()
 
