@@ -27,12 +27,7 @@ FLAG=$1
         QUITE_MODE=1
         shift
         ;;
-    -s|-simple)
-        PROJ_TYPE="simple"
-        shift
-        ;;
-    -t|-test)
-        PROJ_TYPE="test"
+    -s)
         shift
         ;;
     -d|--dataDir)
@@ -45,17 +40,8 @@ FLAG=$1
         shift
         shift
         ;;
-    --mn|--moduleNumber)
-        PROJ_SIZE="$2"
-        shift
-        shift
-        ;;
     -o)
     OVERRIDE=1
-        shift
-        ;;
-    -g|--git)
-        DO_GIT_INIT=1
         shift
         ;;
     *)
@@ -68,14 +54,10 @@ TEMPLATE_DATA_DIR="$ALL_TEMPLATES_DIR/data"
 
 if [ $# -ne 1 ]; then
     echo "ERROR: Invalid number of arguments"
-    echo "USAGE: $0 [-q][-o] [-s|-t] [-d] [-n] [--mn] project_path"
+    echo "USAGE: $0 [-q][-o] [-d] [-n] project_path"
     echo "project types:"
-    echo "  -s: simple (default)"
-    echo "  -t: test (for developers only)"
     echo "  -d: data directory"
     echo "  -n: project name"
-    echo "  --mn: module number"
-    echo "  -g: initializes git repo in project directory"
     echo
     echo "example:"
     echo "    simple:     \$ ./tools/smv-init /project/path"
@@ -86,18 +68,6 @@ PROJ_DIR="$1"
 PROJ_SRC_DIR="${PROJ_DIR}/src/main/python"
 PROJ_CLASS=""
 PROJ_DATA_DIR=${PROJ_DATA_DIR:="${PROJ_DIR}/data"} # default data dir is /data in project dir
-
-function extract_group_artifact_ids()
-{
-    PROJ_GROUP_ID="${PROJ_CLASS%.*}"
-    PROJ_ARTIFACT_ID="${PROJ_CLASS##*.}"
-
-    if [ "$PROJ_GROUP_ID" == "$PROJ_ARTIFACT_ID" ]; then
-        echo "Invalid project class: $PROJ_CLASS"
-        echo "the class must have at least two levels a.b"
-        exit 1
-    fi
-}
 
 function copy_proj_dir()
 {
@@ -128,12 +98,6 @@ function copy_proj_dir()
 
 function substitute_tokens()
 {
-    #  only test proj has artifact id
-    if [ "$PROJ_TYPE" = "test" ] ; then
-        PROJ_CLASS="integration.test"
-        extract_group_artifact_ids
-    fi
-
     echo "-- substituting tokens with project info"
     echo "-- project directory is: ${PROJ_DIR}"
 
@@ -168,15 +132,6 @@ function create_library_folder()
     cd ${PROJ_DIR_FULL_PATH} && mkdir library
 }
 
-function create_git_structure()
-{
-    if [ "$DO_GIT_INIT" = 1 ]; then
-        echo "-- initializing git repository"
-
-        cd ${PROJ_DIR_FULL_PATH} && git init && git add . && git commit -m "init commit"
-    fi
-}
-
 function copy_data_files() {
     # integration test project has its own data already in the template
     # other projects share the same data, so it is stored outside of the template
@@ -186,27 +141,10 @@ function copy_data_files() {
     fi
 }
 
-function augment_module_count() {
-    MODULE_NUMBER=10
-    if [ $PROJ_SIZE ]; then
-        MODULE_NUMBER=$PROJ_SIZE
-    fi
-    if [ "$PROJ_TYPE" = "bigChain" ] ; then
-        $TEMPLATE_DIR/dupChainMod.sh $PROJ_DIR/src/main/python/stage1/employment.py $PROJ_DIR/src/main/python/stage1/ $MODULE_NUMBER
-        rm $PROJ_DIR/src/main/python/stage1/employment.py
-    fi
-    if [ "$PROJ_TYPE" = "bigTree" ] ; then
-        $TEMPLATE_DIR/dupTreeMod.sh $PROJ_DIR/src/main/python/stage1/employment.py $PROJ_DIR/src/main/python/stage1/ $MODULE_NUMBER
-        rm $PROJ_DIR/src/main/python/stage1/employment.py
-    fi
-}
-
 # --- MAIN ---
 
 copy_proj_dir
 substitute_tokens
 copy_data_files
 create_python_packages
-augment_module_count
 create_library_folder
-create_git_structure
