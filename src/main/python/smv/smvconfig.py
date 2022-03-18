@@ -30,7 +30,7 @@ class SmvConfig(object):
             - dynamic configuration handling
     """
     def __init__(self, arglist):
-        self.cmdline = self._create_cmdline_conf(arglist)
+        self.cmdline, self.leftover = self._create_cmdline_conf(arglist)
 
         DEFAULT_SMV_APP_CONF_FILE  = "conf/smv-app-conf.props"
         DEFAULT_SMV_CONN_CONF_FILE  = "conf/connections.props"
@@ -109,15 +109,12 @@ class SmvConfig(object):
 
         def get_sub_dir(name, default):
             res = "{}/{}".format(data_dir, default)
-            if (self.cmdline.get(name)):
-                res = self.cmdline.get(name)
-            elif (props.get('smv.' + name)):
+            if (props.get('smv.' + name)):
                 res = props.get('smv.' + name)
             return res
 
         return {
             'dataDir': data_dir,
-            'inputDir': get_sub_dir('inputDir', "input"),
             'outputDir': get_sub_dir('outputDir', "output"),
             'lockDir': get_sub_dir('lockDir', "lock"),
             'historyDir': get_sub_dir('historyDir', "history"),
@@ -187,7 +184,7 @@ class SmvConfig(object):
         """Parse arglist to a config dictionary
         """
         parser = argparse.ArgumentParser(
-            usage="smv-run -m ModuleToRun\n       smv-run --run-app",
+            usage="spark-submit src/main/python/driver.py -- -m ModuleToRun\n    spark-submit src/main/python/driver.py -- --run-app",
             description="For additional usage information, please refer to the user guide and API docs at: \nhttp://tresamigossd.github.io/SMV"
         )
 
@@ -197,20 +194,13 @@ class SmvConfig(object):
 
         # Where to find/store data
         parser.add_argument('--data-dir', dest='dataDir', help="specify the top level data directory")
-        parser.add_argument('--input-dir', dest='inputDir', help="specify the input directory (default: datadir/input)")
-        parser.add_argument('--output-dir', dest='outputDir', help="specify the output directory (default: datadir/output)")
-        parser.add_argument('--hostory-dir', dest='historyDir', help="specify the history directory (default: datadir/history)")
-        parser.add_argument('--publish-dir', dest='publishDir', help="specify the publish directory (default: datadir/publish)")
 
         # All app run flags
         parser.add_argument('--force-run-all', dest='forceRunAll', action="store_true", help="ignore persisted data and force all modules to run")
-        parser.add_argument('--dead', dest='printDeadModules', action="store_true", help="print a list of the dead modules in this application")
-        parser.add_argument('--graph', dest='graph', action="store_true", help="generate a dot dependency graph of the given modules (modules are not run)")
         parser.add_argument('--dry-run', dest='dryRun', action="store_true", help="determine which modules do not have persisted data and will need to be run")
 
         # Where to output CSVs
         parser.add_argument('--publish', dest='publish', help="publish the given modules/stage/app as given version")
-        parser.add_argument('--export-csv', dest='exportCsv', help="publish|export given modules/stage/app to a CSV file at the given path on the local file system")
 
         # What modules to run
         parser.add_argument('--run-app', dest='runAllApp', action='store_true', help="run all output modules in all stages in app")
@@ -224,8 +214,9 @@ class SmvConfig(object):
         # command line props override
         parser.add_argument('--smv-props', dest="smvProps", nargs='+', type=parse_props, default=[], help="key=value command line props override")
 
-        res = vars(parser.parse_args(arglist))
-        return res
+        res_ns, leftover = parser.parse_known_args(arglist)
+        res = vars(res_ns)
+        return res, leftover
 
     @staticmethod
     def load(path):

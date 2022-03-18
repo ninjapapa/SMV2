@@ -1,11 +1,11 @@
 # Running SMV Application
 
-While an SMV application can be built and run using the standard "spark-submit" command,
-a convenient script `smv-run` is provided to make it easier to make running an application. No build is necessary if project is purely in Python.
+While an SMV application can be built and run using the standard "spark-submit" command
 
 ### Synopsis
 ```shell
-$ smv-run [smv-options] [what-to-run] -- [standard spark-submit-options]
+$ cd project_dir
+$ spark-submit src/main/python/appdriver.py [spark-submit-options] -- [smv-options] [appdriver-options]
 ```
 
 **Note:**  The above command should be run from your project's top level directory, 
@@ -26,12 +26,9 @@ otherwise need to use `--smv-app-dir` to specify project dir.
 </tr>
 
 <tr>
-<td>--script</td>
-<td>None</td>
-<td>allow user to specify a script to launch instead of default `runapp.py`
-<br>
-<code>$ ... --script myapp.py</code>
-</td>
+<td>--smv-app-dir</td>
+<td>./</td>
+<td>allow user to specify project dir</td>
 </tr>
 
 <tr>
@@ -42,27 +39,6 @@ otherwise need to use `--smv-app-dir` to specify project dir.
 <code>$ ... --smv-props "smv.stages=s1"</code>
 <br>
 See <a href="app_config.md">Application Configuration</a> for details.
-</td>
-</tr>
-
-<tr>
-<td>&#8209;&#8209;smv&#8209;app&#8209;conf</td>
-<td>conf/smv-app-conf.props</td>
-<td>option to override default location of application level configuration file.</td>
-</tr>
-
-<tr>
-<td>&#8209;&#8209;smv&#8209;user&#8209;conf</td>
-<td>conf/smv-user-conf.props</td>
-<td>option to override default location of user level configuration file.</td>
-</tr>
-
-<tr>
-<td>--graph / -g</td>
-<td>off</td>
-<td>Generate a dependency graph ".dot" file instead of running the given modules.<br>
-graphvis must be used to convert the ".dot" file to an image or doc.  For example:<br>
-<code>$ dot -Tpng MyApp.dot -o graph.png</code>
 </td>
 </tr>
 
@@ -79,38 +55,9 @@ graphvis must be used to convert the ".dot" file to an image or doc.  For exampl
 </tr>
 
 <tr>
-<td>--export-csv (previously --publish-local)</td>
-<td>None</td>
-<td>
-publish the specified modules to the local file system
-</td>
-</tr>
-
-<tr>
 <td>--dry-run </td>
 <td>off</td>
 <td>Find which modules do not have persisted data, among the modules that need to be run. When specified, no modules are actually executed.
-</td>
-</tr>
-
-<tr>
-<td>--dead</td>
-<td>off</td>
-<td>Print a list of the dead modules in this application
-</td>
-</tr>
-
-<tr>
-<td>--spark-home</td>
-<td>location of spark-submit</td>
-<td>Location where SMV should find Spark installation.
-</td>
-</tr>
-
-<tr>
-<td>--script</td>
-<td>run driver script instead of runapp.py</td>
-<td>Location of driver script.
 </td>
 </tr>
 
@@ -160,59 +107,21 @@ One of the options below must be specified.
 <td>option to override default location of top level data directory</td>
 </tr>
 
-<tr>
-<td>&#8209;&#8209;input&#8209;dir</td>
-<td>smv.inputDir</td>
-<td>option to override default location of input data directory</td>
-</tr>
-
-<tr>
-<td>&#8209;&#8209;output&#8209;dir</td>
-<td>smv.outputDir</td>
-<td>option to override default location of output data directory</td>
-</tr>
-
-<tr>
-<td>&#8209;&#8209;publish&#8209;dir</td>
-<td>smv.publishDir</td>
-<td>option to override default location of publish directory</td>
-</tr>
-
 </table>
-
-### Spark commands override
-Users are able to override the name of the spark commands used to launch batch jobs and shell.  The two environment variables `SMV_SPARK_SUBMIT_CMD` and `SMV_PYSPARK_CMD` can be used to override the `spark-submit` and `pyspark` commands respectively.
-For example, on a cloudera system with both spark 1.6 and spark 2.2, user can set the following in their shell profile:
-```bash
-# user's .bash_profile
-export SMV_SPARK_SUBMIT_CMD="spark2-submit"
-export SMV_PYSPARK_CMD="pyspark2"
-```
-
-The above would ensure that SMV users the spark 2.2 version on the system.
 
 ### Examples
 Run modules `M1` and `M2` and all its dependencies.  Note the use of the module FQN.
 ```shell
-$ smv-run -m com.mycom.myproj.stage1.M1 com.mycom.myproj.stage1.M2
+$ spark-submit src/main/python/appdriver.py -- -m com.mycom.myproj.stage1.M1 com.mycom.myproj.stage1.M2
 ```
 
-Run all modules in application and generate edd report for all modules that needed to run (including dependencies)
+Publish the output modules in stage "s1" as version "xyz".  The modules will be output to `data/publish/xyz` dir.
 ```shell
-$ smv-run --edd --run-app
-```
-
-Generate a dependency graph for all modules that needed to run.
-```shell
-$ smv-run -g --run-app
-```
-
-Publish the output modules in stage "s1" as version "xyz".  The modules will be output to `/tmp/publish/xyz` dir.
-```shell
-$ smv-run --publish xyz --publish-dir /tmp/publish -s s1
+$ spark-submit src/main/python/appdriver.py -- --publish xyz  -s s1
 ```
 
 Provide spark specific arguments
 ```shell
-$ smv-run -m com.mycom.myproj.stage1.M1 -- --executor-memory=2G --driver-memory=1G --master yarn-client
+$ spark-submit --executor-memory=2G --driver-memory=1G --master yarn-client src/main/python/appdriver.py -- -r
 ```
+****

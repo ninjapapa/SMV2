@@ -94,14 +94,6 @@ class SmvModuleRunner(object):
             hist = self.smvApp._read_meta_hist(m)
             SmvJsonOnHdfsPersistenceStrategy(m.smvApp, publish_hist_path).write(hist.toJson())
 
-
-    def publish_local(self, local_dir):
-        self.run()
-
-        for m in self.roots:
-            csv_path = "{}/{}".format(local_dir, m.versioned_fqn)
-            m.data.smvExportCsv(csv_path)
-
     def purge_persisted(self):
         def cleaner(m, state):
             m.persistStrategy().remove()

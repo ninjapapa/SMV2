@@ -4,9 +4,6 @@ set -e
 
 THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 source "${THIS_FILE_DIR}/_env.sh"
-SMV_TOOLS="$(get_smv_tools_dir)"
-
-export SPARK_PRINT_LAUNCH_COMMAND=1
 
 # Set PYTHONSTARTUP to load the init script
 # Since pyspark does not take app parameters, we have to pass SMV_ARGS to the
@@ -14,17 +11,24 @@ export SPARK_PRINT_LAUNCH_COMMAND=1
 echo "${SMV_ARGS[@]}" > .smv_shell_all_args
 SMV_ARGS=()
 
+# reset PYSPARK_DRIVER_PYTHON to ipython
+OLD_PYSPARK_DRIVER_PYTHON="$PYSPARK_DRIVER_PYTHON"
+
+# need to check whether ipython command and python command versions are matched
+export PYSPARK_DRIVER_PYTHON=ipython
+
 OLD_PYTHONSTARTUP=$PYTHONSTARTUP
-export PYTHONSTARTUP="${SMV_TOOLS}/../src/main/python/scripts/smvpyshell.py"
+export PYTHONSTARTUP="${SMV_HOME}/src/main/python/scripts/smvpyshell.py"
 
 
 # PySpark pre-2.0.0 has a bug (see
 # https://issues.apache.org/jira/browse/SPARK-5185) that does not add
 # the jar file to the driver's classpath, so we need to add the jars
 # to the --driver-class-path command-line option
-SMV_LAUNCH_SCRIPT="${SMV_PYSPARK_FULLPATH}" run_pyspark_with
+SMV_LAUNCH_SCRIPT="pyspark" run_pyspark_with
 
 # Reset PYTHONSTARTUP
 export PYTHONSTARTUP=$OLD_PYTHONSTARTUP
+export PYSPARK_DRIVER_PYTHON="$OLD_PYSPARK_DRIVER_PYTHON"
 
 rm -f .smv_shell_all_args

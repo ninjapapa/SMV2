@@ -31,9 +31,7 @@ from smv.error import SmvRuntimeError
 import smv.helpers
 from smv.modulesvisitor import ModulesVisitor
 from smv.smvmodulerunner import SmvModuleRunner
-from smv.smvconfig import SmvConfig
 from smv.smviostrategy import SmvJsonOnHdfsPersistenceStrategy
-from smv.conn import SmvHdfsConnectionInfo
 from smv.smvmetadata import SmvMetaHistory
 from smv.smvhdfs import SmvHDFS
 from smv.smvschema import SmvSchema
@@ -72,10 +70,10 @@ class SmvApp(object):
             return cls._instance
 
     @classmethod
-    def createInstance(cls, arglist, _sparkSession, py_module_hotload=True):
+    def createInstance(cls, smvconf, _sparkSession, py_module_hotload=True):
         """Create singleton instance. Also returns the instance.
         """
-        cls._instance = cls(arglist, _sparkSession, py_module_hotload)
+        cls._instance = cls(smvconf, _sparkSession, py_module_hotload)
         return cls._instance
 
     @classmethod
@@ -84,7 +82,7 @@ class SmvApp(object):
         """
         cls._instance = app
 
-    def __init__(self, arglist, _sparkSession, py_module_hotload=True):
+    def __init__(self, smvconf, _sparkSession, py_module_hotload=True):
         self.smvHome = os.environ.get("SMV_HOME")
         if (self.smvHome is None):
             raise SmvRuntimeError("SMV_HOME env variable not set!")
@@ -103,11 +101,7 @@ class SmvApp(object):
             self._jvm = _gw.jvm
 
         self.py_module_hotload = py_module_hotload
-        self.py_smvconf = SmvConfig(arglist)
-
-        # issue #429 set application name from smv config
-        if (self.sparkSession is not None):
-            sc._conf.setAppName(self.appName())
+        self.py_smvconf = smvconf
 
         # CmdLine is static, so can be an attribute
         cl = self.py_smvconf.cmdline
@@ -180,7 +174,12 @@ class SmvApp(object):
         return file_path
 
     def appName(self):
-        return self.py_smvconf.app_name()
+        # Use the same name in sparkcontext as long as we have one
+        if (self.sparkSession is not None):
+            name = self.sc.getConf.get("spark.app.name")
+        else:
+            name = self.py_smvconf.app_name()
+        return name
 
     def appDir(self):
         return self.py_smvconf.app_dir
@@ -197,7 +196,7 @@ class SmvApp(object):
             raise SmvRuntimeError("JDBC driver is not specified in SMV config")
         return res
 
-    def getConf(self, key):
+    def getDynamicRunConf(self, key):
         return self.py_smvconf.get_run_config(key)
 
     def setAppDir(self, appDir):
@@ -300,15 +299,6 @@ class SmvApp(object):
 
     def appId(self):
         return self.py_smvconf.app_id()
-
-    def inputDir(self):
-        return self.all_data_dirs().inputDir
-
-    def input_connection(self):
-        return SmvHdfsConnectionInfo(
-            "inputdir",
-            {"smv.conn.inputdir.path": self.inputDir()}
-        )
 
     def get_graph_json(self):
         """Generate a json string representing the dependency graph.
@@ -625,33 +615,20 @@ class SmvApp(object):
         print("\n".join([m.fqn() for m in mods_need_to_run]))
         print("----------------------")
 
-    def _generate_dot_graph(self):
-        """Genrate app level graphviz dot file
-        """
-        dot_graph_str = SmvAppInfo(self).create_graph_dot()
-        path = "{}.dot".format(self.appName())
-        with open(path, "w") as f:
-            f.write(dot_graph_str)
-
-    def _print_dead_modules(self):
-        """Print dead modules:
-        Modules which do not contribute to any output modules are considered dead
-        """
-        SmvAppInfo(self).ls_dead()
-
     def _modules_to_run(self):
         modPartialNames = self.py_smvconf.mods_to_run
         stageNames      = [self.py_smvconf.infer_stage_full_name(f) for f in self.py_smvconf.stages_to_run]
 
-        return self.dsm.modulesToRun(modPartialNames, stageNames, self.cmd_line.runAllApp)
+        mods = self.dsm.modulesToRun(modPartialNames, stageNames, self.cmd_line.runAllApp)
 
+        # Default to runAllApp if no module specified
+        if len(mods) == 0: 
+            mods = self.dsm.modulesToRun(modPartialNames, stageNames, True)
+
+        return mods
 
     def _publish_modules(self, mods):
         SmvModuleRunner(mods, self).publish()
-
-    def _publish_modules_locally(self, mods):
-        local_dir = self.cmd_line.exportCsv
-        SmvModuleRunner(mods, self).publish_local(local_dir)
 
     def _generate_output_modules(self, mods):
         SmvModuleRunner(mods, self).run()
@@ -669,15 +646,9 @@ class SmvApp(object):
             print("----------------------")
 
         #either generate graphs, publish modules, or run output modules (only one will occur)
-        if(self.cmd_line.printDeadModules):
-            self._print_dead_modules()
-        elif(self.cmd_line.dryRun):
+        if(self.cmd_line.dryRun):
             self._dry_run(mods)
-        elif(self.cmd_line.graph):
-            self._generate_dot_graph()
         elif(self.cmd_line.publish):
             self._publish_modules(mods)
-        elif(self.cmd_line.exportCsv):
-            self._publish_modules_locally(mods)
         else:
             self._generate_output_modules(mods)

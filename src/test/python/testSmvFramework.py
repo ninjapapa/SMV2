@@ -221,14 +221,16 @@ class SmvAppNoPyHotLoadTest(SmvBaseTest):
     @classmethod
     def setUpClass(cls):
         from smv.smvapp import SmvApp
+        from smv.smvconfig import SmvConfig
 
         cls.sparkSession = TestConfig.sparkSession()
         cls.sparkContext = TestConfig.sparkContext()
         cls.sparkContext.setLogLevel("ERROR")
 
         args = TestConfig.smv_args() + cls.smvAppInitArgs() + ['--data-dir', cls.tmpDataDir()]
+        smvconf = SmvConfig(args)
         # set py_module_hotload flag to False so no reload of python files
-        cls.smvApp = SmvApp.createInstance(args, cls.sparkSession, py_module_hotload=False)
+        cls.smvApp = SmvApp.createInstance(smvconf, cls.sparkSession, py_module_hotload=False)
 
         sys.path.append(cls.resourceTestDir())
 

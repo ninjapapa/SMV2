@@ -12,14 +12,13 @@
 # limitations under the License.
 
 from test_support.smvbasetest import SmvBaseTest
-from smv import SmvApp
 
 class SmvConfigTest(SmvBaseTest):
     @classmethod
     def smvAppInitArgs(cls):
         return ['--smv-app-dir', cls.resourceTestDir(),
                 '--smv-props', 'smv.test2=in_cmd_line',
-                '--input-dir', 'TestInput',
+                '--some-user-ops', 'user_ops',
                 '-m', "None"]
 
     def test_basic_props_priority(self):
@@ -41,7 +40,6 @@ class SmvConfigTest(SmvBaseTest):
     def test_conf_stages(self):
         self.assertEqual(self.smvApp.py_smvconf.stage_names(), ['s1', 's2', 's3'])
 
-    def test_input_dir_override(self):
-        data_dirs = self.smvApp.py_smvconf.all_data_dirs()
-        self.assertEqual(data_dirs.get('inputDir'), 'TestInput')
-        self.assertEqual(data_dirs.get('outputDir'), self.tmpDataDir() + '/output')
+    def test_arg_leftovers(self):
+        leftover = self.smvApp.py_smvconf.leftover
+        self.assertEqual(leftover, ['--some-user-ops', 'user_ops'])

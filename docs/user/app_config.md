@@ -11,13 +11,13 @@ to override any of the options using the command line interface.
 For any given option X, the user may override the value specified in any of the configuration files as follows:
 
 ```
-smv-run --smv-props X=55 ... -m module_to_run
+spark-submit src/main/driver.py -- --smv-props X=55 ... -m module_to_run
 ```
 
 multiple properties may be specified at the same time:
 
 ```
-smv-run --smv-props smv.appName="myApp" smv.stages="s1,s2" ... -m module_to_run
+spark-submit src/main/driver.py -- --smv-props smv.appName="myApp" smv.stages="s1,s2" ... -m module_to_run
 ```
 
 Some configuration parameters have a shorthand direct command line override (e.g. --data-dir)
@@ -45,10 +45,9 @@ Here is an `smv-app-conf.props` example:
 smv.appName = My Sample App
 
 # stage definitions
-smv.stages = org.tresamigos.sample.etl.internal, \
-             org.tresamigos.sample.etl.external, \
-             org.tresamigos.sample.dm.account, \
-             org.tresamigos.sample.dm.customer
+smv.stages = etl, \
+             account, \
+             customer
 
 # spark sql properties
 spark.sql.shuffle.partitions = 256
@@ -62,9 +61,27 @@ Here is an `smv-user-conf.props` example:
 ```
 # data dir
 smv.dataDir = hdfs:///user/myunixname/data
-smv.inputDir = hdfs:///applications/project/data/landingzone
 
 smv.config.sample=1pct
+```
+
+## Connection Config 
+
+Connections are ways for SMV to specify input or output connections to DB, HDFS or other storages. Please refer 
+[SMV Input Doc](smv_input.md#Connections) for details. 
+
+To config a connection, one need to specify connection type and other connection attributes for a given type. For example:
+```
+smv.conn.myinput.type = hdfs
+smv.conn.myinput.path = file://project_path/data/input
+
+smv.conn.myoutput.type = hdfs
+smv.conn.myoutput.path = file://project_path/data/output
+```
+
+One can put it in either `smv-app-conf.props` or `smv-user-conf.props`. Or for best practice, in a separate file:
+```
+connections.props
 ```
 
 ## SMV Config Parameters
@@ -82,9 +99,9 @@ Note that for sequence/list type parameters (e.g. smv.stages), a "," or ":" can 
 
 <tr>
 <td>smv.appName</td>
-<td>"SMV Application"</td>
+<td>appName from SparkSession</td>
 <td>Optional</td>
-<td>The application name</td>
+<td>The application name. When specify SparkSession in an app driver file, the appName of SparkSession with be used.</td>
 </tr>
 
 <tr>
@@ -125,7 +142,6 @@ Can be overridden using <code>--data-dir</code> command line option</td>
 <td>dataDir<code>/publish</code></td>
 <td>Optional</td>
 <td>Data publish directory
-Can be overridden using <code>--publish-dir</code> command line option</td>
 </tr>
 
 <tr>

@@ -34,15 +34,17 @@ class SmvBaseTest(unittest.TestCase):
         # Import needs to happen during EVERY setup to ensure that we are
         # using the most recently reloaded SmvApp
         from smv.smvapp import SmvApp
+        from smv.smvconfig import SmvConfig
 
         cls.sparkSession = TestConfig.sparkSession()
         cls.sparkContext = TestConfig.sparkContext()
         cls.sparkContext.setLogLevel("ERROR")
 
         args = TestConfig.smv_args() + cls.smvAppInitArgs() + ['--data-dir', cls.tmpDataDir()]
+        smvconf = SmvConfig(args)
         # The test's SmvApp must be set as the singleton for correct results of some tests
         # The original SmvApp (if any) will be restored when the test is torn down
-        cls.smvApp = SmvApp.createInstance(args, cls.sparkSession)
+        cls.smvApp = SmvApp.createInstance(smvconf, cls.sparkSession)
 
         sys.path.append(cls.resourceTestDir())
 
@@ -61,6 +63,7 @@ class SmvBaseTest(unittest.TestCase):
         """Patch for Python 2.6 without using unittest
         """
         from smv import SmvApp
+        from smv.smvconfig import SmvConfig
         cls = self.__class__
         if not hasattr(cls, 'smvApp'):
             cls.sparkSession = TestConfig.sparkSession()
@@ -68,7 +71,8 @@ class SmvBaseTest(unittest.TestCase):
             cls.sparkContext.setLogLevel("ERROR")
 
             args = TestConfig.smv_args() + cls.smvAppInitArgs() + ['--data-dir', cls.tmpDataDir()]
-            cls.smvApp = SmvApp.createInstance(args, cls.sparkSession)
+            smvconf = SmvConfig(args)
+            cls.smvApp = SmvApp.createInstance(smvconf, cls.sparkSession)
 
     @classmethod
     def createDF(cls, schema, data):

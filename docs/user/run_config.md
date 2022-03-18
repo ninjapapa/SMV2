@@ -31,4 +31,4 @@ The above is available on all `SmvModules`. For backwards compatibility, SMV sti
 ## 3. Running
 The user can change the current value of any config parameter on a per run basis.  This can be done in one of two ways:
 * modify the `conf/smv-user-conf.props` or `~/.smv/smv-user-conf.props` to set the appropriate `smv.config.key=value` line.
-* Override the property value from the command line.  For example, to set the sampling rate to 1pct for a run, add the following to the end of the `smv-run` command: `--smv-props smv.config.sample=1pct`
+* Override the property value from the command line.  For example, to set the sampling rate to 1pct for a run, add the following to the end of the `spark-submit` command: `--smv-props smv.config.sample=1pct`

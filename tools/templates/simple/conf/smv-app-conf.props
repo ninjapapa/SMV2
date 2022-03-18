@@ -1,5 +1,2 @@
-# application name
-smv.appName = Example App
-
 # stage definitions
 smv.stages = stage1

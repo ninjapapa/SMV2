@@ -31,7 +31,7 @@ class SmvOutput(object):
     """Mixin which marks an SmvModule as one of the output of its stage
         SmvOutputs are distinct from other SmvModule in that
 
-            * The -s and --run-app options of smv-run only run SmvOutputs and their dependencies.
+            * The -s and --run-app options of only run SmvOutputs and their dependencies.
 
         Deprecated. Will be replaced by sub-classed of smv.io.SmvOutput.
     """

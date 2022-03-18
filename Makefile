@@ -37,7 +37,7 @@ xml-jar:
 
 BUNDLE_NAME = smv2_$(SMV_VERSION).tgz
 BUNDLE_PATH = docker/smv/$(BUNDLE_NAME)
-BUNDLE_INCLUDE = LICENSE README.md docs log4j.properties releases setup.cfg setup.py jars src/main/python tools
+BUNDLE_INCLUDE = LICENSE README.md docs log4j.properties releases setup.cfg setup.py jars src/main/python tools .supported_spark
 
 local_bundle: xml-jar
 	# cleanup some unneeded binary files.

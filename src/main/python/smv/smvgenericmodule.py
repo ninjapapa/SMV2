@@ -665,7 +665,7 @@ class SmvProcessModule(SmvGenericModule):
         if (key not in self.requiresConfig()):
             raise SmvRuntimeError("RunConfig key {} was not specified in requiresConfig method{}.".format(key, self.requiresConfig()))
 
-        return self.smvApp.getConf(key)
+        return self.smvApp.getDynamicRunConf(key)
 
     def smvGetRunConfigAsInt(self, key):
         runConfig = self.smvGetRunConfig(key)

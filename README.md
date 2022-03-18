@@ -20,21 +20,28 @@ Spark Modularized View enables users to build enterprise scale applications on A
 
 Current SMV2 is tested on 
 
-* Spark 2.4.5 (Should work on any Spark 2 distribution)
+* Spark 2.4.8 (Should work on any Spark 2 distribution)
+* Spark 3.2.1
 * Python 2.7.* (for better interactive experience, install IPython for Python2)
+* Python 3.8.* (for better interactive experience, install IPython)
 
 SMV2 can easily setup on Linux and MACOS (Intel silicon, M1 chip MAC book does not have full Python2.7 support) env with or without Hadoop. 
 
-### Python 2.7 
+### Python 
 There are a lot tutorial online for how to setup different python versions on your system. Need to make sure you have `pip` command also set up 
-on the Python 2.7 so that you can install python packages as needed.
+on the correct Python version so that you can install python packages.
+
+Install python packages:
+```
+$ pip install -r tools/requirements.txt
+```
 
 There are some challenges of using Python 2.7 on M1 chip Mac books. Although Python 2.7 is supported, no easy way to setup `pip`. 
 
-SMV2 should work on Python 3. It is on roadmap to test it on Python 3.
 
 ### Setup Spark
-Download a Spark2 bin tar release, such as: https://archive.apache.org/dist/spark/spark-2.4.8/spark-2.4.8-bin-hadoop2.7.tgz
+Download a Spark bin tar release, such as: https://archive.apache.org/dist/spark/spark-2.4.8/spark-2.4.8-bin-hadoop2.7.tgz or other versions as in
+'.supported_spark'. 
 
 ```sh
 $ cd ~
@@ -78,23 +85,41 @@ where the value of the var is thc command of IPython on your env.
 
 Just download the lasted release from https://github.com/ninjapapa/SMV2/releases. And unarchive to `${HOME}` dir. It typically under `SMV2` folder.
 
+Need to setup env vars for SMV_HOME, PATH and PYTHONPATH:
+```sh
+export SMV_HOME="${HOME}/SMV2"
+export PATH="${SMV_HOME}/tools:${PATH}"
+export PYTHONPATH="$SMV_HOME/src/main/python:$PYTHONPATH"
+```
+
 ## Create Example App
 
 SMV provides a shell script to easily create template applications. We will use a simple example app to explore SMV.
 
 ```shell
-$ SMV2/tools/smv-init -s MyApp
+$ cd
+$ smv-init -s MyApp
 ```
 
 ## Run Example App
 
-Run the entire application with
+A project created by `smv-init` has a driver file under `src/main/python` with name `appdriver.py`. One can run `spark-submit` under the project folder on it to run the example app.
+
+Run the entire application with `spark-submit`:
 
 ```shell
 $ cd MyAPP
-$ ../SMV2/tools/smv-run --run-app
+$ spark-submit src/main/python/appdriver.py
 ```
 
+Or can run on a specific module
+
+```shell
+$ cd MyAPP
+$ spark-submit src/main/python/appdriver.py -- -m EmploymentByStateOut
+```
+
+Please note we used `--` in the command line to avoid spark-submit to parse the args.
 This command must be run from the root of the project.
 
 The output csv file and schema can be found in the `data/output` directory. 
@@ -118,10 +143,15 @@ ST: string @metadata={}
 EMP: long @metadata={}
 ```
 
-Or you can run it SMV interactive shell (using PySpark shell):
+User can edit the driver file `appdriver.py` to specify sparksession parameters, or use `spark-submit` command line parameters to specify configurations.
+
+
+## Use interactive shell (IPython)
+
+One can also run app in SMV interactive shell (using PySpark shell):
 ```shell
 $ cd MyApp
-$ ../SMV2/tools/smv-shell
+$ smv-shell
 ```
 
 You can run some command in the shell like below:

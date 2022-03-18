@@ -23,7 +23,6 @@ fi
 
 THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 source "${THIS_FILE_DIR}/_env.sh"
-SMV_TOOLS="$(get_smv_tools_dir)"
 
 # When run test, use local log4j config so that we can turn on DEBUG log level
 LOG_CONF_FILE="${SMV_HOME}/log4j.properties"
@@ -33,6 +32,6 @@ OLD_PYSPARK_DRIVER_PYTHON="$PYSPARK_DRIVER_PYTHON"
 unset PYSPARK_DRIVER_PYTHON
 
 find_app_jar
-run_pyspark_with ${SMV_TOOLS}/../src/main/python/scripts/runtests.py "$@"
+run_pyspark_with ${SMV_HOME}/src/main/python/scripts/runtests.py "$@"
 
 export PYSPARK_DRIVER_PYTHON="$OLD_PYSPARK_DRIVER_PYTHON"
