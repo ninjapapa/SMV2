@@ -1,9 +1,6 @@
 #!/bin/bash
 set -eo pipefail
 
-THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-source "${THIS_FILE_DIR}/_env.sh"
-
 # Another way to add smv.py is through the --py-files option passed to
 # pyspark, as in `pyspark --py-files $SMV_TOOLS/../python/smv.py`
 # Not sure yet which way is best practice.
