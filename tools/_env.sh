@@ -24,7 +24,7 @@ function split_smv_spark_args()
 
         if [ "$1" == "--spark-home" ]; then
           shift
-          SPARK_HOME_OPT="$1"
+          SPARK_HOME="$1"
           shift
         else
           SMV_ARGS=("${SMV_ARGS[@]}" "$1")
@@ -110,7 +110,8 @@ function sanitize_version () {
 }
 
 function installed_spark_major_version() {
-  local installed_version=$(spark-submit --version 2>&1 | \
+  echo "hhhhads${SPARK_HOME}"
+  local installed_version=$(${SPARK_HOME}/bin/spark-submit --version 2>&1 | \
     grep -v "Spark Command" | grep version | head -1 | sed -e 's/.*version //')
   local sanitized_version=$(sanitize_version $installed_version)
   export SPARK_MAJOR_VERSION="${sanitized_version:0:1}"
@@ -152,7 +153,7 @@ function run_pyspark_with () {
   # reloading code and have led to discovering deleted modules (#612)
   local PYTHONDONTWRITEBYTECODE=1
   local SPARK_PRINT_LAUNCH_COMMAND=1
-  local SMV_LAUNCH_SCRIPT="${SMV_LAUNCH_SCRIPT:-spark-submit}"
+  local SMV_LAUNCH_SCRIPT="${SMV_LAUNCH_SCRIPT:-${SPARK_HOME}/bin/spark-submit}"
 
   ( export PYTHONDONTWRITEBYTECODE SPARK_PRINT_LAUNCH_COMMAND PYTHONPATH; \
     "${SMV_LAUNCH_SCRIPT}" "${SPARK_ARGS[@]}" \

@@ -12,6 +12,9 @@ PYTHON_VERSIONS := $(shell cat admin/.python_to_test)
 DEFAULT_PYTHON_PATCH := $(shell tail -1 admin/.python_to_test)
 DEFAULT_PYTHON_MAJOR := $(shell cut -c 1-3 <<< $(DEFAULT_PYTHON_PATCH))
 
+SPARK_PYTHON_TO_TEST := admin/.spark_python_to_test
+TEST_TARGETS := $(shell awk '{print "target/spark_python_"NR".tested"}' $(SPARK_PYTHON_TO_TEST))
+
 SMV_VERSION := v$(shell cat .smv_version)
 
 SMV_ROOT := $(shell pwd)
@@ -92,3 +95,17 @@ test-python: install-basic
 
 test-integration: install-basic
 	tox -e $(DEFAULT_PYTHON_MAJOR) -- bash src/test/scripts/run-integration-test.sh --spark-home $(DEFAULT_SPARK_HOME)
+
+test-full: install-basic create_tests $(TEST_TARGETS)
+
+create_tests:
+	awk 'BEGIN{FS=","}{gsub(/ /, "", $$2); print $$1 "\n" $$2 > "target/spark_python_"NR".totest"}' $(SPARK_PYTHON_TO_TEST)
+
+$(TEST_TARGETS): %.tested: %.totest 
+	SPARK_VERSION=$(shell head -1 $<); \
+	export SPARK_HOME="$(SPARKS_DIR)/$${SPARK_VERSION}"; \
+	PYTHON_VERSION=$(shell tail -1 $<); \
+	tox -e $${PYTHON_VERSION} -- bash src/test/scripts/run-integration-test.sh --spark-home $${SPARK_HOME}
+	tox -e $${PYTHON_VERSION} -- bash tools/smv-pytest --spark-home $${SPARK_HOME} ;\
+	touch $@
+
