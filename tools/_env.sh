@@ -110,7 +110,6 @@ function sanitize_version () {
 }
 
 function installed_spark_major_version() {
-  echo "hhhhads${SPARK_HOME}"
   local installed_version=$(${SPARK_HOME}/bin/spark-submit --version 2>&1 | \
     grep -v "Spark Command" | grep version | head -1 | sed -e 's/.*version //')
   local sanitized_version=$(sanitize_version $installed_version)
