@@ -7,6 +7,23 @@ S_APP_NAME=SimpleApp
 
 HASH_TEST_MOD="integration.test.hashtest.modules.M"
 
+function parse_args() {
+  local _spark_home="${SPARK_HOME:-}"
+
+  for arg in "${@}"; do
+    if [ "${arg}" == "--spark-home" ]; then
+      shift
+      _spark_home="${1}"
+      shift
+    fi
+  done
+
+  # In insatlling in pip, make sure eo emulate a user environment without a spark home
+  export SPARK_HOME
+  SPARK_HOME=$(cd "${_spark_home}"; pwd)
+  echo "Using Spark installation at ${SPARK_HOME:? Expected SPARK_HOME to have been set}"
+}
+
 function verify_test_context() {
   echo "Using SMV_HOME of: ${SMV_HOME:-No SMV_HOME set}"
 
@@ -61,11 +78,12 @@ function test_simple_app() {
   ${SMV_INIT} $S_APP_NAME
 
   echo "--------- RUN SIMPLE APP -------------"
-  execute_in_dir "$S_APP_NAME" "spark-submit src/main/python/appdriver.py -- --run-app"
+  execute_in_dir "$S_APP_NAME" "${SPARK_HOME}/bin/spark-submit src/main/python/appdriver.py -- --run-app"
 }
 
 echo "--------- INTEGRATION TEST BEGIN -------------"
 
+parse_args $@
 verify_test_context
 enter_clean_test_dir
 test_simple_app
