@@ -45,15 +45,6 @@ function enter_clean_test_dir() {
   cd ${TEST_DIR}
 }
 
-function execute_in_dir() {
-  target_dir="${1}"
-  func_to_exec="${2}"
-  (
-    cd "${target_dir}"
-    ${func_to_exec}
-  )
-}
-
 function count_output() {
   echo $(wc -l <<< "$(ls -d data/output/*.csv)")
 }
@@ -78,7 +69,11 @@ function test_simple_app() {
   ${SMV_INIT} $S_APP_NAME
 
   echo "--------- RUN SIMPLE APP -------------"
-  execute_in_dir "$S_APP_NAME" "${SPARK_HOME}/bin/spark-submit src/main/python/appdriver.py -- --run-app"
+  (
+    export PYTHONDONTWRITEBYTECODE=1
+    cd "$S_APP_NAME"
+    "${SPARK_HOME}"/bin/spark-submit src/main/python/appdriver.py
+  )
 }
 
 echo "--------- INTEGRATION TEST BEGIN -------------"
