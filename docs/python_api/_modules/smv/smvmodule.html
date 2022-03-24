@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>smv.smvmodule &#8212; Spark Modularized View 2 v1.1r1 documentation</title>
+    <title>smv.smvmodule &#8212; Spark Modularized View 2 v1.1r2 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
@@ -24,7 +24,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Spark Modularized View 2 v1.1r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Spark Modularized View 2 v1.1r2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">smv.smvmodule</a></li> 
       </ul>
@@ -69,7 +69,7 @@
     <span class="sd">&quot;&quot;&quot;Mixin which marks an SmvModule as one of the output of its stage</span>
 <span class="sd">        SmvOutputs are distinct from other SmvModule in that</span>
 
-<span class="sd">            * The -s and --run-app options of smv-run only run SmvOutputs and their dependencies.</span>
+<span class="sd">            * The -s and --run-app options of only run SmvOutputs and their dependencies.</span>
 
 <span class="sd">        Deprecated. Will be replaced by sub-classed of smv.io.SmvOutput.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -218,14 +218,14 @@
             <span class="n">ds</span> <span class="o">=</span> <span class="n">tbl_name_2_ds</span><span class="p">[</span><span class="n">tbl_name</span><span class="p">]</span>
             <span class="n">i</span><span class="p">[</span><span class="n">ds</span><span class="p">]</span><span class="o">.</span><span class="n">createOrReplaceTempView</span><span class="p">(</span><span class="n">tbl_name</span><span class="p">)</span>
 
-        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smvApp</span><span class="o">.</span><span class="n">sqlContext</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">())</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smvApp</span><span class="o">.</span><span class="n">sparkSession</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">())</span>
 
         <span class="c1"># drop temporary tables</span>
         <span class="k">for</span> <span class="n">tbl_name</span> <span class="ow">in</span> <span class="n">tbl_name_2_ds</span><span class="p">:</span>
             <span class="c1"># This currently causes an &quot;error&quot; to be reported saying &quot;table does</span>
             <span class="c1"># not exist&quot;. This happens even when using &quot;drop table if exists &quot;.</span>
             <span class="c1"># It is annoying but can be safely ignored.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">smvApp</span><span class="o">.</span><span class="n">sqlContext</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;drop table &quot;</span> <span class="o">+</span> <span class="n">tbl_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">smvApp</span><span class="o">.</span><span class="n">sparkSession</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;drop table &quot;</span> <span class="o">+</span> <span class="n">tbl_name</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">res</span></div></div>
 
@@ -346,7 +346,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Spark Modularized View 2 v1.1r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Spark Modularized View 2 v1.1r2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">smv.smvmodule</a></li> 
       </ul>

@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; Spark Modularized View 2 v1.1r1 documentation</title>
+    <title>Index &#8212; Spark Modularized View 2 v1.1r2 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -24,7 +24,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Spark Modularized View 2 v1.1r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Spark Modularized View 2 v1.1r2 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>  
@@ -193,8 +193,6 @@
 </li>
       <li><a href="smv.html#smv.smvappinfo.SmvAppInfo.create_module_state_json">create_module_state_json() (smv.smvappinfo.SmvAppInfo method)</a>
 </li>
-      <li><a href="smv.html#smv.smvdriver.SmvDriver.create_smv_app">create_smv_app() (smv.smvdriver.SmvDriver method)</a>
-</li>
       <li><a href="smv.html#smv.smvapp.SmvApp.createDF">createDF() (smv.smvapp.SmvApp method)</a>
 </li>
       <li><a href="smv.html#smv.smvhdfs.SmvHDFS.createFileAtomic">createFileAtomic() (smv.smvhdfs.SmvHDFS method)</a>
@@ -202,6 +200,8 @@
       <li><a href="smv.html#smv.smvapp.SmvApp.createInstance">createInstance() (smv.smvapp.SmvApp class method)</a>
 </li>
       <li><a href="smv.html#smv.datasetrepo.DataSetRepoFactory.createRepo">createRepo() (smv.datasetrepo.DataSetRepoFactory method)</a>
+</li>
+      <li><a href="smv.html#smv.smvdriver.SmvDriver.createSpark">createSpark() (smv.smvdriver.SmvDriver method)</a>
 </li>
       <li><a href="smv.iomod.html#smv.iomod.outputs.SmvCsvOutputFile.csvAttr">csvAttr() (smv.iomod.outputs.SmvCsvOutputFile method)</a>
 </li>
@@ -365,11 +365,11 @@
 </li>
       <li><a href="smv.iomod.html#smv.iomod.base.SmvSparkDfOutput.get_spark_df">get_spark_df() (smv.iomod.base.SmvSparkDfOutput method)</a>
 </li>
-      <li><a href="smv.html#smv.smvapp.SmvApp.getConf">getConf() (smv.smvapp.SmvApp method)</a>
-</li>
       <li><a href="smv.html#smv.smvapp.SmvApp.getCurrentProperties">getCurrentProperties() (smv.smvapp.SmvApp method)</a>
 </li>
       <li><a href="smv.html#smv.smvapp.SmvApp.getDsHash">getDsHash() (smv.smvapp.SmvApp method)</a>
+</li>
+      <li><a href="smv.html#smv.smvapp.SmvApp.getDynamicRunConf">getDynamicRunConf() (smv.smvapp.SmvApp method)</a>
 </li>
       <li><a href="smv.html#smv.smvmetadata.SmvMetaData.getEddResult">getEddResult() (smv.smvmetadata.SmvMetaData method)</a>
 </li>
@@ -417,10 +417,6 @@
 </li>
       <li><a href="smv.html#smv.helpers.init_helpers">init_helpers() (in module smv.helpers)</a>
 </li>
-      <li><a href="smv.html#smv.smvapp.SmvApp.input_connection">input_connection() (smv.smvapp.SmvApp method)</a>
-</li>
-      <li><a href="smv.html#smv.smvapp.SmvApp.inputDir">inputDir() (smv.smvapp.SmvApp method)</a>
-</li>
       <li><a href="smv.iomod.html#smv.iomod.inputs.SmvHiveInputTable.instanceValHash">instanceValHash() (smv.iomod.inputs.SmvHiveInputTable method)</a>
 
       <ul>
@@ -431,10 +427,10 @@
       </ul></li>
       <li><a href="smv.html#smv.provider.SmvProvider.IS_PROVIDER">IS_PROVIDER (smv.provider.SmvProvider attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="smv.html#smv.utils.is_string">is_string() (in module smv.utils)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="smv.iomod.html#smv.iomod.base.SmvIoModule.isEphemeral">isEphemeral() (smv.iomod.base.SmvIoModule method)</a>
 
       <ul>
@@ -684,6 +680,8 @@
 </li>
       <li><a href="smv.html#smv.smvshell.props">props() (in module smv.smvshell)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="smv.conn.html#smv.conn.conninfos.SmvHdfsConnectionInfo.provider_type">provider_type() (smv.conn.conninfos.SmvHdfsConnectionInfo static method)</a>
 
       <ul>
@@ -696,13 +694,9 @@
         <li><a href="smv.html#smv.provider.SmvProvider.provider_type">(smv.provider.SmvProvider static method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="smv.html#smv.provider.SmvProvider.provider_type_fqn">provider_type_fqn() (smv.provider.SmvProvider class method)</a>
 </li>
       <li><a href="smv.html#smv.smvmodulerunner.SmvModuleRunner.publish">publish() (smv.smvmodulerunner.SmvModuleRunner method)</a>
-</li>
-      <li><a href="smv.html#smv.smvmodulerunner.SmvModuleRunner.publish_local">publish_local() (smv.smvmodulerunner.SmvModuleRunner method)</a>
 </li>
       <li><a href="smv.html#smv.smvmodulerunner.SmvModuleRunner.purge_persisted">purge_persisted() (smv.smvmodulerunner.SmvModuleRunner method)</a>
 </li>
@@ -1213,8 +1207,6 @@
 </li>
       <li><a href="smv.html#smv.smviostrategy.SmvXmlOnHdfsIoStrategy">SmvXmlOnHdfsIoStrategy (class in smv.smviostrategy)</a>
 </li>
-      <li><a href="smv.html#smv.smvconfig.SmvConfig.spark_sql_props">spark_sql_props() (smv.smvconfig.SmvConfig method)</a>
-</li>
       <li><a href="smv.html#smv.smvapp.SmvApp.SRC_LIB_PATH">SRC_LIB_PATH (smv.smvapp.SmvApp attribute)</a>
 </li>
       <li><a href="smv.html#smv.smvapp.SmvApp.SRC_PROJECT_PATH">SRC_PROJECT_PATH (smv.smvapp.SmvApp attribute)</a>
@@ -1363,7 +1355,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Spark Modularized View 2 v1.1r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Spark Modularized View 2 v1.1r2 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>

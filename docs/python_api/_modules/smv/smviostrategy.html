@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>smv.smviostrategy &#8212; Spark Modularized View 2 v1.1r1 documentation</title>
+    <title>smv.smviostrategy &#8212; Spark Modularized View 2 v1.1r2 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
@@ -24,7 +24,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Spark Modularized View 2 v1.1r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Spark Modularized View 2 v1.1r2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">smv.smviostrategy</a></li> 
       </ul>
@@ -280,7 +280,7 @@
 
 <div class="viewcode-block" id="SmvHiveIoStrategy.read"><a class="viewcode-back" href="../../smv.html#smv.smviostrategy.SmvHiveIoStrategy.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;select * from </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_table_with_schema</span><span class="p">())</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">smvApp</span><span class="o">.</span><span class="n">sqlContext</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="n">query</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">smvApp</span><span class="o">.</span><span class="n">sparkSession</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="n">query</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SmvHiveIoStrategy.write"><a class="viewcode-back" href="../../smv.html#smv.smviostrategy.SmvHiveIoStrategy.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_data</span><span class="p">):</span>
         <span class="c1"># TODO: write_mode == &#39;Ignore&#39;</span>
@@ -288,10 +288,10 @@
         <span class="n">raw_data</span><span class="o">.</span><span class="n">createOrReplaceTempView</span><span class="p">(</span><span class="s2">&quot;dftable&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">_write_mode</span> <span class="o">==</span> <span class="s1">&#39;overwrite&#39;</span> <span class="ow">or</span> <span class="n">_write_mode</span> <span class="o">==</span> <span class="s1">&#39;errorifexists&#39;</span><span class="p">):</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">_write_mode</span> <span class="o">==</span> <span class="s1">&#39;overwrite&#39;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">smvApp</span><span class="o">.</span><span class="n">sqlContext</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;drop table if exists </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_table_with_schema</span><span class="p">()))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">smvApp</span><span class="o">.</span><span class="n">sqlContext</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;create table </span><span class="si">{}</span><span class="s2"> as select * from dftable&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_table_with_schema</span><span class="p">()))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">smvApp</span><span class="o">.</span><span class="n">sparkSession</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;drop table if exists </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_table_with_schema</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">smvApp</span><span class="o">.</span><span class="n">sparkSession</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;create table </span><span class="si">{}</span><span class="s2"> as select * from dftable&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_table_with_schema</span><span class="p">()))</span>
         <span class="k">elif</span> <span class="p">(</span><span class="n">_write_mode</span> <span class="o">==</span> <span class="s1">&#39;append&#39;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">smvApp</span><span class="o">.</span><span class="n">sqlContext</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;insert into table </span><span class="si">{}</span><span class="s2"> select * from dftable&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_table_with_schema</span><span class="p">()))</span></div></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">smvApp</span><span class="o">.</span><span class="n">sparkSession</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;insert into table </span><span class="si">{}</span><span class="s2"> select * from dftable&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_table_with_schema</span><span class="p">()))</span></div></div>
 
     <span class="c1"># TODO: we should allow persisting intermidiate results in Hive also</span>
     <span class="c1"># For that case, however need to specify a convention to store semaphore</span>
@@ -320,7 +320,7 @@
 
 <div class="viewcode-block" id="SmvXmlOnHdfsIoStrategy.read"><a class="viewcode-back" href="../../smv.html#smv.smviostrategy.SmvXmlOnHdfsIoStrategy.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># TODO: look for possibilities to feed to readerLogger</span>
-        <span class="n">reader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smvApp</span><span class="o">.</span><span class="n">sqlContext</span>\
+        <span class="n">reader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smvApp</span><span class="o">.</span><span class="n">sparkSession</span>\
             <span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;xml&#39;</span><span class="p">)</span>\
             <span class="o">.</span><span class="n">options</span><span class="p">(</span><span class="n">rowTag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rowTag</span><span class="p">)</span>
 
@@ -421,7 +421,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Spark Modularized View 2 v1.1r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Spark Modularized View 2 v1.1r2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">smv.smviostrategy</a></li> 
       </ul>

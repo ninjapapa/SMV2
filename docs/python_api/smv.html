@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>smv package &#8212; Spark Modularized View 2 v1.1r1 documentation</title>
+    <title>smv package &#8212; Spark Modularized View 2 v1.1r2 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -33,7 +33,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to smv’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Spark Modularized View 2 v1.1r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Spark Modularized View 2 v1.1r2 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">smv package</a></li> 
       </ul>
     </div>  
@@ -727,7 +727,7 @@ This module provides the main SMV Python entry point <code class="docutils liter
 It is equivalent to <code class="docutils literal notranslate"><span class="pre">SmvApp</span></code> on Scala side</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="smv.smvapp.SmvApp">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">smv.smvapp.</span></span><span class="sig-name descname"><span class="pre">SmvApp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arglist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_sparkSession</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">py_module_hotload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/smv/smvapp.html#SmvApp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvapp.SmvApp" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">smv.smvapp.</span></span><span class="sig-name descname"><span class="pre">SmvApp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smvconf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_sparkSession</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">py_module_hotload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/smv/smvapp.html#SmvApp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvapp.SmvApp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>The Python representation of SMV.</p>
 <p>Its singleton instance is created later in the containing module
@@ -806,7 +806,7 @@ such as one returned by open(), or StringIO</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="smv.smvapp.SmvApp.createInstance">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">createInstance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arglist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_sparkSession</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">py_module_hotload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/smv/smvapp.html#SmvApp.createInstance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvapp.SmvApp.createInstance" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">createInstance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smvconf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_sparkSession</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">py_module_hotload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/smv/smvapp.html#SmvApp.createInstance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvapp.SmvApp.createInstance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create singleton instance. Also returns the instance.</p>
 </dd></dl>
 
@@ -821,11 +821,6 @@ such as one returned by open(), or StringIO</p></li>
 <dd><p>Decorator function to catch Py4JJavaError and raise.
 Otherwise just pass through the original exception</p>
 </dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="smv.smvapp.SmvApp.getConf">
-<span class="sig-name descname"><span class="pre">getConf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/smv/smvapp.html#SmvApp.getConf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvapp.SmvApp.getConf" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="smv.smvapp.SmvApp.getCurrentProperties">
@@ -856,6 +851,11 @@ specified here to retrieve the correct hash.</p></li>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="smv.smvapp.SmvApp.getDynamicRunConf">
+<span class="sig-name descname"><span class="pre">getDynamicRunConf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/smv/smvapp.html#SmvApp.getDynamicRunConf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvapp.SmvApp.getDynamicRunConf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="smv.smvapp.SmvApp.getInstance">
@@ -995,16 +995,6 @@ all roots, set <cite>keep_roots</cite> to True</p>
 <dd><p>Discover all providers in user lib and smv lib that have an provider type fqn
 starting with the given prefix.</p>
 </dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="smv.smvapp.SmvApp.inputDir">
-<span class="sig-name descname"><span class="pre">inputDir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/smv/smvapp.html#SmvApp.inputDir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvapp.SmvApp.inputDir" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="smv.smvapp.SmvApp.input_connection">
-<span class="sig-name descname"><span class="pre">input_connection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/smv/smvapp.html#SmvApp.input_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvapp.SmvApp.input_connection" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="smv.smvapp.SmvApp.jdbcDriver">
@@ -1291,11 +1281,6 @@ Ignore reset if new_d_props is None</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="smv.smvconfig.SmvConfig.spark_sql_props">
-<span class="sig-name descname"><span class="pre">spark_sql_props</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/smv/smvconfig.html#SmvConfig.spark_sql_props"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvconfig.SmvConfig.spark_sql_props" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="smv.smvconfig.SmvConfig.stage_names">
 <span class="sig-name descname"><span class="pre">stage_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/smv/smvconfig.html#SmvConfig.stage_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvconfig.SmvConfig.stage_names" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1315,35 +1300,38 @@ Ignore reset if new_d_props is None</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">smv.smvdriver.</span></span><span class="sig-name descname"><span class="pre">SmvDriver</span></span><a class="reference internal" href="_modules/smv/smvdriver.html#SmvDriver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvdriver.SmvDriver" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Driver for an SMV application</p>
-<p>SmvDriver handles the boiler plate around parsing driver args, constructing an SmvApp, and running an application.
-To use SmvDriver, override <cite>main</cite> and in the main block of your driver script call construct your driver and
-call <cite>run</cite>.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="smv.smvdriver.SmvDriver.create_smv_app">
-<span class="sig-name descname"><span class="pre">create_smv_app</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smv_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver_args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/smv/smvdriver.html#SmvDriver.create_smv_app"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvdriver.SmvDriver.create_smv_app" title="Permalink to this definition">¶</a></dt>
-<dd><p>Override this to define how this driver’s SmvApp is created</p>
-<p>Default is just SmvApp.createInstance(smv_args). Note that it’s important to use <cite>createInstance</cite> to ensure that
-the singleton app is set.</p>
-<p>SmvDriver will parse the full CLI args to distinguish the SMV args from from the args to your driver.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>smv_args</strong> (<em>list</em><em>(</em><em>str</em><em>)</em>) – CLI args for SMV - should be passed to <cite>SmvApp</cite>)</p></li>
-<li><p><strong>driver_args</strong> (<em>list</em><em>(</em><em>str</em><em>)</em>) – CLI args for the driver</p></li>
+<p>SmvDriver handles the boiler plate around parsing driver args, constructing an SmvApp, and running an application.</p>
+<p>Extend SmvDriver as the entry point to a project app override the following methods to customize:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>createSpark (optional) - return a SparkSession</p></li>
+<li><p>main - what to do with the smvapp (typically call smvapp.run())</p></li>
 </ul>
+</div></blockquote>
+<p>Project driver python script could create the customize SmvDriver class and call run() method in __main__:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>if __name__ == “__main__”:</dt><dd><p>AppDriver().run()</p>
 </dd>
 </dl>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="smv.smvdriver.SmvDriver.createSpark">
+<span class="sig-name descname"><span class="pre">createSpark</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smvconf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/smv/smvdriver.html#SmvDriver.createSpark"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvdriver.SmvDriver.createSpark" title="Permalink to this definition">¶</a></dt>
+<dd><p>Override this to define SparkSession with customize parameters</p>
+<p>If not defined, will use parameters in kernel_config_file, which specified by “smv.kernelConfigFile”
+keyword in smv opts files. If kernel_config not specified, will create default spark session.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="smv.smvdriver.SmvDriver.main">
-<span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver_args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/smv/smvdriver.html#SmvDriver.main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvdriver.SmvDriver.main" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smvapp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver_args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/smv/smvdriver.html#SmvDriver.main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvdriver.SmvDriver.main" title="Permalink to this definition">¶</a></dt>
 <dd><p>Override this to define the driver logic</p>
-<p>Default is to just call <cite>run</cite> onthe <cite>SmvApp</cite>.</p>
+<p>Default is to just call <cite>run</cite> on the <cite>SmvApp</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>app</strong> (<a class="reference internal" href="#smv.smvapp.SmvApp" title="smv.smvapp.SmvApp"><em>SmvApp</em></a>) – app which was constructed</p></li>
+<li><p><strong>smvapp</strong> (<a class="reference internal" href="#smv.smvapp.SmvApp" title="smv.smvapp.SmvApp"><em>SmvApp</em></a>) – app which was constructed</p></li>
 <li><p><strong>driver_args</strong> (<em>list</em><em>(</em><em>str</em><em>)</em>) – CLI args for the driver</p></li>
 </ul>
 </dd>
@@ -2238,7 +2226,7 @@ May deprecate when the full SmvGenericModule framework get adopted</p>
 SmvOutputs are distinct from other SmvModule in that</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>The -s and –run-app options of smv-run only run SmvOutputs and their dependencies.</p></li>
+<li><p>The -s and –run-app options of only run SmvOutputs and their dependencies.</p></li>
 </ul>
 </div></blockquote>
 <p>Deprecated. Will be replaced by sub-classed of smv.io.SmvOutput.</p>
@@ -2335,11 +2323,6 @@ a group of modules</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="smv.smvmodulerunner.SmvModuleRunner.publish">
 <span class="sig-name descname"><span class="pre">publish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">publish_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/smv/smvmodulerunner.html#SmvModuleRunner.publish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvmodulerunner.SmvModuleRunner.publish" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="smv.smvmodulerunner.SmvModuleRunner.publish_local">
-<span class="sig-name descname"><span class="pre">publish_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/smv/smvmodulerunner.html#SmvModuleRunner.publish_local"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#smv.smvmodulerunner.SmvModuleRunner.publish_local" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -2758,7 +2741,7 @@ use to calculate sourceCodeHash.</p>
         <li class="right" >
           <a href="index.html" title="Welcome to smv’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Spark Modularized View 2 v1.1r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Spark Modularized View 2 v1.1r2 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">smv package</a></li> 
       </ul>
     </div>
