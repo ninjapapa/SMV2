@@ -1,8 +1,6 @@
 import smv
 import pyspark.sql.functions as F
 
-__all__ = ['EmploymentByState']
-
 class Employment(smv.iomod.SmvCsvInputFile):
     def connectionName(self):
         return "myinput"
