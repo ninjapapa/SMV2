@@ -40,6 +40,8 @@ There are some challenges of using Python 2.7 on M1 chip Mac books. Although Pyt
 
 
 ### Setup Spark
+Spark packages depend on java8 jdk. Please check online for how to install java8 jdk for your system.
+
 Download a Spark bin tar release, such as: https://archive.apache.org/dist/spark/spark-2.4.8/spark-2.4.8-bin-hadoop2.7.tgz or other versions as in
 '.supported_spark'. 
 
@@ -158,7 +160,7 @@ You can run some command in the shell like below:
 ```
 In [1]: ls()
 
-stage1:
+emp:
   (I) employment.Employment
   (O) employment.EmploymentByState
 
@@ -175,7 +177,7 @@ Basically you can access the output of an `SmvModule` (e.g. "EmploymentByState")
 
 The `EmploymentByState` module is defined in `src/python/stage1/employment.py`:
 
-```shell
+```python
 class EmploymentByState(SmvModule, SmvOutput):
     """Python ETL Example: employment by state"""
 
@@ -190,7 +192,7 @@ class EmploymentByState(SmvModule, SmvOutput):
 The `run` method of a module defines the operations needed to get the output based on the input. We would like to create a new column to indicate 
 whether a state has more than 1M employees:
 
-```shell
+```python
   def run(self, i):
       df = i[inputdata.Employment]
       df1 = df.groupBy(col("ST")).agg(sum(col("EMP")).alias("EMP"))
@@ -198,12 +200,12 @@ whether a state has more than 1M employees:
       return df
 ```
 
-The best practice is to open an Smv-shell and an editor in a different window (either VS-Code or just Vim) of the code editing. 
+The best practice is to open an Smv-shell in one window and an editor in a different window (either VS-Code or just Vim) for code editing. 
 After finished editing and save the file, you can access the new module results from the shell.
 
 For example continuing on the previous smv-shell example, we can call `df` method again
 
-```
+```python
 In [4]: data2 = df("EmploymentByState")
 
 In [5]: data2.peek()
@@ -218,5 +220,7 @@ EMP : bigint = 2933665
 
 Please note, at this point you can still access the old DataFrame `data1`, so you can even do a comparison check between the new one 
 and old one.
+
+`fullRun` command is similar to `df`. However it will persist intermediate data for quick access. For example, if module `C` depends on `B` and then depends on `A`, if `B` takes a lot time to run, and we made some modification of `C`, when rerun `df("C")`, `B` will need to re-calculate from `A`. However if we run `fullRun("C")` the first time, after modify `C`, when re-run either `df("C")` or `fullRun("C")`, `B` will not be re-calculated, instead it will from the persisted data.
 
 See the [user guide](docs/user/0_user_toc.md) for further examples and documentation.
