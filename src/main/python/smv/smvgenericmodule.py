@@ -156,7 +156,7 @@ class SmvGenericModule(ABC):
             Returns:
                 (str): version number of this SmvGenericModule
         """
-        return "0"
+        return None
 
 
     #########################################################################
@@ -469,7 +469,12 @@ class SmvGenericModule(ABC):
         _sourceCodeHash = self._sourceCodeHash()
         log.debug("{}.sourceCodeHash = ${}".format(self.fqn(), _sourceCodeHash))
 
-        res = _instanceValHash + _sourceCodeHash
+        if (self.version() is not None):
+            _versionHash = smvhash(self.version())
+        else:
+            _versionHash = 0
+
+        res = _instanceValHash + _sourceCodeHash + _versionHash
 
         # ensure python's numeric type can fit in a java.lang.Integer
         return res & 0x7fffffff
