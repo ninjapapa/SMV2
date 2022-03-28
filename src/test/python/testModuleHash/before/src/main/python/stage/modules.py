@@ -126,3 +126,11 @@ class DoesntConfigValue(SmvModule):
         pass
     def requiresConfig(self):
         return ["keyDoesntChange"]
+
+class ModuleVersionChange(SmvModule):
+    def requiresDS(self):
+        return[]
+    def run(self, i):
+        pass
+    def version(self):
+        return "0"

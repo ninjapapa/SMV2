@@ -106,3 +106,7 @@ class ModuleHashTest(SmvBaseTest):
     def test_change_irrelevant_conf_value_shouldnt_change_hash(self):
         """updating config value not used by an SmvGenericModule shouldn't change its hash"""
         self.assert_hash_should_not_change("stage.modules.DoesntConfigValue")
+
+    def test_change_version_should_change_hash(self):
+        """updating version value should change its hash"""
+        self.assert_hash_should_change("stage.modules.ModuleVersionChange")
