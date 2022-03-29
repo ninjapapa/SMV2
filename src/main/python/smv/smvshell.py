@@ -21,7 +21,9 @@ from smv import SmvApp
 from smv.smvappinfo import SmvAppInfo
 from smv.conn import SmvHdfsEmptyConn
 from smv.iomod import SmvCsvInputFile
-from smv.smviostrategy import SmvSchemaOnHdfsIoStrategy
+from smv.smviostrategy import SmvSchemaOnHdfsIoStrategy, SmvCsvOnHdfsIoStrategy
+from smv.smvschema import SmvSchema
+from smv.csv_attributes import CsvAttributes
 from test_support.test_runner import SmvTestRunner
 from test_support.testconfig import TestConfig
 
@@ -118,6 +120,23 @@ def openCsv(path):
             return "DROPMALFORMED"
 
     return TmpCsv(app).doRun(None)
+
+def saveCsv(df, path):
+    """Save DF as a CSV file with header (single partition for easy sharing)
+    
+        Args:
+            df (DataFrame): data to be saved
+            path (string): CSV file path. A folder will be created with that path and a single CSV partition will be 
+            stored in
+
+        Return:
+            (None)
+    """
+    schema = SmvSchema(df.schema).addCsvAttributes(CsvAttributes(hasHeader = "true"))
+    data = df.coalesce(1)
+    smvApp = SmvApp.getInstance()
+    SmvCsvOnHdfsIoStrategy(smvApp, path, schema, "FAILFAST", "overwrite").write(data)
+
 
 def help():
     """Print a list of the SMV helper functions available in the shell
@@ -269,6 +288,7 @@ __all__ = [
     'dshash',
     'getModel',
     'openCsv',
+    'saveCsv',
     'help',
     'lsStage',
     'ls',
