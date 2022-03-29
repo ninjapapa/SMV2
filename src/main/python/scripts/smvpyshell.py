@@ -66,3 +66,7 @@ if os.path.exists("conf/smv_shell_app_init.py"):
   from smv_shell_app_init import *
 
 del os, atexit, readline, rlcompleter, save_history, historyPath
+
+print("Entering SMV-Shell. See help info:")
+print("  >import smv")
+print("  >help(smv.smvshell)")

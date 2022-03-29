@@ -138,24 +138,6 @@ def saveCsv(df, path):
     SmvCsvOnHdfsIoStrategy(smvApp, path, schema, "FAILFAST", "overwrite").write(data)
 
 
-def help():
-    """Print a list of the SMV helper functions available in the shell
-    """
-    this_mod = sys.modules[__name__]
-
-    help_msg = "SMV shell commands:"
-    for func_name in __all__:
-        func = getattr(this_mod, func_name)
-        signature = formatargspec(*getargspec(func))
-        help_msg += "\n* {}{}".format(func_name, signature)
-
-    smv_version = SmvApp.getInstance().smvVersion()
-    doc_url = ("http://tresamigossd.github.io/SMV/pythondocs/{}/smv.html#module-smv.smvshell"
-                .format(smv_version))
-    help_msg += "\nDocumentation may be found at " + doc_url
-
-    print(help_msg)
-
 def lsStage():
     """List all the stages
     """
@@ -210,6 +192,18 @@ def create_graph(dotfile=None):
         path = dotfile
     with open(path, "w") as f:
         f.write(dot_graph_str)
+
+
+def purge_persisted():
+    """Remove current persisted data files, so when re-run will generate from input.
+
+        Will only remove "current" version of persisted files. Historical persisted files (no more current) will
+        not be removed. User need to do that from OS.
+    """
+    smvApp = SmvApp.getInstance()
+    mods_to_run = smvApp.dsm.modulesToRun([], [], True)
+    smvApp._purge_current_output_files(mods_to_run)
+
 
 def now():
     """Print current time
@@ -289,13 +283,13 @@ __all__ = [
     'getModel',
     'openCsv',
     'saveCsv',
-    'help',
     'lsStage',
     'ls',
     'lsDead',
     'props',
     'ancestors',
     'descendants',
+    'purge_persisted',
     'now',
     'smvDiscoverSchema',
     'smvDiscoverSchemaToFile',
