@@ -529,7 +529,8 @@ class SmvApp(object):
             .option("mode", mode)\
             .option('inferSchema', 'false')\
             .option('enforceSchema', 'true')\
-            .option('ignoreLeadingWhiteSpace', 'true')
+            .option('ignoreLeadingWhiteSpace', 'true')\
+            .option("encoding", "utf-8")
 
         # Could set nullValue when handle String[,_NULL_] type schema string
         if attrs.get('dateFormat'):
