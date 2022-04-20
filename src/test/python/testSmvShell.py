@@ -19,7 +19,11 @@ import json
 class SmvShellTest(SmvBaseTest):
     @classmethod
     def smvAppInitArgs(cls):
-        return ['--smv-props', 'smv.stages=stage:stage2']
+        return [
+          '--smv-props', 
+          'smv.stages=stage:stage2',
+          'smv.appName=smvShellTest',
+        ]
 
     def test_shell_df(self):
         fqn = "stage.modules.CsvStr"
@@ -85,6 +89,17 @@ stage2:
         smvshell.smvDiscoverSchemaToFile(self.tmpInputDir() + "/" + file_name)
         assert os.path.exists(self.tmpInputDir() + "/" + out_schema_name)
         os.remove(self.tmpInputDir() + "/" + out_schema_name)
+
+    def test_app_name(self):
+      res = self.smvApp.appName()
+      exp = "smvShellTest"
+      self.assertEqual(res, exp)
+
+    def test_create_graph(self):
+      filename = "smvShellTest.dot"
+      path_to_check = self.tmpTestDir() + "/" + filename
+      smvshell.create_graph(path_to_check)
+      assert os.path.exists(path_to_check)
 
     def test_app_createDF_to_create_empty_df(self):
         res = self.smvApp.createDF("a:String")
