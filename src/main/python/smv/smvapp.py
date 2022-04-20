@@ -174,11 +174,11 @@ class SmvApp(object):
         return file_path
 
     def appName(self):
-        # Use the same name in sparkcontext as long as we have one
-        if (self.sparkSession is not None):
-            name = self.sc.getConf.get("spark.app.name")
-        else:
+        # get name from SmvConf, if none, get from sparksession
+        if (self.py_smvconf is not None):
             name = self.py_smvconf.app_name()
+        elif (self.sparkSession is not None):
+            name = self.sc.getConf().get("spark.app.name")
         return name
 
     def appDir(self):

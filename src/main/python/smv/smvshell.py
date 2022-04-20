@@ -294,6 +294,7 @@ __all__ = [
     'smvDiscoverSchema',
     'smvDiscoverSchemaToFile',
     'run_test',
+    'create_graph',
     'show_run_info',
     'get_run_info'
 ]
