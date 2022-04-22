@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -e
+
+# reset PYSPARK_DRIVER_PYTHON to ipython
+OLD_PYSPARK_DRIVER_PYTHON="$PYSPARK_DRIVER_PYTHON"
+OLD_PYSPARK_DRIVER_PYTHON_OPTS="$PYSPARK_DRIVER_PYTHON_OPTS"
+
+export PYSPARK_DRIVER_PYTHON=jupyter
+export PYSPARK_DRIVER_PYTHON_OPTS='notebook'
+
+# Simply run pyspark. It will start a jupyter notebook. By default it will look for
+# "notebooks" dir for ipynb files. Run this command from project dir will automaticall use
+# the "notebooks" folder with and example NB already has SMV initialized. 
+
+pyspark
+
+
+export PYSPARK_DRIVER_PYTHON="$OLD_PYSPARK_DRIVER_PYTHON"
+export PYSPARK_DRIVER_PYTHON_OPTS="$OLD_PYSPARK_DRIVER_PYTHON_OPTS"
