@@ -65,6 +65,18 @@ ST EMP     cat_high_emp
 34 3324188 true
 ....
 
+### Create histogram on string column
+
+```python
+>>> s2res.smvHist("ST")
++---+-----+
+| ST|count|
++---+-----+
+| 01|    1|
+| 02|    1|
+....
+```
+
 
 ### List all the stages
 ```python

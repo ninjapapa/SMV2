@@ -174,6 +174,18 @@ class DataFrameHelper(object):
             for (n, l) in labels:
                 print("{} = {}".format(l, rec[n]))
 
+    def smvHist(self, col, top_n = 20):
+        """Display the histogram of a column
+
+            Args:
+                col (Column or str): the column to display the histogram
+                top_n (int): the number of top values to display, default as 20
+        """
+        col_name = col if isinstance(col, str) else col.name()
+        if self.df.schema[col_name].dataType.typeName() == "string":
+            self.df.groupBy(col_name).count().orderBy(F.desc("count")).show(top_n)
+        else:
+            raise SmvRuntimeError("Histogram is only supported for StringType column")
 
 class ColumnHelper(object):
     def __init__(self, col):
