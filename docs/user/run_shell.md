@@ -64,6 +64,8 @@ ST EMP     cat_high_emp
 33 508120  false
 34 3324188 true
 ....
+```
+
 
 ### Create histogram on string column
 
