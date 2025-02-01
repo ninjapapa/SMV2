@@ -137,7 +137,9 @@ class SmvSchema(object):
         return (s, a)
 
     def toStrForFile(self):
-        attrStr = "\n".join(["@{} = {}".format(k, v) for (k, v) in self.attributes.items()])
+        # For delimiter, use \t for print
+        attr_for_print = {k: r"\t" if k == "delimiter" and v == "\t" else v for k, v in self.attributes.items()}
+        attrStr = "\n".join(["@{} = {}".format(k, v) for (k, v) in attr_for_print.items()])
         s = self.schema
         fmtStr = "\n".join([
             "{}: {} @metadata={}".format(name, s[name].dataType.typeName(), json.dumps(s[name].metadata))
