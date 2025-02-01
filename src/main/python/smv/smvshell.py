@@ -210,6 +210,17 @@ def now():
     print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 def smvDiscoverSchema(path, attrs = {}):
+    """Try best to discover Schema from raw Csv file
+
+        Print infered Schema on console
+
+        Args:
+            path (str): Path to the CSV file
+            ca (CsvAttributes): Defaults to CsvWithHeader
+
+        Example:
+            smvDiscoverSchema("data/input/user.csv", {"delimiter": "\\t"})
+    """
     smvSchema = SmvApp.getInstance().discoverSchema(path, attrs)
     print(smvSchema.toStrForFile())
 
@@ -220,8 +231,10 @@ def smvDiscoverSchemaToFile(path, attrs = {}):
 
         Args:
             path (str): Path to the CSV file
-            n (int): Number of records to check for schema discovery, default 100k
             ca (CsvAttributes): Defaults to CsvWithHeader
+
+        Example:
+            smvDiscoverSchemaToFile("data/input/user.csv", {"delimiter": "\\t"})
     """
     app = SmvApp.getInstance()
     schema_path = re.sub(r"(?i)csv", "schema.toBeReviewed", path)
