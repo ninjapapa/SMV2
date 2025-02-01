@@ -12,7 +12,6 @@
 # limitations under the License.
 """Helper functions available in SMV's Python shell
 """
-from inspect import formatargspec, getargspec
 import sys
 import re
 import datetime
