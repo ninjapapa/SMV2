@@ -187,6 +187,45 @@ class DataFrameHelper(object):
         else:
             raise SmvRuntimeError("Histogram is only supported for StringType column")
 
+    def _get_key_one_by_one(self, working_df, pool, selected_keys, unique_count, cnt, debug):
+        """Fined unique key one by one"""
+        if debug:
+            print("selected_keys: {}, unique_count: {}".format(selected_keys, unique_count))
+
+        if len(pool) == 0 or cnt == unique_count:
+            return (selected_keys, unique_count)
+
+        current_max_unique = unique_count
+        for test_col in pool:
+            n = working_df.select(selected_keys + [test_col]).distinct().count()
+            if n > current_max_unique:
+                current_max_unique = n
+                best_col = test_col
+        
+        if current_max_unique > unique_count:
+            new_unique_count = current_max_unique
+            new_selected_keys = selected_keys + [best_col]
+            new_pool = [i for i in pool if i != best_col]
+            return self._get_key_one_by_one(working_df, new_pool, new_selected_keys, new_unique_count, cnt, debug)
+        else:
+            return (selected_keys, unique_count)
+
+    def smvDiscoverPK(self, top_n = 5000, debug = True):
+        """Discover the primary key of a DataFrame
+
+            Args:
+                top_n (int): the number of top values to display, default as 5000
+                debug (boolean): if true, print debug information, default as True
+
+            Returns:
+                (list): the primary key of the DataFrame
+        """
+        working_df = self.df.limit(top_n).cache()
+        cnt = working_df.count()
+        pool = working_df.columns
+        selected_keys, unique_count = self._get_key_one_by_one(working_df, pool, [], 0, cnt, debug)
+        return selected_keys
+
 class ColumnHelper(object):
     def __init__(self, col):
         self.col = col
