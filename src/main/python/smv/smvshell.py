@@ -266,8 +266,9 @@ def run_test(test_name):
 def _clear_from_sys_modules(names_to_clear):
     """Clear smv and the given names from sys.modules (don't clear this module)
     """
-    for name in sys.modules.keys():
-        for ntc in names_to_clear:
+    all_mods = sys.modules.keys()
+    for ntc in names_to_clear:
+        for name in all_mods:
             if name != "smv.smvshell" and (name.startswith(ntc + ".") or name == ntc):
                 sys.modules.pop(name)
                 break

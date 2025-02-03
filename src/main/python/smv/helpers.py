@@ -174,18 +174,22 @@ class DataFrameHelper(object):
             for (n, l) in labels:
                 print("{} = {}".format(l, rec[n]))
 
-    def smvHist(self, col, top_n = 20):
+    def smvHist(self, col):
         """Display the histogram of a column
 
             Args:
                 col (Column or str): the column to display the histogram
-                top_n (int): the number of top values to display, default as 20
+
+            Returns:
+                (DataFrame): the histogram of the column
         """
         col_name = col if isinstance(col, str) else col.name()
         if self.df.schema[col_name].dataType.typeName() == "string":
-            self.df.groupBy(col_name).count().orderBy(F.desc("count")).show(top_n)
+            return self.df.groupBy(col_name).count().orderBy(F.desc("count"))
+        if self.df.schema[col_name].dataType.typeName() == "integer":
+            return self.df.groupBy(col_name).count().orderBy(F.asc(col_name))
         else:
-            raise SmvRuntimeError("Histogram is only supported for StringType column")
+            raise SmvRuntimeError("Histogram is only supported for StringType or IntegerType column")
 
     def _get_key_one_by_one(self, working_df, pool, selected_keys, unique_count, cnt, debug):
         """Fined unique key one by one"""
