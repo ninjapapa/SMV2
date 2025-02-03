@@ -24,7 +24,6 @@ from pyspark.context import SparkContext
 from pyspark.sql import SQLContext, HiveContext
 from pyspark.sql.functions import col, struct, count
 from py4j.protocol import Py4JJavaError
-from smv.error import SmvRuntimeError
 
 class DfHelperTest(SmvBaseTest):
     @classmethod

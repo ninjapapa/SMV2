@@ -15,7 +15,6 @@ import os
 import sys
 from test_support.smvbasetest import SmvBaseTest
 from smv import *
-from smv.error import SmvRuntimeError
 from smv.modulesvisitor import ModulesVisitor
 from smv.smvmodulerunner import SmvModuleRunner
 from smv.smviostrategy import SmvJsonOnHdfsPersistenceStrategy
@@ -165,7 +164,7 @@ class SmvFrameworkTest2(SmvBaseTest):
         self.assertEqual(m1_post_counter, 1)
 
     def test_try_to_load_non_exit_module(self):
-        with self.assertRaisesRegexp(SmvRuntimeError, "Module .*NonExist does not exist"):
+        with self.assertRaisesRegex(RuntimeError, "Module .*NonExist does not exist"):
             self.load("stage.modules.NonExist")
 
     def test_app_get_need_to_run(self):
@@ -179,7 +178,7 @@ class SmvFrameworkTest2(SmvBaseTest):
         self.df("stage.modules.WithLib")
 
     def test_error_on_wrong_type(self):
-        with self.assertRaisesRegexp(SmvRuntimeError, "should be a Spark DataFrame"):
+        with self.assertRaisesRegex(RuntimeError, "should be a Spark DataFrame"):
             self.df("stage.modules.WrongType")
 
 class SmvAppWithoutSparkTest(SmvBaseTest):

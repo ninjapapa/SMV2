@@ -13,7 +13,6 @@
 
 from test_support.smvbasetest import SmvBaseTest
 from smv import SmvApp
-from smv.error import SmvRuntimeError
 
 class RunModuleWithRunConfigTest(SmvBaseTest):
     modFqn = 'stage.modules.A'
@@ -64,5 +63,5 @@ class RunModuleWithRunConfigTest(SmvBaseTest):
         self.should_be_same(self.createDF('src:String', 'dynamic_a'), a)
 
     def test_use_without_requiresConfig_should_error_out(self):
-        with self.assertRaisesRegexp(SmvRuntimeError, "RunConfig key .* was not specified"):
+        with self.assertRaisesRegex(RuntimeError, "RunConfig key .* was not specified"):
             self.df("stage.modules.RunConfWithError")

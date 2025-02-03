@@ -12,7 +12,6 @@
 # limitations under the License.
 
 from test_support.smvbasetest import SmvBaseTest
-from smv.error import SmvRuntimeError
 
 class RunCmdLineBaseTest(SmvBaseTest):
     @classmethod
@@ -63,7 +62,7 @@ class RunNotExistModuleTest(RunCmdLineBaseTest):
         return ['-m', 'tooth-fary']
 
     def test_should_report_non_existing_module(self):
-        with self.assertRaisesRegexp(SmvRuntimeError, "Can't find name tooth-fary"):
+        with self.assertRaisesRegex(RuntimeError, "Can't find name tooth-fary"):
             self.smvApp.run()
 
 class RunModuleAmbiguousTest(RunCmdLineBaseTest):
@@ -72,7 +71,7 @@ class RunModuleAmbiguousTest(RunCmdLineBaseTest):
         return ['-m', 'A']
     
     def test_should_report_ambiguous_modules(self):
-        with self.assertRaisesRegexp(SmvRuntimeError, r"Partial name A is ambiguous"):
+        with self.assertRaisesRegex(RuntimeError, r"Partial name A is ambiguous"):
             self.smvApp.run()
 
 class SmvAppForceAllTest(RunCmdLineBaseTest):

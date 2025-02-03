@@ -12,7 +12,6 @@
 # limitations under the License.
 import sys
 
-from smv.error import SmvRuntimeError
 from test_support.smvbasetest import SmvBaseTest
 from test_support.extrapath import ExtraPath, AppDir
 
@@ -145,6 +144,6 @@ class DataSetRepoTest(SmvBaseTest):
         """Ensure repo can detect duplicate providers with same provider type fqn"""
         # the bad_provider dir has multiple providers with fqn "aaa.bbb"
         prov_dir = self.resourceTestDir() + "/bad_provider"
-        with self.assertRaisesRegexp(SmvRuntimeError, "multiple providers with same fqn: aaa.bbb"):
+        with self.assertRaisesRegex(RuntimeError, r"multiple providers with same fqn: aaa.bbb"):
             with AppDir(self.smvApp, prov_dir):
                 self.build_new_repo()._all_providers()

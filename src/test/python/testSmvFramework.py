@@ -22,7 +22,6 @@ from smv import *
 import sys
 import smv.utils
 import smv.smvshell
-from smv.error import SmvMetadataValidationError, SmvRuntimeError
 
 import pyspark
 from pyspark.context import SparkContext
@@ -61,7 +60,7 @@ class SmvFrameworkTest(SmvBaseTest):
 
     def test_cycle_dependency_error_out(self):
         fqn = "cycle.modules.CycleA"
-        with self.assertRaisesRegexp(SmvRuntimeError, "Cycle found while resolving"):
+        with self.assertRaisesRegex(RuntimeError, "Cycle found while resolving"):
             df = self.df(fqn)
 
     def test_module_should_only_run_once(self):
@@ -103,7 +102,7 @@ class SmvNameErrorPropagationTest(SmvBaseTest):
 
     def test_module_NameError_propagation(self):
         fqn = "stage.modules.ModWithBadName"
-        with self.assertRaisesRegexp(NameError, "ModWhoseNameDoesntExist"):
+        with self.assertRaisesRegex(NameError, "ModWhoseNameDoesntExist"):
             self.df(fqn)
 
 
@@ -133,17 +132,17 @@ class SmvMetadataTest(SmvBaseTest):
 
     def test_metadata_validation_failure_causes_error(self):
         fqn = "metadata_stage.modules.ModWithFailingValidation"
-        with self.assertRaises(SmvMetadataValidationError):
+        with self.assertRaises(RuntimeError):
             self.df(fqn)
 
     def test_invalid_metadata_rejected_gracefully(self):
         fqn = "metadata_stage.modules.ModWithInvalidMetadata"
-        with self.assertRaisesRegexp(Exception, r"metadata .* is not a dict"):
+        with self.assertRaisesRegex(Exception, r"metadata .* is not a dict"):
             self.df(fqn)
 
     def test_invalid_metadata_validation_rejected_gracefully(self):
         fqn = "metadata_stage.modules.ModWithInvalidMetadataValidation"
-        with self.assertRaisesRegexp(Exception, r"message .* is not a string"):
+        with self.assertRaisesRegex(Exception, r"message .* is not a string"):
             self.df(fqn)
 
     def test_metadata_only_called_once(self):

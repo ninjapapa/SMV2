@@ -13,11 +13,8 @@
 """
 Errors thrown by SMV
 """
-import json
-
 class SmvRuntimeError(RuntimeError):
-    def __init__(self,msg):
-        super(SmvRuntimeError,self).__init__(msg)
+    pass
 
 class SmvMetadataValidationError(SmvRuntimeError):
     pass
