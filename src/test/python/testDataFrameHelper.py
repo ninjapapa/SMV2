@@ -31,6 +31,15 @@ class DfHelperTest(SmvBaseTest):
     def smvAppInitArgs(cls):
         return ['--smv-props', 'smv.stages=stage']
 
+    def test_smvHist(self):
+        df = self.createDF("a:Integer; b:String", """1,a;2,s;3,a;4,s;5,a;6,s;7,a;8,y;9,t;10,x""")
+        res = df.smvHist("a")
+        expect = self.createDF("a:Integer;count:Long", """1,1;2,1;3,1;4,1;5,1;6,1;7,1;8,1;9,1;10,1""")
+        self.should_be_same(expect, res)
+        res = df.smvHist("b")
+        expect = self.createDF("b:String;count:Long", """a,4;s,3;y,1;t,1;x,1""")
+        self.should_be_same(expect, res)
+
     def test_smvJoinByKey(self):
         df1 = self.createDF(
             "a:Integer; b:Double; c:String",
