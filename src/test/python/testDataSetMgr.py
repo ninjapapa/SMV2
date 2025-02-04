@@ -24,7 +24,6 @@ class SmvDataSetMgrTest(SmvBaseTest):
         ]
 
     def assertDSListMatch(self, jds_list, fqn_list):
-        # Scaffolding for moving resolver from Scala to Python
         try:
             jds_fqns = [str(x.fqn().toString()) for x in jds_list]
         except:
@@ -33,7 +32,6 @@ class SmvDataSetMgrTest(SmvBaseTest):
         self.assertEqual(sorted(jds_fqns), sorted(fqn_list))
 
     def resolvedDS(self, ds):
-        # Scaffolding for moving resolver from Scala to Python
         try:
             return ds.resolvedRequiresDS().array()
         except:

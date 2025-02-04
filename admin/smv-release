@@ -137,7 +137,6 @@ function run_make_in_docker()
   local pyenv_setup='eval "$(pyenv init -)"'
   local docker_cmd="cd /usr/lib/SMV && ${pyenv_setup} && make ${target}"
 
-  # explicitly add -ivy flag as SMV docker image is not picking up sbtopts file. (SMV issue #556)
   docker run --rm -it ${BASE_DOCKER_IMAGE} bash -c "${docker_cmd}" \
      >> ${LOGFILE} 2>&1 || error "SMV make $target failed"
 }

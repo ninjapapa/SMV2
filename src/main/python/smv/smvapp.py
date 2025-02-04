@@ -13,7 +13,6 @@
 
 """SmvApp entry class
 This module provides the main SMV Python entry point ``SmvPy`` class and a singleton `smvApp`.
-It is equivalent to ``SmvApp`` on Scala side
 """
 import os
 import sys
@@ -203,7 +202,6 @@ class SmvApp(object):
         """ SMV's equivalent of 'cd' for app dirs. """
         self.removeDefaultDirs()
 
-        # this call sets the scala side's picture of app dir and forces
         # the app properties to be read from disk and reevaluated
         self.py_smvconf.set_app_dir(appDir)
 
@@ -565,7 +563,6 @@ class SmvApp(object):
         return dataframe
 
     def abs_path_for_project_path(self, project_path):
-        # Load dynamic app dir from scala
         return os.path.abspath(os.path.join(self.appDir(), project_path))
 
     def prepend_source(self, project_path):
