@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# script to add the apache license header to all the scala files in the
+# script to add the apache license header to all the py files in the
 # project.  It will only add the license header if it is not there already.
 #
 # USAGE: (from top level SMV directory)
@@ -9,7 +9,7 @@
 
 LICENSE_FILE="./admin/license_header.txt"
 
-find src -name '*.scala' -print | while read f; do
+find src -name '*.py' -print | while read f; do
   c=$(head -10 $f | grep -c "LICENSE-2.0")
   if [[ "$c" == 0 ]]; then
     echo "Adding license header to: $f"

@@ -12,7 +12,6 @@
 # limitations under the License.
 
 """DataSetMgr entry class
-This module provides the python entry point to DataSetMgr on scala side
 """
 import smv
 
@@ -43,7 +42,7 @@ class DataSetMgr(object):
             *fqns (str): list of FQNs as strings
 
         Returns:
-            list(SmvGenericModules): list of Scala SmvGenericModules (j_ds)
+            list(SmvGenericModules): list of SmvGenericModules
         """
         with self.tx() as tx:
             return tx.load(fqns)

@@ -240,7 +240,7 @@ class SmvXmlInputFile(SparkDfGenMod, WithSchemaFile):
 
 class WithSmvSchema(SchemaString):
     def csvAttr(self):
-        """Specifies the csv file format.  Corresponds to the CsvAttributes case class in Scala.
+        """Specifies the csv file format.
             Derive from smvSchema if not specified by user.
 
             Override this method if user want to specify CsvAttributes which is different from
