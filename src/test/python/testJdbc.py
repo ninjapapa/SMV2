@@ -12,24 +12,16 @@
 # limitations under the License.
 
 from test_support.smvbasetest import SmvBaseTest
-from pyspark.sql import DataFrame
-from smv.smvmodulerunner import SmvModuleRunner
-# from py4j.java_gateway import java_import
 
 
 class NewJdbcTest(SmvBaseTest):
-    @classmethod
-    def setUpClass(cls):
-        super(NewJdbcTest, cls).setUpClass()
-        cls.smvApp._jvm.org.apache.spark.sql.jdbc.JdbcDialects.registerDialect(
-            cls.smvApp._jvm.org.tresamigos.smv.test.jdbc.DerbyDialect())
-
     @classmethod
     def url(cls):
         return "jdbc:derby:" + cls.tmpTestDir() + "/derby;create=true"
 
     @classmethod
     def driver(cls):
+        # New spark jar has derby driver included
         return "org.apache.derby.jdbc.EmbeddedDriver"
 
     @classmethod

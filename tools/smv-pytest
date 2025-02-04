@@ -33,7 +33,6 @@ unset PYSPARK_DRIVER_PYTHON
 
 rm -rf ${SMV_HOME}/metastore_db
 
-#find_app_jar
 run_pyspark_with ${SMV_HOME}/src/main/python/scripts/runtests.py "$@"
 
 export PYSPARK_DRIVER_PYTHON="$OLD_PYSPARK_DRIVER_PYTHON"

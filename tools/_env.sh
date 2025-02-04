@@ -128,25 +128,6 @@ function find_dependent_jars() {
   export DEPENDENT_JARS
 }
 
-# find latest app jar (only for testing) in target directory.
-function find_app_jar()
-{
-  SMV_APP_JAR="${SMV_HOME}/target/scala-2.12"
-
-  # try sbt-build location first if not found try mvn-build location next.
-  # then repeat from the parent directory, because the shell is
-  # sometimes run from a notebook subdirectory of a data project
-  dirs=("target/scala-2.12" "target" "../target/scala-2.12" "../target" "$SMV_APP_JAR" "${SMV_HOME}/target" "${SMV_HOME}/target/scala-2.12")
-  APP_JAR=$(find_file_in_dir "smv*jar-with-dependencies.jar" "${dirs[@]}")
-
-  if [ -z "$APP_JAR" ]; then
-    echo "ERROR: could not find an app jar in local target directory or SMV build target"
-    exit 1
-  fi
-  export DEPENDENT_JARS="$APP_JAR,$DEPENDENT_JARS"
-  export EXTRA_DRIVER_CLASSPATHS="$APP_JAR:$(basename ${APP_JAR}):$EXTRA_DRIVER_CLASSPATHS"
-}
-
 function run_pyspark_with () {
   # Suppress creation of .pyc files. These cause complications with
   # reloading code and have led to discovering deleted modules (#612)

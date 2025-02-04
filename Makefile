@@ -10,7 +10,7 @@ DEFAULT_SPARK_HOME := $(addprefix $(SPARKS_DIR)/, $(DEFAULT_SPARK))
 
 PYTHON_VERSIONS := $(shell cat admin/.python_to_test)
 DEFAULT_PYTHON_PATCH := $(shell tail -1 admin/.python_to_test)
-DEFAULT_PYTHON_MAJOR := $(shell cut -c 1-3 <<< $(DEFAULT_PYTHON_PATCH))
+DEFAULT_PYTHON_MAJOR := $(shell grep -P '^\d\.\d*' -o <<< $(DEFAULT_PYTHON_PATCH))
 
 SPARK_PYTHON_TO_TEST := admin/.spark_python_to_test
 TEST_TARGETS := $(shell awk '{print "target/spark_python_"NR".tested"}' $(SPARK_PYTHON_TO_TEST))
@@ -22,16 +22,12 @@ SMV_ROOT := $(shell pwd)
 clean:
 	rm -rf .tox
 	rm -f $(BUNDLE_NAME)
-	sbt clean
 
 install: install-basic
 
-install-basic: install-spark-default assemble-fat-jar
+install-basic: install-spark-default
 
-install-full: install-spark-all assemble-fat-jar
-
-assemble-fat-jar: xml-jar
-	sbt assembly
+install-full: install-spark-all
 
 xml-jar: 
 	curl -OL --progress-bar --fail https://repo1.maven.org/maven2/com/databricks/spark-xml_2.12/0.13.0/spark-xml_2.12-0.13.0.jar > spark-xml_2.12-0.13.0.jar
