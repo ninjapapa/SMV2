@@ -174,22 +174,29 @@ class DataFrameHelper(object):
             for (n, l) in labels:
                 print("{} = {}".format(l, rec[n]))
 
-    def smvHist(self, col):
+    def smvHist(self, col, bin=None):
         """Display the histogram of a column
 
             Args:
                 col (Column or str): the column to display the histogram
-
+                bin (int): the number of bins to display, default as 10
             Returns:
                 (DataFrame): the histogram of the column
         """
+        number_types = set(["integer", "long", "float", "double"])
         col_name = col if isinstance(col, str) else col.name()
         if self.df.schema[col_name].dataType.typeName() == "string":
             return self.df.groupBy(col_name).count().orderBy(F.desc("count"))
-        if self.df.schema[col_name].dataType.typeName() == "integer":
+        if self.df.schema[col_name].dataType.typeName() == "boolean":
+            return self.df.groupBy(col_name).count().orderBy(F.col(col_name))
+        if self.df.schema[col_name].dataType.typeName() == "integer" and bin is None:
             return self.df.groupBy(col_name).count().orderBy(F.asc(col_name))
+        if self.df.schema[col_name].dataType.typeName() in number_types:
+            nbin = bin or 10
+            ncol_name = col_name + "_bin"
+            return self.df.withColumn(ncol_name, F.floor(F.col(col_name) / nbin)).groupBy(ncol_name).count().orderBy(F.asc(ncol_name))
         else:
-            raise SmvRuntimeError("Histogram is only supported for StringType or IntegerType column")
+            raise SmvRuntimeError("Histogram is only supported for StringType, BooleanType or NumberType column")
 
     def _get_key_one_by_one(self, working_df, pool, selected_keys, unique_count, cnt, debug):
         """Fined unique key one by one"""
