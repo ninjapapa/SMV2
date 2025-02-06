@@ -178,12 +178,21 @@ class DataFrameHelper(object):
         """Display the histogram of a column
 
             Args:
-                col (Column or str): the column to display the histogram
+                col (Column, str, list): the column(s) to display the histogram
                 bin (int): the number of bins to display, default as 10
+
+            If multiple columns are provided, the histogram will be displayed for the joint distribution of the columns.
+            If a single string or Column is provided, the histogram will be displayed for the distribution of the column with highest frequency at the top.
+            If a single integer is provided without a bin, the histogram will be displayed for the distribution sorted by the column value.
+            If a number is provided with a bin, the histogram will be displayed by the binned values.
+
             Returns:
                 (DataFrame): the histogram of the column
         """
         number_types = set(["integer", "long", "float", "double"])
+        if isinstance(col, list):
+            return self.df.groupBy(col).count().orderBy(col)
+
         col_name = col if isinstance(col, str) else col.name()
         if self.df.schema[col_name].dataType.typeName() == "string":
             return self.df.groupBy(col_name).count().orderBy(F.desc("count"))
@@ -194,7 +203,7 @@ class DataFrameHelper(object):
         if self.df.schema[col_name].dataType.typeName() in number_types:
             nbin = bin or 10
             ncol_name = col_name + "_bin"
-            return self.df.withColumn(ncol_name, F.floor(F.col(col_name) / nbin)).groupBy(ncol_name).count().orderBy(F.asc(ncol_name))
+            return self.df.withColumn(ncol_name, F.floor(F.col(col_name) / nbin) * nbin).groupBy(ncol_name).count().orderBy(F.asc(ncol_name))
         else:
             raise SmvRuntimeError("Histogram is only supported for StringType, BooleanType or NumberType column")
 
