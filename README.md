@@ -18,12 +18,10 @@ Spark Modularized View enables users to build enterprise scale applications on A
 
 ## Installation
 
-Current SMV2 is tested on 
+Current SMV2 is tested on
 
-* Spark 2.4.8 (Should work on any Spark 2 distribution)
-* Spark 3.2.1
-* Python 2.7.* (for better interactive experience, install IPython for Python2)
-* Python 3.8.* (for better interactive experience, install IPython)
+* Spark 4.0.2
+* Python 3.11 (for better interactive experience, install IPython)
 
 SMV2 can easily setup on Linux and MACOS (Intel silicon, M1 chip MAC book does not have full Python2.7 support) env with or without Hadoop. 
 
@@ -42,17 +40,17 @@ There are some challenges of using Python 2.7 on M1 chip Mac books. Although Pyt
 ### Setup Spark
 Spark packages depend on java8 jdk. Please check online for how to install java8 jdk for your system.
 
-Download a Spark bin tar release, such as: https://archive.apache.org/dist/spark/spark-2.4.8/spark-2.4.8-bin-hadoop2.7.tgz or other versions as in
-'.supported_spark'. 
+Download a Spark bin tar release, such as: https://archive.apache.org/dist/spark/spark-4.0.2/spark-4.0.2-bin-hadoop3.tgz or other versions as in
+`.supported_spark`.
 
 ```sh
 $ cd ~
-$ tar zx spark-2.4.8-bin-hadoop2.7.tgz
+$ tar zx spark-4.0.2-bin-hadoop3.tgz
 ```
 
 Need to setup `SPARK_HOME` env var in `bashrc` or other profile file for the shell you use:
 ```
-export SPARK_HOME="${HOME}/park-2.4.8-bin-hadoop2.7"
+export SPARK_HOME="${HOME}/spark-4.0.2-bin-hadoop3"
 export PATH="${SPARK_HOME}/bin:${PATH}"
 ```
 Then reload shell to have the env vars take effect.
