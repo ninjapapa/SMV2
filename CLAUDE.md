@@ -52,20 +52,18 @@ make test-full
 Tests use Python `unittest` and are run via the `smv-pytest` tool. On macOS, `SPARK_LOCAL_IP=127.0.0.1` is required to fix an IPv6 binding issue:
 
 ```sh
-# Run all unit tests (macOS)
-SPARK_LOCAL_IP=127.0.0.1 SMV_HOME=$(pwd) PYTHONPATH=$(pwd)/src/main/python \
+# Run all unit tests (macOS) — JAVA_HOME, SMV_HOME, PYTHONPATH, and SPARK_LOCAL_IP must be set explicitly
+JAVA_HOME="/Users/bo.i.zhang/jdk-21.0.6+7/Contents/Home" \
+  SPARK_LOCAL_IP=127.0.0.1 SMV_HOME=$(pwd) PYTHONPATH=$(pwd)/src/main/python \
   bash tools/smv-pytest --spark-home .sparks/3.5.4
 
 # Run a specific test file (by filename without .py)
-SPARK_LOCAL_IP=127.0.0.1 SMV_HOME=$(pwd) PYTHONPATH=$(pwd)/src/main/python \
+JAVA_HOME="/Users/bo.i.zhang/jdk-21.0.6+7/Contents/Home" \
+  SPARK_LOCAL_IP=127.0.0.1 SMV_HOME=$(pwd) PYTHONPATH=$(pwd)/src/main/python \
   bash tools/smv-pytest --spark-home .sparks/3.5.4 -t testDataSetMgr
-
-# Filter to a specific test class
-SPARK_LOCAL_IP=127.0.0.1 SMV_HOME=$(pwd) PYTHONPATH=$(pwd)/src/main/python \
-  bash tools/smv-pytest --spark-home .sparks/3.5.4 -t testDataSetMgr.SomeTestClass
 ```
 
-**Java requirement**: Spark 3.5.x requires Java 11 or 17. Java 23+ is incompatible due to removed Hadoop security APIs. Recommended: [Eclipse Temurin JDK 17](https://adoptium.net/temurin/releases/?version=17). Set `JAVA_HOME` to the JDK's `Contents/Home` directory.
+**Java requirement**: Spark 3.5.x requires Java 11, 17, or 21. Java 23+ is incompatible due to removed Hadoop security APIs. Recommended: [Eclipse Temurin JDK 21](https://adoptium.net/temurin/releases/?version=21). Set `JAVA_HOME` to the JDK's `Contents/Home` directory.
 
 Test files live in `src/test/python/` and follow the naming pattern `testXxx.py`.
 
