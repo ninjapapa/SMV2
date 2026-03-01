@@ -117,12 +117,15 @@ function installed_spark_major_version() {
 }
 
 function find_dependent_jars() {
-  if [ "$SPARK_MAJOR_VERSION" == "2" ]; then 
+  if [ "$SPARK_MAJOR_VERSION" == "2" ]; then
     DEPENDENT_JARS="${SMV_HOME}/jars/spark-xml_2.11-0.13.0.jar"
   elif [ "$SPARK_MAJOR_VERSION" == "3" ]; then
     DEPENDENT_JARS="${SMV_HOME}/jars/spark-xml_2.12-0.13.0.jar"
+  elif [ "$SPARK_MAJOR_VERSION" == "4" ]; then
+    # Spark 4.0+ has built-in XML support; no external JAR needed
+    DEPENDENT_JARS=""
   else
-    echo "Spark $SPARK_MAJOR_VERSION detected. Need either Spark 2 or Spark 3."
+    echo "Spark $SPARK_MAJOR_VERSION detected. Need Spark 2, 3, or 4."
     exit 1
   fi
   export DEPENDENT_JARS
@@ -135,9 +138,16 @@ function run_pyspark_with () {
   local SPARK_PRINT_LAUNCH_COMMAND=1
   local SMV_LAUNCH_SCRIPT="${SMV_LAUNCH_SCRIPT:-${SPARK_HOME}/bin/spark-submit}"
 
+  # Build --jars argument only when there are jars to include
+  local ALL_JARS="${DEPENDENT_JARS:+$DEPENDENT_JARS}${DEPENDENT_JARS:+${EXTRA_JARS:+,}}${EXTRA_JARS}"
+  local JARS_ARG=()
+  if [ -n "$ALL_JARS" ]; then
+    JARS_ARG=(--jars "$ALL_JARS")
+  fi
+
   ( export PYTHONDONTWRITEBYTECODE SPARK_PRINT_LAUNCH_COMMAND PYTHONPATH; \
     "${SMV_LAUNCH_SCRIPT}" "${SPARK_ARGS[@]}" \
-    --jars "$DEPENDENT_JARS,$EXTRA_JARS" \
+    "${JARS_ARG[@]}" \
     --driver-class-path "$EXTRA_DRIVER_CLASSPATHS" \
     $1 "${SMV_ARGS[@]}"
   )
