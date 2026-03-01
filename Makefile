@@ -29,10 +29,8 @@ install-basic: install-spark-default
 
 install-full: install-spark-all
 
-xml-jar: 
-	curl -OL --progress-bar --fail https://repo1.maven.org/maven2/com/databricks/spark-xml_2.12/0.13.0/spark-xml_2.12-0.13.0.jar > spark-xml_2.12-0.13.0.jar
-	curl -OL --progress-bar --fail https://repo1.maven.org/maven2/com/databricks/spark-xml_2.11/0.13.0/spark-xml_2.11-0.13.0.jar > spark-xml_2.11-0.13.0.jar
-	mv spark-xml*jar jars
+xml-jar:
+	@echo "Spark 4.0+ has built-in XML support; no external JAR required."
 
 BUNDLE_NAME = smv2_$(SMV_VERSION).tgz
 BUNDLE_PATH = docker/smv/$(BUNDLE_NAME)
